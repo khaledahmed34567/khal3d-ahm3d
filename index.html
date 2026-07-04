@@ -1420,9 +1420,11 @@ function generateUID() { return Date.now().toString(36) + Math.random().toString
 
 async function apiGet(sheet, params='') {
   const url = params ? `${BASE_URL}/${sheet}?${params}` : `${BASE_URL}/${sheet}`;
-  const r = await fetch(url, { headers: HEADERS });
+  let r;
+  try { r = await fetch(url, { headers: HEADERS }); }
+  catch(netErr) { console.error('apiGet network error', netErr); return { results: [], total: 0 }; }
   if (!r.ok) {
-    const txt = await r.text();
+    const txt = await r.text().catch(()=>'');
     console.error('apiGet error', r.status, txt);
     if (r.status === 404 || r.status === 400) return { results: [], total: 0 };
     throw new Error(`HTTP ${r.status}: ${txt}`);
@@ -1447,7 +1449,8 @@ async function apiPost(sheet, data) {
 async function apiPatch(sheet, rowIndex, data) {
   const url = `${BASE_URL}/${sheet}/${rowIndex}`;
   const r = await fetch(url, { method: 'PATCH', headers: HEADERS, body: JSON.stringify(data) });
-  const json = await r.json();
+  let json = {};
+  try { json = await r.json(); } catch(e) { if (!r.ok) throw new Error(`HTTP ${r.status}`); return {}; }
   if (!r.ok || json.error) {
     console.error('apiPatch error', r.status, json);
     throw new Error(json.error || `HTTP ${r.status}`);
@@ -1774,14 +1777,15 @@ function navigate(page) {
   if (sb) sb.classList.add('active');
   const p = document.getElementById('page-'+page);
   if (p) p.classList.add('active');
-  // Lazy load
-  if (page === 'opps') loadOpps();
-  if (page === 'certs') loadCerts();
-  if (page === 'info') loadInfo();
-  if (page === 'contact') loadMyReplies();
+  // Load data on navigate
+  if (page === 'opps')     loadOpps();
+  if (page === 'certs')    loadCerts();
+  if (page === 'info')     loadInfo();
+  if (page === 'contact')  { loadMyReplies(); }
   if (page === 'settings') { loadPartners(); updateProfileUI(); }
   if (page === 'articles') loadArticles();
-  if (page === 'apps') loadApps();
+  if (page === 'apps')     loadApps();
+  if (page === 'reports')  { document.getElementById('reportCodeInput').value=''; resetReportView(); }
 }
 
 function openSidebar() {
@@ -1822,8 +1826,37 @@ async function loadAbout() {
       const links = JSON.parse(row.social || '[]');
       socialEl.innerHTML = links.map(l => `<div class="social-link" onclick="openLink('${l.url}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>${l.name}</div>`).join('');
     } catch(e) { socialEl.innerHTML = ''; }
+    // حفظ row لاستخدامه لاحقاً في loadAdminAbout
+    window._aboutRow = row;
   } catch(e) { console.log('About load error', e); }
 }
+
+// تحميل بيانات about في نموذج الأدمن
+async function loadAdminAbout() {
+  try {
+    const data = await apiGet(SHEETS.about, 'limit=1');
+    const row = (data.results||[])[0];
+    if (!row) return;
+    window._aboutRow = row;
+    const nameEl = document.getElementById('adminAboutName');
+    const roleEl = document.getElementById('adminAboutRole');
+    const bioEl  = document.getElementById('adminAboutBio');
+    const skillsEl = document.getElementById('adminAboutSkills');
+    const statsEl  = document.getElementById('adminAboutStats');
+    const socialEl = document.getElementById('adminAboutSocial');
+    const avatarEl = document.getElementById('aboutAvatarUrl');
+    const prevEl   = document.getElementById('adminAvatarPreview');
+    if (nameEl)   nameEl.value   = row.name   || '';
+    if (roleEl)   roleEl.value   = row.role   || '';
+    if (bioEl)    bioEl.value    = row.bio    || '';
+    if (skillsEl) skillsEl.value = row.skills || '';
+    if (statsEl)  statsEl.value  = row.stats  || '';
+    if (socialEl) socialEl.value = row.social || '';
+    if (avatarEl) avatarEl.value = row.avatar || '';
+    if (prevEl && row.avatar) { prevEl.src = row.avatar; prevEl.classList.add('show'); }
+  } catch(e) { console.log('loadAdminAbout error', e); }
+}
+window.loadAdminAbout = loadAdminAbout;
 
 function openLink(url) { window.open(url, '_blank'); }
 
@@ -1963,9 +1996,12 @@ function renderReport(r) {
 }
 
 function resetReportView() {
-  document.getElementById('reportAccessView').style.display = 'block';
-  document.getElementById('reportView').style.display = 'none';
-  document.getElementById('reportCodeInput').value = '';
+  const rav = document.getElementById('reportAccessView');
+  const rv  = document.getElementById('reportView');
+  const rci = document.getElementById('reportCodeInput');
+  if (rav) rav.style.display = 'block';
+  if (rv)  rv.style.display  = 'none';
+  if (rci) rci.value = '';
 }
 
 function openPdf(url, title) {
@@ -2060,14 +2096,14 @@ function setupPostSwipe(pi, total) {
   track.addEventListener('touchend', e => {
     if (!isDragging) return; isDragging = false;
     const dx = e.changedTouches[0].clientX - startX;
-    if (Math.abs(dx) > 40) goToSlide(pi, postSlideIndexes[pi] + (dx < 0 ? 1 : -1), total);
+    if (Math.abs(dx) > 40) goToSlide(pi, postSlideIndexes[pi] + (dx > 0 ? 1 : -1), total);
   });
 }
 function goToSlide(pi, idx, total) {
   idx = Math.max(0, Math.min(idx, total-1));
   postSlideIndexes[pi] = idx;
   const track = document.getElementById('slides-'+pi);
-  if (track) track.style.transform = `translateX(${idx * 100}%)`;
+  if (track) track.style.transform = `translateX(${idx * 100 * (document.dir==='rtl' ? 1 : -1)}%)`;
   const ctr = document.getElementById('counter-'+pi);
   if (ctr) ctr.textContent = `${idx+1}/${total}`;
   const dots = document.querySelectorAll(`#indicators-${pi} .post-dot`);
@@ -2190,7 +2226,7 @@ async function loadPartners() {
     const track = document.getElementById('tickerTrack');
     const ticker = document.getElementById('partnerTicker');
     if (!rows.length) { track.innerHTML = ''; if(ticker) ticker.style.display='none'; return; }
-    if(ticker) ticker.style.display='block';
+    if(ticker) ticker.style.display='';
     const items = rows.map(r => {
       if (r.logo) {
         return `<div class="ticker-item"><img class="ticker-logo" src="${r.logo}" alt="${r.name||''}" onerror="this.style.display='none'"></div><div class="ticker-divider"></div>`;
@@ -2302,6 +2338,7 @@ function switchAdminTab(tab) {
   document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
   event.target.classList.add('active');
   document.getElementById('admin-'+tab)?.classList.add('active');
+  if (tab==='about') loadAdminAbout();
   if (tab==='certs') loadAdminCerts();
   if (tab==='opps') loadAdminOpps();
   if (tab==='reports') loadAdminReports();
@@ -2323,9 +2360,15 @@ async function loadDashboard() {
   const ids = ['statUsers','statCerts','statReports','statContacts','statOpps','statCoursera','statArticles','statApps'];
   for (let i=0; i<sheets.length; i++) {
     try {
-      const d = await apiGet(sheets[i], 'limit=1');
-      document.getElementById(ids[i]).textContent = d.total || (d.results||[]).length || 0;
-    } catch(e) {}
+      // نطلب limit=1000 عشان Sheetson يرجع العدد الفعلي في results
+      const d = await apiGet(sheets[i], 'limit=1000');
+      const count = d.total != null ? d.total : (d.results||[]).length;
+      const el = document.getElementById(ids[i]);
+      if (el) el.textContent = count;
+    } catch(e) {
+      const el = document.getElementById(ids[i]);
+      if (el) el.textContent = '0';
+    }
   }
 }
 
@@ -2372,6 +2415,7 @@ async function saveAbout() {
     }
     showToast('تم الحفظ بنجاح', 'success');
     loadAbout();
+    loadAdminAbout();
   } catch(e) {
     showToast('فشل الحفظ: ' + e.message, 'error');
   } finally { btn.textContent = 'حفظ البيانات'; btn.disabled = false; }
@@ -2387,15 +2431,30 @@ async function saveOpp() {
   const btn = document.querySelector('#admin-opps .btn-save');
   btn.textContent = 'جاري الحفظ...'; btn.disabled = true;
   try {
+    // رفع الفيديو إن وجد
+    let videoUrl = '';
+    if (oppVideos['current']) {
+      showToast('جاري رفع الفيديو...');
+      try {
+        const fd = new FormData();
+        fd.append('image', oppVideos['current']);
+        const vr = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method:'POST', body:fd });
+        const vd = await vr.json();
+        videoUrl = vd.data?.url || '';
+      } catch(ve) { console.warn('video upload failed', ve); }
+    }
     await apiPost(SHEETS.opportunities, {
       uid: generateUID(), image: img, title, description: desc, url,
+      video: videoUrl,
       isActive: 'true', created_at: new Date().toISOString()
     });
     showToast('تم حفظ الفرصة', 'success');
     ['oppImgUrl','oppTitle','oppDesc','oppUrl'].forEach(id => document.getElementById(id).value='');
     document.getElementById('oppImgPreview').classList.remove('show');
     document.getElementById('oppVideoName').textContent = '';
+    oppVideos['current'] = null;
     loadAdminOpps();
+    if (currentPage === 'opps') loadOpps();
   } catch(e) { showToast('فشل الحفظ: ' + e.message, 'error'); }
   finally { btn.textContent = 'حفظ الفرصة'; btn.disabled = false; }
 }
@@ -2439,6 +2498,7 @@ async function saveCert() {
     ['certImgUrl','certCredId','certTitle','certDesc','certCompany','certField','certIssue','certExpiry'].forEach(id => document.getElementById(id).value='');
     document.getElementById('certImgPreview').classList.remove('show');
     loadAdminCerts();
+    if (currentPage === 'certs') loadCerts();
   } catch(e) { showToast('فشل الحفظ: ' + e.message, 'error'); }
   finally { btn.textContent = 'حفظ الشهادة'; btn.disabled = false; }
 }
@@ -2549,6 +2609,7 @@ async function saveInfoPost() {
     document.getElementById('infoImgUrls').value = '';
     document.getElementById('infoImgsStatus').textContent = '';
     loadAdminInfo();
+    if (currentPage === 'info') loadInfo();
   } catch(e) { showToast('فشل النشر: ' + e.message, 'error'); }
   finally { btn.textContent = 'نشر المعلومة'; btn.disabled = false; }
 }
@@ -2560,6 +2621,7 @@ async function sendReply(rowIndex, textareaId) {
     await apiPatch(SHEETS.contacts, rowIndex, { reply, replied: 'true' });
     showToast('تم إرسال الرد', 'success');
     loadAdminContacts();
+    if (currentPage === 'contact') loadMyReplies();
   } catch(e) { showToast('فشل إرسال الرد: ' + e.message, 'error'); }
 }
 
@@ -2573,6 +2635,7 @@ async function sendNotification() {
     document.getElementById('notifText').value = '';
     showToast('تم إرسال الإشعار', 'success');
     loadAdminNotifs();
+    loadNotifications();
   } catch(e) { showToast('فشل الإرسال: ' + e.message, 'error'); }
   finally { btn.textContent = 'إرسال للجميع'; btn.disabled = false; }
 }
@@ -2584,6 +2647,22 @@ async function deleteRow(sheet, rowIndex, listId, reloadFn) {
     showToast('تم الحذف', 'success');
     if (typeof reloadFn === 'function') reloadFn();
     else if (typeof window[reloadFn] === 'function') window[reloadFn]();
+    // تحديث صفحة اليوزر المقابلة
+    const sheetToPage = {
+      [SHEETS.opportunities]: 'opps',
+      [SHEETS.certificates]:  'certs',
+      [SHEETS.info]:          'info',
+      [SHEETS.articles]:      'articles',
+      [SHEETS.apps]:          'apps',
+      [SHEETS.partners]:      null,
+    };
+    const targetPage = sheetToPage[sheet];
+    if (targetPage && currentPage === targetPage) {
+      const loaders = { opps: loadOpps, certs: loadCerts, info: loadInfo, articles: loadArticles, apps: loadApps };
+      if (loaders[targetPage]) loaders[targetPage]();
+    }
+    if (sheet === SHEETS.partners) loadPartners();
+    if (sheet === SHEETS.notifications) loadNotifications();
   } catch(e) { showToast('فشل الحذف: ' + e.message, 'error'); }
 }
 
@@ -2736,6 +2815,7 @@ async function saveArticle() {
     ['artImgUrl','artTitle','artCategory','artExcerpt','artContent'].forEach(id => document.getElementById(id).value='');
     document.getElementById('artImgPreview').classList.remove('show');
     loadAdminArticles();
+    if (currentPage === 'articles') loadArticles();
   } catch(e) { showToast('فشل النشر: ' + e.message, 'error'); }
   finally { btn.textContent = 'نشر المقال'; btn.disabled = false; }
 }
@@ -2782,6 +2862,7 @@ async function saveApp() {
     ['appIconUrl','appName','appDesc','appTags','appVersion','appDlUrl','appStoreUrl'].forEach(id => document.getElementById(id).value='');
     document.getElementById('appIconPreview').classList.remove('show');
     loadAdminApps();
+    if (currentPage === 'apps') loadApps();
   } catch(e) { showToast('فشل الإضافة: ' + e.message, 'error'); }
   finally { btn.textContent = 'إضافة التطبيق'; btn.disabled = false; }
 }
