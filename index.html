@@ -159,15 +159,15 @@
   /* ========== MAIN APP ========== */
   #main-app { display: flex; flex-direction: column; height: 100%; }
   #main-app.hidden { display: none; }
-  .app-content { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 80px; }
+  .app-content { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 24px; }
   
   /* ========== TOP BAR ========== */
   .top-bar {
-    padding: 52px 20px 14px; background: var(--white);
+    padding: 44px 16px 10px; background: var(--white);
     border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between;
     position: sticky; top: 0; z-index: 100;
   }
-  .top-bar-logo { height: 36px; object-fit: contain; }
+  .top-bar-logo { height: 28px; object-fit: contain; }
   .top-bar-actions { display: flex; gap: 10px; align-items: center; }
   .icon-btn { width: 38px; height: 38px; border-radius: 50%; border: none; background: var(--gray-100); cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .icon-btn svg { width: 18px; height: 18px; color: var(--maroon); }
@@ -450,6 +450,70 @@
   .ad-body { font-size:11px; color:var(--gray-500); line-height:1.5; }
   .ad-close { position:absolute; top:6px; left:6px; width:20px; height:20px; border-radius:50%; background:var(--gray-100); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--gray-400); }
 
+  
+  /* ========== SIDEBAR DRAWER ========== */
+  .sidebar-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:399; display:none; }
+  .sidebar-overlay.open { display:block; }
+  .sidebar { position:fixed; top:0; right:0; bottom:0; width:78%; max-width:300px; background:var(--white); z-index:400; transform:translateX(100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; box-shadow:var(--shadow-lg); }
+  .sidebar.open { transform:translateX(0); }
+  .sidebar-header { padding:52px 20px 20px; background:linear-gradient(135deg,var(--maroon),var(--maroon-dark)); }
+  .sidebar-user-name { font-size:16px; font-weight:700; color:white; margin-bottom:2px; }
+  .sidebar-user-email { font-size:12px; color:rgba(255,255,255,0.75); }
+  .sidebar-nav { flex:1; overflow-y:auto; padding:12px 0; }
+  .sidebar-item { display:flex; align-items:center; gap:14px; padding:14px 20px; cursor:pointer; transition:background 0.15s; border-bottom:1px solid var(--gray-100); }
+  .sidebar-item:hover, .sidebar-item.active { background:var(--maroon-pale); }
+  .sidebar-item svg { width:20px; height:20px; color:var(--maroon); flex-shrink:0; }
+  .sidebar-item-label { font-size:14px; font-weight:500; color:var(--gray-700); }
+  .sidebar-item.active .sidebar-item-label { color:var(--maroon); font-weight:700; }
+  .sidebar-footer { padding:16px 20px 32px; border-top:1px solid var(--gray-100); }
+  .sidebar-logout { width:100%; padding:12px; border:1.5px solid #e0e0e0; border-radius:var(--radius-md); background:transparent; font-family:var(--font-ar); font-size:14px; font-weight:600; color:#c0392b; cursor:pointer; }
+  .menu-btn { width:38px; height:38px; border-radius:50%; border:none; background:var(--gray-100); cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .menu-btn svg { width:18px; height:18px; color:var(--maroon); }
+
+  /* ========== ARTICLES PAGE ========== */
+  .article-card { margin:12px 16px; background:var(--white); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); border:1px solid var(--gray-200); overflow:hidden; }
+  .article-img { width:100%; aspect-ratio:16/7; object-fit:cover; display:block; }
+  .article-body { padding:16px; }
+  .article-cat { display:inline-block; padding:3px 10px; background:var(--maroon-pale); color:var(--maroon); border-radius:20px; font-size:11px; font-weight:600; margin-bottom:8px; }
+  .article-title { font-size:16px; font-weight:700; color:var(--gray-700); margin-bottom:6px; line-height:1.4; }
+  .article-excerpt { font-size:13px; color:var(--gray-500); line-height:1.7; margin-bottom:12px; }
+  .article-meta { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--gray-400); }
+  .article-meta svg { width:13px; height:13px; }
+  .article-read-btn { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:11px; border:1.5px solid var(--maroon); border-radius:var(--radius-sm); background:transparent; color:var(--maroon); font-family:var(--font-ar); font-size:13px; font-weight:600; cursor:pointer; margin-top:10px; }
+
+  /* Article viewer modal */
+  .article-viewer { position:fixed; inset:0; background:var(--white); z-index:600; display:flex; flex-direction:column; transform:translateY(100%); transition:transform 0.35s ease; }
+  .article-viewer.open { transform:translateY(0); }
+  .article-viewer-toolbar { padding:52px 16px 12px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--gray-100); background:var(--white); }
+  .article-viewer-back { width:36px; height:36px; border-radius:50%; background:var(--gray-100); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .article-viewer-back svg { width:18px; height:18px; color:var(--maroon); }
+  .article-viewer-title { flex:1; font-size:15px; font-weight:700; color:var(--gray-700); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .article-viewer-body { flex:1; overflow-y:auto; padding:20px 20px 40px; }
+  .article-viewer-body img { width:100%; border-radius:var(--radius-md); margin:12px 0; }
+  .article-content { font-size:14px; color:var(--gray-500); line-height:1.9; }
+  .article-content h2 { font-size:17px; font-weight:700; color:var(--gray-700); margin:20px 0 8px; }
+  .article-content h3 { font-size:15px; font-weight:600; color:var(--gray-700); margin:16px 0 6px; }
+  .article-content strong { color:var(--gray-700); }
+  .article-content p { margin-bottom:12px; }
+  .article-viewer-img { width:100%; max-height:240px; object-fit:cover; border-radius:0; }
+
+  /* ========== APPS PAGE ========== */
+  .app-card { margin:12px 16px; background:var(--white); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); border:1px solid var(--gray-200); padding:16px; display:flex; gap:14px; align-items:flex-start; }
+  .app-icon { width:60px; height:60px; border-radius:16px; object-fit:cover; flex-shrink:0; background:var(--gray-100); border:1px solid var(--gray-200); }
+  .app-info { flex:1; min-width:0; }
+  .app-name { font-size:15px; font-weight:700; color:var(--gray-700); margin-bottom:4px; }
+  .app-desc { font-size:12px; color:var(--gray-500); line-height:1.6; margin-bottom:10px; }
+  .app-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+  .app-tag { padding:3px 10px; background:var(--maroon-pale); color:var(--maroon); border-radius:20px; font-size:11px; font-weight:600; }
+  .app-dl-btn { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:10px; border:none; border-radius:var(--radius-sm); background:var(--maroon); color:white; font-family:var(--font-ar); font-size:13px; font-weight:600; cursor:pointer; }
+  .app-dl-btn svg { width:16px; height:16px; }
+  .app-version { font-size:10px; color:var(--gray-400); font-family:var(--font-en); margin-top:4px; }
+
+  /* ========== CERT HOLD IMPROVED ========== */
+  .cert-card .cert-blur { transition: opacity 0.25s ease; }
+  .cert-card.hold-ready .cert-blur { opacity: 0.4; }
+  .cert-card.revealed .cert-blur { opacity: 0; }
+
   @media (max-width: 360px) {
     .certs-grid { grid-template-columns: 1fr; }
     .report-media-grid { grid-template-columns: 1fr; }
@@ -642,9 +706,70 @@
 
 <!-- MAIN APP -->
 <div id="main-app" class="hidden">
+  <!-- SIDEBAR OVERLAY + SIDEBAR -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-user-name" id="sidebarName">خالد أحمد</div>
+      <div class="sidebar-user-email" id="sidebarEmail"></div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="sidebar-item active" id="sb-about" onclick="navigate('about');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="sidebar-item-label">عني</span>
+      </div>
+      <div class="sidebar-item" id="sb-articles" onclick="navigate('articles');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span class="sidebar-item-label">المقالات</span>
+      </div>
+      <div class="sidebar-item" id="sb-opps" onclick="navigate('opps');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        <span class="sidebar-item-label">الفرص</span>
+      </div>
+      <div class="sidebar-item" id="sb-certs" onclick="navigate('certs');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+        <span class="sidebar-item-label">شهاداتي</span>
+      </div>
+      <div class="sidebar-item" id="sb-reports" onclick="navigate('reports');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span class="sidebar-item-label">تقارير سيبرانية</span>
+      </div>
+      <div class="sidebar-item" id="sb-info" onclick="navigate('info');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="sidebar-item-label">معلومة سيبرانية</span>
+      </div>
+      <div class="sidebar-item" id="sb-apps" onclick="navigate('apps');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="9" height="9" rx="2"/><rect x="13" y="2" width="9" height="9" rx="2"/><rect x="2" y="13" width="9" height="9" rx="2"/><rect x="13" y="13" width="9" height="9" rx="2"/></svg>
+        <span class="sidebar-item-label">التطبيقات</span>
+      </div>
+      <div class="sidebar-item" id="sb-coursera" onclick="navigate('coursera');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        <span class="sidebar-item-label">Coursera Pro</span>
+      </div>
+      <div class="sidebar-item" id="sb-contact" onclick="navigate('contact');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span class="sidebar-item-label">تواصل معي</span>
+      </div>
+      <div class="sidebar-item" id="sb-settings" onclick="navigate('settings');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="sidebar-item-label">الإعدادات</span>
+      </div>
+      <div class="sidebar-item" id="sb-admin" style="display:none" onclick="openAdmin();closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="sidebar-item-label">لوحة الإدارة</span>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="sidebar-logout" onclick="handleLogout()">تسجيل الخروج</button>
+    </div>
+  </div>
+
   <!-- TOP BAR -->
   <div class="top-bar">
-    <img id="mainLogo" src="https://i.ibb.co/Sk9D0cT/logo.png" alt="Logo" class="top-bar-logo" onerror="this.style.display='none'">
+    <button class="menu-btn" onclick="openSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <img id="mainLogo" src="https://i.ibb.co/Sk9D0cT/logo.png" alt="Logo" class="top-bar-logo" style="position:absolute;left:50%;transform:translateX(-50%);" onerror="this.style.display='none'">
     <div class="top-bar-actions">
       <button class="icon-btn notif-badge" id="notifBtn" data-count="0" onclick="openNotifications()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -801,6 +926,24 @@
       </div>
     </div>
 
+    <!-- ARTICLES PAGE -->
+    <div class="page" id="page-articles">
+      <div class="page-header">
+        <div class="page-title">المقالات</div>
+        <div class="page-subtitle">مقالات ومحتوى تعليمي في مجال الأمن السيبراني</div>
+      </div>
+      <div id="articlesContainer"><div class="loading-spinner"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- APPS PAGE -->
+    <div class="page" id="page-apps">
+      <div class="page-header">
+        <div class="page-title">التطبيقات</div>
+        <div class="page-subtitle">تطبيقات وأدوات يمكنك تحميلها</div>
+      </div>
+      <div id="appsContainer"><div class="loading-spinner"><div class="spinner"></div></div></div>
+    </div>
+
     <!-- SETTINGS PAGE -->
     <div class="page" id="page-settings">
       <div class="user-profile-card" id="profileCard">
@@ -865,51 +1008,17 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAV -->
-  <nav class="bottom-nav">
-    <div class="nav-item active" onclick="navigate('about')">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      </div>
-      <span class="nav-label">عني</span>
+  <!-- Article viewer -->
+  <div class="article-viewer" id="articleViewer">
+    <div class="article-viewer-toolbar">
+      <button class="article-viewer-back" onclick="closeArticleViewer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      </button>
+      <span class="article-viewer-title" id="articleViewerTitle"></span>
+      <button class="share-copy" style="font-size:12px;" id="articleShareBtn">مشاركة</button>
     </div>
-    <div class="nav-item" onclick="navigate('opps')">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-      </div>
-      <span class="nav-label">الفرص</span>
-    </div>
-    <div class="nav-item" onclick="navigate('certs')">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
-      </div>
-      <span class="nav-label">شهاداتي</span>
-    </div>
-    <div class="nav-item" onclick="navigate('reports')">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      </div>
-      <span class="nav-label">تقارير</span>
-    </div>
-    <div class="nav-item" onclick="navigate('info')">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      </div>
-      <span class="nav-label">معلومات</span>
-    </div>
-    <div class="nav-item" onclick="navigate('contact')">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-      </div>
-      <span class="nav-label">تواصل</span>
-    </div>
-    <div class="nav-item" onclick="navigate('settings')">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </div>
-      <span class="nav-label">الإعدادات</span>
-    </div>
-  </nav>
+    <div class="article-viewer-body" id="articleViewerBody"></div>
+  </div>
 </div>
 
 <!-- ADMIN PANEL -->
@@ -932,6 +1041,8 @@
     <button class="admin-tab-btn" onclick="switchAdminTab('users')">المستخدمون</button>
     <button class="admin-tab-btn" onclick="switchAdminTab('notifs')">الإشعارات</button>
     <button class="admin-tab-btn" onclick="switchAdminTab('partners')">الشركاء</button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('articles')">المقالات</button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('apps')">التطبيقات</button>
   </div>
   <div class="admin-content">
 
@@ -944,6 +1055,8 @@
         <div class="admin-stat-card"><div class="admin-stat-num" id="statContacts">0</div><div class="admin-stat-lbl">رسالة</div></div>
         <div class="admin-stat-card"><div class="admin-stat-num" id="statOpps">0</div><div class="admin-stat-lbl">فرصة</div></div>
         <div class="admin-stat-card"><div class="admin-stat-num" id="statCoursera">0</div><div class="admin-stat-lbl">طلب كورسيرا</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-num" id="statArticles">0</div><div class="admin-stat-lbl">مقال</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-num" id="statApps">0</div><div class="admin-stat-lbl">تطبيق</div></div>
       </div>
     </div>
 
@@ -1134,6 +1247,57 @@
       </div>
     </div>
 
+
+    <!-- ARTICLES ADMIN -->
+    <div class="admin-section" id="admin-articles">
+      <div class="admin-card">
+        <div class="admin-card-title">إضافة مقال جديد</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="input-group"><label class="input-label">صورة المقال (رفع)</label>
+            <input type="file" accept="image/*" id="artImgFile" style="display:none" onchange="uploadAdminImg(this,'artImgPreview','artImgUrl')">
+            <button class="admin-file-btn" onclick="document.getElementById('artImgFile').click()">رفع صورة</button>
+            <img id="artImgPreview" class="admin-img-preview">
+            <input type="text" class="input-field" style="margin-top:8px;" id="artImgUrl" placeholder="أو رابط الصورة">
+          </div>
+          <div class="input-group"><label class="input-label">عنوان المقال</label><input type="text" class="input-field" id="artTitle" placeholder="عنوان المقال"></div>
+          <div class="input-group"><label class="input-label">الفئة / التصنيف</label><input type="text" class="input-field" id="artCategory" placeholder="مثل: أمن سيبراني، تقنية..."></div>
+          <div class="input-group"><label class="input-label">مقتطف (ملخص قصير)</label><textarea class="input-field" id="artExcerpt" rows="2" placeholder="ملخص المقال..."></textarea></div>
+          <div class="input-group"><label class="input-label">محتوى المقال الكامل</label><textarea class="input-field" id="artContent" rows="8" placeholder="اكتب المقال هنا... (يمكن استخدام الأسطر للفقرات)"></textarea></div>
+          <button class="btn-save" onclick="saveArticle()">نشر المقال</button>
+        </div>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-title">المقالات المنشورة</div>
+        <div id="adminArticlesList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- APPS ADMIN -->
+    <div class="admin-section" id="admin-apps">
+      <div class="admin-card">
+        <div class="admin-card-title">إضافة تطبيق جديد</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="input-group"><label class="input-label">أيقونة التطبيق (رفع)</label>
+            <input type="file" accept="image/*" id="appIconFile" style="display:none" onchange="uploadAdminImg(this,'appIconPreview','appIconUrl')">
+            <button class="admin-file-btn" onclick="document.getElementById('appIconFile').click()">رفع الأيقونة</button>
+            <img id="appIconPreview" class="admin-img-preview" style="max-height:80px;object-fit:contain;">
+            <input type="text" class="input-field" style="margin-top:8px;" id="appIconUrl" placeholder="أو رابط الأيقونة">
+          </div>
+          <div class="input-group"><label class="input-label">اسم التطبيق</label><input type="text" class="input-field" id="appName" placeholder="اسم التطبيق"></div>
+          <div class="input-group"><label class="input-label">الوصف</label><textarea class="input-field" id="appDesc" rows="3" placeholder="وصف التطبيق..."></textarea></div>
+          <div class="input-group"><label class="input-label">الفئات / التاقات (مفصولة بفاصلة)</label><input type="text" class="input-field" id="appTags" placeholder="أمان، أدوات، مجاني"></div>
+          <div class="input-group"><label class="input-label">الإصدار</label><input type="text" class="input-field" id="appVersion" placeholder="1.0.0" dir="ltr"></div>
+          <div class="input-group"><label class="input-label">رابط التحميل المباشر (.apk / .ipa)</label><input type="url" class="input-field" id="appDlUrl" placeholder="https://..." dir="ltr"></div>
+          <div class="input-group"><label class="input-label">رابط المتجر (Google Play / App Store)</label><input type="url" class="input-field" id="appStoreUrl" placeholder="https://play.google.com/..." dir="ltr"></div>
+          <button class="btn-save" onclick="saveApp()">إضافة التطبيق</button>
+        </div>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-title">التطبيقات الحالية</div>
+        <div id="adminAppsList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1206,7 +1370,9 @@ const SHEETS = {
   coursera: 'Coursera',
   contacts: 'Contacts',
   notifications: 'Notifications',
-  partners: 'Partners'
+  partners: 'Partners',
+  articles: 'Articles',
+  apps: 'Apps'
 };
 
 // State
@@ -1252,12 +1418,12 @@ function decodeData(str) { try { return decodeURIComponent(escape(atob(str))); }
 function generateUID() { return Date.now().toString(36) + Math.random().toString(36).substr(2,8); }
 
 async function apiGet(sheet, params='') {
-  const url = `${BASE_URL}/${sheet}?${params}`;
+  const url = params ? `${BASE_URL}/${sheet}?${params}` : `${BASE_URL}/${sheet}`;
   const r = await fetch(url, { headers: HEADERS });
   if (!r.ok) {
     const txt = await r.text();
     console.error('apiGet error', r.status, txt);
-    if (r.status === 404) return { results: [], total: 0 };
+    if (r.status === 404 || r.status === 400) return { results: [], total: 0 };
     throw new Error(`HTTP ${r.status}: ${txt}`);
   }
   let json = {};
@@ -1269,8 +1435,7 @@ async function apiGet(sheet, params='') {
 async function apiPost(sheet, data) {
   const url = `${BASE_URL}/${sheet}`;
   const r = await fetch(url, { method: 'POST', headers: HEADERS, body: JSON.stringify(data) });
-  let json = {};
-  try { json = await r.json(); } catch(e) { if (!r.ok) throw new Error(`HTTP ${r.status}`); return {}; }
+  const json = await r.json();
   if (!r.ok || json.error) {
     console.error('apiPost error', r.status, json);
     throw new Error(json.error || `HTTP ${r.status}`);
@@ -1395,7 +1560,7 @@ async function handleRegister() {
   const pass     = document.getElementById('regPass').value;
   const conf     = document.getElementById('regPassConfirm').value;
 
-  // ── validation ──
+  //  validation 
   if (!name)     { showToast('أدخل الاسم الكامل', 'error'); return; }
   if (!email || !email.includes('@')) { showToast('أدخل بريد إلكتروني صحيح', 'error'); return; }
   if (!phone)    { showToast('أدخل رقم الهاتف', 'error'); return; }
@@ -1410,7 +1575,7 @@ async function handleRegister() {
   btn.textContent = 'جاري التحقق...'; btn.disabled = true;
 
   try {
-    // ── check duplicates ──
+    //  check duplicates 
     showToast('جاري التحقق من البيانات...');
     let rows = [];
     try {
@@ -1437,7 +1602,7 @@ async function handleRegister() {
       btn.textContent = 'إنشاء الحساب'; btn.disabled = false; return;
     }
 
-    // ── create user ──
+    //  create user 
     showToast('جاري إنشاء الحساب...');
     const newUser = {
       uid:        generateUID(),
@@ -1517,13 +1682,29 @@ async function handleForgot() {
 // ============================================================
 function startApp() {
   document.getElementById('main-app').classList.remove('hidden');
-  if (currentUser?.role === 'admin') document.getElementById('adminBtn').style.display='flex';
+  if (currentUser?.role === 'admin') {
+    document.getElementById('adminBtn').style.display='flex';
+    const sbAdmin = document.getElementById('sb-admin');
+    if (sbAdmin) sbAdmin.style.display='flex';
+  }
+  // Update sidebar header
+  const sn = document.getElementById('sidebarName');
+  const se = document.getElementById('sidebarEmail');
+  if (sn) sn.textContent = currentUser?.name || 'خالد أحمد';
+  if (se) se.textContent = currentUser?.email || '';
   updateProfileUI();
   loadNotifications();
   loadAbout();
   loadPartners();
-  navigate('about');
-  checkDeepLink();
+  // Check pending deep link nav
+  const pendingPage = sessionStorage.getItem('ka_pending_page');
+  if (pendingPage) {
+    sessionStorage.removeItem('ka_pending_page');
+    navigate(pendingPage);
+  } else {
+    navigate('about');
+    checkDeepLink();
+  }
   setTimeout(showFloatingAd, 5000);
 }
 
@@ -1533,18 +1714,27 @@ function checkDeepLink() {
 }
 
 function handleDeepLink(hash) {
-  // #page-cert-CERTID, #page-report-CODE, #page-opp-OPPID, #page-info-POSTID
-  if (hash.startsWith('#page-')) {
-    const parts = hash.replace('#page-', '').split('-');
-    const section = parts[0];
-    if (section === 'cert') { navigate('certs'); }
-    else if (section === 'report') {
-      navigate('reports');
-      if (parts[1]) { document.getElementById('reportCodeInput').value = parts.slice(1).join('-'); fetchReport(); }
-    }
-    else if (section === 'opp') { navigate('opps'); }
-    else if (section === 'info') { navigate('info'); }
+  if (!hash.startsWith('#page-')) return;
+  const parts = hash.replace('#page-', '').split('-');
+  const section = parts[0];
+  const needsAuth = ['cert','report','opp','info','article','app'].includes(section);
+  if (needsAuth && !currentUser) {
+    sessionStorage.setItem('ka_pending_page', section === 'cert' ? 'certs' : section === 'opp' ? 'opps' : section === 'article' ? 'articles' : section === 'app' ? 'apps' : section + 's');
+    if (section === 'report') sessionStorage.setItem('ka_pending_code', parts.slice(1).join('-'));
+    showToast('أنشئ حساباً أو سجل دخولك للمتابعة', 'error');
+    return;
   }
+  if (section === 'cert') navigate('certs');
+  else if (section === 'report') {
+    navigate('reports');
+    const code = sessionStorage.getItem('ka_pending_code') || parts.slice(1).join('-');
+    sessionStorage.removeItem('ka_pending_code');
+    if (code) { setTimeout(() => { document.getElementById('reportCodeInput').value = code; fetchReport(); }, 300); }
+  }
+  else if (section === 'opp') navigate('opps');
+  else if (section === 'info') navigate('info');
+  else if (section === 'article') navigate('articles');
+  else if (section === 'app') navigate('apps');
 }
 
 function updateProfileUI() {
@@ -1560,25 +1750,36 @@ function updateProfileUI() {
 // NAVIGATION
 // ============================================================
 function navigate(page) {
-  if (!currentUser && ['reports','info','contact','certs'].includes(page)) {
-    showToast('يجب تسجيل الدخول أولاً', 'error');
+  if (!currentUser && ['reports','info','contact','certs','articles','apps'].includes(page)) {
+    showToast('يجب تسجيل الدخول أولاً، أنشئ حساباً أو سجل دخولك', 'error');
+    setTimeout(() => { document.getElementById('auth-screen').classList.remove('hidden'); }, 1200);
     return;
   }
   currentPage = page;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const pages = ['about','opps','certs','reports','info','contact','settings'];
-  const idx = pages.indexOf(page);
+  // Update sidebar active state
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  const sb = document.getElementById('sb-'+page);
+  if (sb) sb.classList.add('active');
   const p = document.getElementById('page-'+page);
   if (p) p.classList.add('active');
-  const navItems = document.querySelectorAll('.nav-item');
-  if (navItems[idx]) navItems[idx].classList.add('active');
   // Lazy load
   if (page === 'opps') loadOpps();
   if (page === 'certs') loadCerts();
   if (page === 'info') loadInfo();
   if (page === 'contact') loadMyReplies();
   if (page === 'settings') { loadPartners(); updateProfileUI(); }
+  if (page === 'articles') loadArticles();
+  if (page === 'apps') loadApps();
+}
+
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
 }
 
 // ============================================================
@@ -1676,16 +1877,22 @@ async function loadCerts() {
 }
 
 let certHoldTimer = null;
+let certHoldReadyTimer = null;
 function certHoldStart(i) {
+  const el = document.getElementById('cert-'+i);
+  if (el) el.classList.add('hold-ready');
   certHoldTimer = setTimeout(() => {
-    const el = document.getElementById('cert-'+i);
-    if (el) el.classList.add('revealed');
+    if (el) {
+      el.classList.remove('hold-ready');
+      el.classList.add('revealed');
+      if (navigator.vibrate) navigator.vibrate(30);
+    }
   }, 500);
 }
 function certHoldEnd(i) {
   clearTimeout(certHoldTimer);
   const el = document.getElementById('cert-'+i);
-  if (el) el.classList.remove('revealed');
+  if (el) { el.classList.remove('revealed'); el.classList.remove('hold-ready'); }
 }
 
 // ============================================================
@@ -1970,7 +2177,9 @@ async function loadPartners() {
     const data = await apiGet(SHEETS.partners, 'limit=100');
     const rows = data.results || [];
     const track = document.getElementById('tickerTrack');
-    if (!rows.length) { track.innerHTML = ''; return; }
+    const ticker = document.getElementById('partnerTicker');
+    if (!rows.length) { track.innerHTML = ''; if(ticker) ticker.style.display='none'; return; }
+    if(ticker) ticker.style.display='block';
     const items = rows.map(r => {
       if (r.logo) {
         return `<div class="ticker-item"><img class="ticker-logo" src="${r.logo}" alt="${r.name||''}" onerror="this.style.display='none'"></div><div class="ticker-divider"></div>`;
@@ -2091,14 +2300,16 @@ function switchAdminTab(tab) {
   if (tab==='users') loadAdminUsers();
   if (tab==='notifs') loadAdminNotifs();
   if (tab==='partners') loadAdminPartners();
+  if (tab==='articles') loadAdminArticles();
+  if (tab==='apps') loadAdminApps();
   if (tab==='dashboard') loadDashboard();
 }
 
 async function loadAdminData() { loadDashboard(); }
 
 async function loadDashboard() {
-  const sheets = [SHEETS.users, SHEETS.certificates, SHEETS.reports, SHEETS.contacts, SHEETS.opportunities, SHEETS.coursera];
-  const ids = ['statUsers','statCerts','statReports','statContacts','statOpps','statCoursera'];
+  const sheets = [SHEETS.users, SHEETS.certificates, SHEETS.reports, SHEETS.contacts, SHEETS.opportunities, SHEETS.coursera, SHEETS.articles, SHEETS.apps];
+  const ids = ['statUsers','statCerts','statReports','statContacts','statOpps','statCoursera','statArticles','statApps'];
   for (let i=0; i<sheets.length; i++) {
     try {
       const d = await apiGet(sheets[i], 'limit=1');
@@ -2188,7 +2399,7 @@ async function loadAdminOpps() {
       ${r.image ? `<img class="admin-list-img" src="${r.image}" onerror="this.style.display='none'">` : ''}
       <div class="admin-list-info"><div class="admin-list-name">${r.title||''}</div><div class="admin-list-sub">${r.url||''}</div></div>
       <div class="admin-action-btns">
-        <button class="btn-del" onclick="deleteRow('${SHEETS.opportunities}',${r.rowIndex},'adminOppsList',loadAdminOpps)">حذف</button>
+        <button class="btn-del" onclick="deleteRow('${SHEETS.opportunities}',${r.rowIndex},'adminOppsList','loadAdminOpps')">حذف</button>
       </div>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد فرص</p>';
 }
@@ -2231,7 +2442,7 @@ async function loadAdminCerts() {
       <img class="admin-list-img" src="${r.image||''}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 44 44%22><rect fill=%22%23f5e8eb%22 width=%2244%22 height=%2244%22/></svg>'">
       <div class="admin-list-info"><div class="admin-list-name">${r.title||''}</div><div class="admin-list-sub">${r.company||''} • ${r.field||''}</div></div>
       <div class="admin-action-btns">
-        <button class="btn-del" onclick="deleteRow('${SHEETS.certificates}',${r.rowIndex},'adminCertsList',loadAdminCerts)">حذف</button>
+        <button class="btn-del" onclick="deleteRow('${SHEETS.certificates}',${r.rowIndex},'adminCertsList','loadAdminCerts')">حذف</button>
       </div>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد شهادات</p>';
 }
@@ -2288,7 +2499,7 @@ async function loadAdminReports() {
     <div class="admin-list-item">
       <div class="admin-list-info"><div class="admin-list-name">${r.title||''}</div><div class="admin-list-sub" style="font-family:var(--font-en);">${r.code||''} • ${r.date||''}</div></div>
       <div class="admin-action-btns">
-        <button class="btn-del" onclick="deleteRow('${SHEETS.reports}',${r.rowIndex},'adminReportsList',loadAdminReports)">حذف</button>
+        <button class="btn-del" onclick="deleteRow('${SHEETS.reports}',${r.rowIndex},'adminReportsList','loadAdminReports')">حذف</button>
       </div>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد تقارير</p>';
 }
@@ -2374,7 +2585,7 @@ async function loadAdminInfo() {
     <div class="admin-list-item">
       <div class="admin-list-info"><div class="admin-list-name">${(r.caption||'').slice(0,40)||'منشور'}</div><div class="admin-list-sub">${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div></div>
       <div class="admin-action-btns">
-        <button class="btn-del" onclick="deleteRow('${SHEETS.info}',${r.rowIndex},'adminInfoList',loadAdminInfo)">حذف</button>
+        <button class="btn-del" onclick="deleteRow('${SHEETS.info}',${r.rowIndex},'adminInfoList','loadAdminInfo')">حذف</button>
       </div>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد منشورات</p>';
 }
@@ -2437,7 +2648,7 @@ async function loadAdminUsers() {
       <div class="admin-list-info"><div class="admin-list-name">${r.name||''}</div><div class="admin-list-sub">${r.email||''} • ${r.role||'user'}</div></div>
       <div class="admin-action-btns">
         ${r.role!=='admin' ? `<button class="btn-edit" onclick="setAdmin(${r.rowIndex})">أدمن</button>` : ''}
-        <button class="btn-del" onclick="deleteRow('${SHEETS.users}',${r.rowIndex},'adminUsersList',loadAdminUsers)">حذف</button>
+        <button class="btn-del" onclick="deleteRow('${SHEETS.users}',${r.rowIndex},'adminUsersList','loadAdminUsers')">حذف</button>
       </div>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا يوجد مستخدمون</p>';
 }
@@ -2457,7 +2668,7 @@ async function loadAdminNotifs() {
   c.innerHTML = rows.length ? rows.reverse().map(r => `
     <div class="admin-list-item">
       <div class="admin-list-info"><div class="admin-list-name">${r.text||''}</div><div class="admin-list-sub">${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div></div>
-      <button class="btn-del" onclick="deleteRow('${SHEETS.notifications}',${r.rowIndex},'adminNotifsList',loadAdminNotifs)">حذف</button>
+      <button class="btn-del" onclick="deleteRow('${SHEETS.notifications}',${r.rowIndex},'adminNotifsList','loadAdminNotifs')">حذف</button>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد إشعارات</p>';
 }
 
@@ -2470,7 +2681,7 @@ async function loadAdminPartners() {
     <div class="admin-list-item">
       ${r.logo ? `<img src="${r.logo}" style="height:36px;width:auto;max-width:80px;object-fit:contain;background:var(--gray-50);padding:4px;border-radius:6px;border:1px solid var(--gray-200);" onerror="this.style.display='none'">` : ''}
       <div class="admin-list-info"><div class="admin-list-name">${r.name||''}</div><div class="admin-list-sub">${r.logo ? 'لوجو مرفوع' : 'بدون لوجو'}</div></div>
-      <button class="btn-del" onclick="deleteRow('${SHEETS.partners}',${r.rowIndex},'adminPartnersList',loadAdminPartners)">حذف</button>
+      <button class="btn-del" onclick="deleteRow('${SHEETS.partners}',${r.rowIndex},'adminPartnersList','loadAdminPartners')">حذف</button>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا يوجد شركاء</p>';
 }
 async function savePartner() {
@@ -2490,6 +2701,225 @@ async function savePartner() {
   } catch(e) { showToast('فشل الإضافة: ' + e.message, 'error'); }
   finally { btn.textContent = 'إضافة شريك'; btn.disabled = false; }
 }
+
+
+// ============================================================
+// ADMIN - ARTICLES
+// ============================================================
+async function saveArticle() {
+  const img      = document.getElementById('artImgUrl').value.trim();
+  const title    = document.getElementById('artTitle').value.trim();
+  const category = document.getElementById('artCategory').value.trim();
+  const excerpt  = document.getElementById('artExcerpt').value.trim();
+  const content  = document.getElementById('artContent').value.trim();
+  if (!title)   { showToast('أدخل عنوان المقال', 'error'); return; }
+  if (!content) { showToast('أدخل محتوى المقال', 'error'); return; }
+  const btn = document.querySelector('#admin-articles .btn-save');
+  btn.textContent = 'جاري النشر...'; btn.disabled = true;
+  try {
+    await apiPost(SHEETS.articles, {
+      uid: generateUID(), image: img, title, category, excerpt, content,
+      isActive: 'true', created_at: new Date().toISOString()
+    });
+    showToast('تم نشر المقال', 'success');
+    ['artImgUrl','artTitle','artCategory','artExcerpt','artContent'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('artImgPreview').classList.remove('show');
+    loadAdminArticles();
+  } catch(e) { showToast('فشل النشر: ' + e.message, 'error'); }
+  finally { btn.textContent = 'نشر المقال'; btn.disabled = false; }
+}
+
+async function loadAdminArticles() {
+  const c = document.getElementById('adminArticlesList');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  try {
+    const data = await apiGet(SHEETS.articles, 'limit=100');
+    const rows = data.results || [];
+    c.innerHTML = rows.length ? rows.map(r => `
+      <div class="admin-list-item">
+        ${r.image ? `<img class="admin-list-img" src="${r.image}" onerror="this.style.display='none'">` : ''}
+        <div class="admin-list-info"><div class="admin-list-name">${r.title||''}</div><div class="admin-list-sub">${r.category||''} • ${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div></div>
+        <div class="admin-action-btns">
+          <button class="btn-del" onclick="deleteRow('${SHEETS.articles}',${r.rowIndex},'adminArticlesList','loadAdminArticles')">حذف</button>
+        </div>
+      </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد مقالات</p>';
+  } catch(e) { c.innerHTML = '<p style="color:red;font-size:13px;">خطأ: ' + e.message + '</p>'; }
+}
+
+// ============================================================
+// ADMIN - APPS
+// ============================================================
+async function saveApp() {
+  const icon     = document.getElementById('appIconUrl').value.trim();
+  const name     = document.getElementById('appName').value.trim();
+  const desc     = document.getElementById('appDesc').value.trim();
+  const tags     = document.getElementById('appTags').value.trim();
+  const version  = document.getElementById('appVersion').value.trim();
+  const dlUrl    = document.getElementById('appDlUrl').value.trim();
+  const storeUrl = document.getElementById('appStoreUrl').value.trim();
+  if (!name) { showToast('أدخل اسم التطبيق', 'error'); return; }
+  if (!dlUrl && !storeUrl) { showToast('أدخل رابط التحميل أو المتجر', 'error'); return; }
+  const btn = document.querySelector('#admin-apps .btn-save');
+  btn.textContent = 'جاري الإضافة...'; btn.disabled = true;
+  try {
+    await apiPost(SHEETS.apps, {
+      uid: generateUID(), icon, name, description: desc, tags, version,
+      download_url: dlUrl, store_url: storeUrl, isActive: 'true',
+      created_at: new Date().toISOString()
+    });
+    showToast('تم إضافة التطبيق', 'success');
+    ['appIconUrl','appName','appDesc','appTags','appVersion','appDlUrl','appStoreUrl'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('appIconPreview').classList.remove('show');
+    loadAdminApps();
+  } catch(e) { showToast('فشل الإضافة: ' + e.message, 'error'); }
+  finally { btn.textContent = 'إضافة التطبيق'; btn.disabled = false; }
+}
+
+async function loadAdminApps() {
+  const c = document.getElementById('adminAppsList');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  try {
+    const data = await apiGet(SHEETS.apps, 'limit=100');
+    const rows = data.results || [];
+    c.innerHTML = rows.length ? rows.map(r => `
+      <div class="admin-list-item">
+        ${r.icon ? `<img class="admin-list-img" src="${r.icon}" onerror="this.style.display='none'" style="border-radius:12px;">` : ''}
+        <div class="admin-list-info"><div class="admin-list-name">${r.name||''}</div><div class="admin-list-sub">v${r.version||'1.0'} • ${r.tags||''}</div></div>
+        <div class="admin-action-btns">
+          <button class="btn-del" onclick="deleteRow('${SHEETS.apps}',${r.rowIndex},'adminAppsList','loadAdminApps')">حذف</button>
+        </div>
+      </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد تطبيقات</p>';
+  } catch(e) { c.innerHTML = '<p style="color:red;font-size:13px;">خطأ: ' + e.message + '</p>'; }
+}
+
+// ============================================================
+// ARTICLES PAGE
+// ============================================================
+async function loadArticles() {
+  const c = document.getElementById('articlesContainer');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  try {
+    const data = await apiGet(SHEETS.articles, 'limit=100');
+    const rows = (data.results||[]).filter(r=>r.isActive!=='false').reverse();
+    if (!rows.length) { c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>لا توجد مقالات حتى الآن</p></div>'; return; }
+    c.innerHTML = rows.map((r,i) => {
+      const shareUrl = `${location.href.split('#')[0]}#page-article-${r.uid||r.rowIndex}`;
+      return `<div class="article-card">
+        ${r.image ? `<img class="article-img" src="${r.image}" alt="${r.title||''}" onerror="this.style.display='none'">` : ''}
+        <div class="article-body">
+          ${r.category ? `<span class="article-cat">${r.category}</span>` : ''}
+          <div class="article-title">${r.title||''}</div>
+          <div class="article-excerpt">${(r.excerpt||r.content||'').slice(0,120)}${(r.content||'').length>120?'...':''}</div>
+          <div class="article-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}
+            <span style="flex:1;"></span>
+            <button class="share-copy" style="font-size:11px;padding:4px 10px;" onclick="copyLink('${shareUrl}')">مشاركة</button>
+          </div>
+          <button class="article-read-btn" onclick="openArticle(${i},${JSON.stringify(rows).replace(/"/g,'&quot;').replace(/'/g,'&apos;')})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            قراءة المقال
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { c.innerHTML = '<div class="empty-state"><p>خطأ في تحميل المقالات</p></div>'; }
+}
+
+let _articlesCache = [];
+function openArticle(idx, rowsJson) {
+  let rows;
+  try { rows = typeof rowsJson === 'string' ? JSON.parse(rowsJson.replace(/&quot;/g,'"').replace(/&apos;/g,"'")) : rowsJson; } catch(e) { return; }
+  _articlesCache = rows;
+  const r = rows[idx];
+  if (!r) return;
+  const shareUrl = `${location.href.split('#')[0]}#page-article-${r.uid||r.rowIndex}`;
+  document.getElementById('articleViewerTitle').textContent = r.title || 'مقال';
+  document.getElementById('articleShareBtn').onclick = () => copyLink(shareUrl);
+  let content = r.content || r.excerpt || '';
+  // Render newlines as paragraphs
+  content = content.split('\n').filter(l=>l.trim()).map(l=>`<p>${l}</p>`).join('');
+  document.getElementById('articleViewerBody').innerHTML = `
+    ${r.image ? `<img class="article-viewer-img" src="${r.image}" alt="${r.title||''}" onerror="this.style.display='none'">` : ''}
+    <div style="padding:0 0 12px;">
+      ${r.category ? `<span class="article-cat" style="margin:16px 0 0;display:inline-block;">${r.category}</span>` : ''}
+      <div style="font-size:20px;font-weight:700;color:var(--gray-700);margin:12px 0 6px;">${r.title||''}</div>
+      <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px;">${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div>
+      <div class="article-content">${content}</div>
+    </div>`;
+  document.getElementById('articleViewer').classList.add('open');
+}
+
+function closeArticleViewer() {
+  document.getElementById('articleViewer').classList.remove('open');
+}
+
+// ============================================================
+// APPS PAGE
+// ============================================================
+async function loadApps() {
+  const c = document.getElementById('appsContainer');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  try {
+    const data = await apiGet(SHEETS.apps, 'limit=100');
+    const rows = (data.results||[]).filter(r=>r.isActive!=='false');
+    if (!rows.length) { c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="9" height="9" rx="2"/><rect x="13" y="2" width="9" height="9" rx="2"/><rect x="2" y="13" width="9" height="9" rx="2"/><rect x="13" y="13" width="9" height="9" rx="2"/></svg><p>لا توجد تطبيقات متاحة حتى الآن</p></div>'; return; }
+    c.innerHTML = rows.map(r => {
+      const tags = (r.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+      return `<div class="app-card">
+        ${r.icon ? `<img class="app-icon" src="${r.icon}" alt="${r.name||''}" onerror="this.style.display='none'">` : `<div class="app-icon" style="display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:var(--maroon);">${(r.name||'A')[0]}</div>`}
+        <div class="app-info">
+          <div class="app-name">${r.name||''}</div>
+          <div class="app-desc">${r.description||''}</div>
+          ${tags.length ? `<div class="app-tags">${tags.map(t=>`<span class="app-tag">${t}</span>`).join('')}</div>` : ''}
+          ${r.version ? `<div class="app-version">v${r.version}</div>` : ''}
+          ${r.download_url ? `<button class="app-dl-btn" onclick="downloadFile('${r.download_url}','${r.name||'app'}.apk')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            تحميل التطبيق
+          </button>` : r.store_url ? `<button class="app-dl-btn" onclick="openLink('${r.store_url}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            فتح في المتجر
+          </button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { c.innerHTML = '<div class="empty-state"><p>خطأ في تحميل التطبيقات</p></div>'; }
+}
+
+// ============================================================
+// WINDOW REGISTRATIONS (for inline onclick from innerHTML)
+// ============================================================
+window.loadAdminOpps = loadAdminOpps;
+window.loadAdminCerts = loadAdminCerts;
+window.loadAdminReports = loadAdminReports;
+window.loadAdminInfo = loadAdminInfo;
+window.loadAdminCoursera = loadAdminCoursera;
+window.loadAdminContacts = loadAdminContacts;
+window.loadAdminUsers = loadAdminUsers;
+window.loadAdminNotifs = loadAdminNotifs;
+window.loadAdminPartners = loadAdminPartners;
+window.loadAdminArticles = loadAdminArticles;
+window.loadAdminApps = loadAdminApps;
+window.sendReply = sendReply;
+window.approveCoursera = approveCoursera;
+window.setAdmin = setAdmin;
+window.deleteRow = deleteRow;
+window.certHoldStart = certHoldStart;
+window.certHoldEnd = certHoldEnd;
+window.goToSlide = goToSlide;
+window.openLink = openLink;
+window.copyLink = copyLink;
+window.fetchReport = fetchReport;
+window.resetReportView = resetReportView;
+window.openPdf = openPdf;
+window.closePdfViewer = closePdfViewer;
+window.downloadCurrentPdf = downloadCurrentPdf;
+window.downloadFile = downloadFile;
+window.downloadAllReport = downloadAllReport;
+window.openArticle = openArticle;
+window.closeArticleViewer = closeArticleViewer;
+window.closeSidebar = closeSidebar;
+window.openSidebar = openSidebar;
 
 // ============================================================
 // DISABLE RIGHT CLICK + SCREENSHOTS PROTECTION
