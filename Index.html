@@ -1,0 +1,2979 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KA">
+<title>KA</title>
+<link rel="manifest" id="manifest-placeholder">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --maroon: #7B1C2E;
+    --maroon-light: #9B2C41;
+    --maroon-dark: #5A0F1F;
+    --maroon-pale: #F5E8EB;
+    --white: #ffffff;
+    --gray-50: #f9f9f9;
+    --gray-100: #f3f3f3;
+    --gray-200: #e8e8e8;
+    --gray-300: #d0d0d0;
+    --gray-400: #a0a0a0;
+    --gray-500: #707070;
+    --gray-700: #333333;
+    --shadow-sm: 0 1px 4px rgba(123,28,46,0.08);
+    --shadow-md: 0 4px 16px rgba(123,28,46,0.12);
+    --shadow-lg: 0 8px 32px rgba(123,28,46,0.18);
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 22px;
+    --radius-xl: 32px;
+    --font-ar: 'IBM Plex Sans Arabic', sans-serif;
+    --font-en: 'Montserrat', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: var(--white); font-family: var(--font-ar); }
+  body { display: flex; flex-direction: column; }
+  
+  /* ========== GLOBAL ========== */
+  * { -webkit-user-select: none; user-select: none; }
+  input, textarea { -webkit-user-select: text; user-select: text; }
+  img { pointer-events: none; -webkit-user-drag: none; }
+  .hidden { display: none !important; }
+  .flex { display: flex; }
+  .flex-col { flex-direction: column; }
+  .items-center { align-items: center; }
+  .justify-center { justify-content: center; }
+  .gap-2 { gap: 8px; }
+  .gap-3 { gap: 12px; }
+  .gap-4 { gap: 16px; }
+  .w-full { width: 100%; }
+  .text-center { text-align: center; }
+  .relative { position: relative; }
+  .absolute { position: absolute; }
+
+  /* ========== SPLASH / ONBOARDING ========== */
+  #splash-screen {
+    position: fixed; inset: 0; background: var(--white); z-index: 1000;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .splash-bg {
+    position: absolute; inset: 0; overflow: hidden;
+  }
+  .splash-circle {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle, rgba(123,28,46,0.06), transparent);
+  }
+  .splash-circle:nth-child(1) { width: 400px; height: 400px; top: -100px; right: -100px; animation: floatCircle 6s ease-in-out infinite; }
+  .splash-circle:nth-child(2) { width: 300px; height: 300px; bottom: -50px; left: -80px; animation: floatCircle 8s ease-in-out infinite reverse; }
+  .splash-circle:nth-child(3) { width: 200px; height: 200px; top: 40%; left: 50%; animation: floatCircle 5s ease-in-out infinite 1s; }
+  @keyframes floatCircle { 0%,100%{transform:scale(1) translate(0,0);} 50%{transform:scale(1.1) translate(10px,-10px);} }
+
+  #onboarding {
+    position: fixed; inset: 0; background: var(--white); z-index: 999;
+    display: flex; flex-direction: column;
+  }
+  .onboarding-slide {
+    display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px 28px; text-align: center;
+  }
+  .onboarding-slide.active { display: flex; }
+  .ob-icon-wrap {
+    width: 100px; height: 100px; border-radius: 50%;
+    background: var(--maroon-pale); display: flex; align-items: center; justify-content: center;
+    margin-bottom: 32px; animation: obPulse 2s ease-in-out infinite;
+  }
+  @keyframes obPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
+  .ob-icon-wrap svg { width: 48px; height: 48px; color: var(--maroon); }
+  .ob-title { font-family: var(--font-en); font-size: 22px; font-weight: 700; color: var(--maroon); margin-bottom: 12px; }
+  .ob-desc { font-size: 14px; color: var(--gray-500); line-height: 1.7; max-width: 280px; }
+  .ob-dots { display: flex; gap: 8px; justify-content: center; padding: 20px; }
+  .ob-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gray-200); transition: all 0.3s; }
+  .ob-dot.active { background: var(--maroon); width: 24px; border-radius: 4px; }
+  .ob-bottom { padding: 20px 28px 40px; display: flex; gap: 12px; }
+  .btn-ob-skip { flex: 1; padding: 14px; border: 1.5px solid var(--gray-200); border-radius: var(--radius-md); background: transparent; color: var(--gray-500); font-family: var(--font-ar); font-size: 14px; font-weight: 500; cursor: pointer; }
+  .btn-ob-next { flex: 2; padding: 14px; border: none; border-radius: var(--radius-md); background: var(--maroon); color: white; font-family: var(--font-ar); font-size: 14px; font-weight: 600; cursor: pointer; }
+
+  /* ========== AUTH SCREENS ========== */
+  #auth-screen {
+    position: fixed; inset: 0; background: var(--white); z-index: 998;
+    display: flex; flex-direction: column; overflow-y: auto;
+  }
+  .auth-header {
+    padding: 60px 28px 32px; text-align: center; background: var(--white);
+  }
+  .auth-logo { width: 72px; height: 72px; border-radius: 18px; object-fit: cover; margin: 0 auto 16px; display: block; box-shadow: var(--shadow-md); }
+  .auth-tabs { display: flex; gap: 0; background: var(--gray-100); border-radius: var(--radius-md); margin: 0 28px 24px; padding: 4px; }
+  .auth-tab { flex: 1; padding: 10px; border: none; background: transparent; border-radius: 10px; font-family: var(--font-ar); font-size: 14px; font-weight: 500; color: var(--gray-500); cursor: pointer; transition: all 0.25s; }
+  .auth-tab.active { background: var(--white); color: var(--maroon); font-weight: 600; box-shadow: var(--shadow-sm); }
+  .auth-form { padding: 0 28px 40px; display: flex; flex-direction: column; gap: 14px; }
+  .auth-form.hidden { display: none; }
+  .input-group { display: flex; flex-direction: column; gap: 6px; }
+  .input-label { font-size: 12px; font-weight: 600; color: var(--gray-700); padding-right: 4px; }
+  .input-field {
+    width: 100%; padding: 13px 16px; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm);
+    background: var(--gray-50); font-family: var(--font-ar); font-size: 14px; color: var(--gray-700);
+    outline: none; transition: border-color 0.2s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .input-field:focus { border-color: var(--maroon); background: var(--white); }
+  .input-field::placeholder { color: var(--gray-400); }
+  select.input-field { cursor: pointer; }
+  .btn-primary {
+    width: 100%; padding: 15px; border: none; border-radius: var(--radius-md);
+    background: var(--maroon); color: white; font-family: var(--font-ar); font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: background 0.2s, transform 0.1s; margin-top: 6px;
+  }
+  .btn-primary:active { transform: scale(0.98); background: var(--maroon-dark); }
+  .auth-divider { display: flex; align-items: center; gap: 12px; margin: 4px 0; }
+  .auth-divider span { color: var(--gray-400); font-size: 12px; }
+  .auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:var(--gray-200); }
+  .auth-alt-login { display: flex; flex-direction: column; gap: 10px; }
+  .btn-alt { width:100%; padding:13px; border:1.5px solid var(--gray-200); border-radius:var(--radius-sm); background:var(--white); font-family:var(--font-ar); font-size:14px; color:var(--gray-700); cursor:pointer; }
+  .forgot-link { text-align:center; font-size:13px; color:var(--maroon); cursor:pointer; font-weight:500; margin-top:4px; }
+
+  /* Reset password modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 2000;
+    display: flex; align-items: flex-end; justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-overlay.hidden { display: none; }
+  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+  .modal-sheet {
+    background: var(--white); border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    padding: 24px 28px 48px; width: 100%; max-width: 480px;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from{transform:translateY(60px); opacity:0;} to{transform:translateY(0); opacity:1;} }
+  .modal-handle { width:48px; height:4px; background:var(--gray-200); border-radius:2px; margin:0 auto 24px; }
+  .modal-title { font-size:18px; font-weight:700; color:var(--maroon); margin-bottom:20px; text-align:center; }
+  .modal-close { position:absolute; top:16px; left:16px; width:32px; height:32px; border-radius:50%; background:var(--gray-100); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+  /* ========== MAIN APP ========== */
+  #main-app { display: flex; flex-direction: column; height: 100%; }
+  #main-app.hidden { display: none; }
+  .app-content { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 24px; }
+  
+  /* ========== TOP BAR ========== */
+  .top-bar {
+    padding: 44px 16px 10px; background: var(--white);
+    border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .top-bar-logo { height: 28px; object-fit: contain; }
+  .top-bar-actions { display: flex; gap: 10px; align-items: center; }
+  .icon-btn { width: 38px; height: 38px; border-radius: 50%; border: none; background: var(--gray-100); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .icon-btn svg { width: 18px; height: 18px; color: var(--maroon); }
+  .notif-badge { position: relative; }
+  .notif-badge::after { content: attr(data-count); position: absolute; top: -2px; left: -2px; background: var(--maroon); color: white; font-size: 9px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
+
+  /* ========== BOTTOM NAV ========== */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--white); border-top: 1px solid var(--gray-100);
+    display: flex; padding: 8px 0 24px; z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 6px 0; transition: all 0.2s; }
+  .nav-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+  .nav-icon svg { width: 22px; height: 22px; color: var(--gray-400); transition: color 0.2s; }
+  .nav-label { font-size: 10px; font-weight: 500; color: var(--gray-400); transition: color 0.2s; }
+  .nav-item.active .nav-icon svg { color: var(--maroon); }
+  .nav-item.active .nav-label { color: var(--maroon); font-weight: 600; }
+  .nav-item.active .nav-icon { position: relative; }
+  .nav-item.active .nav-icon::before { content:''; position:absolute; bottom:-6px; width:4px; height:4px; border-radius:50%; background:var(--maroon); }
+
+  /* ========== PAGES ========== */
+  .page { display: none; animation: pageIn 0.25s ease; }
+  .page.active { display: block; }
+  @keyframes pageIn { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  .page-header { padding: 20px 20px 12px; }
+  .page-title { font-size: 22px; font-weight: 700; color: var(--gray-700); }
+  .page-subtitle { font-size: 13px; color: var(--gray-500); margin-top: 4px; }
+  
+  /* ========== ABOUT PAGE ========== */
+  .about-hero {
+    margin: 16px; border-radius: var(--radius-lg); overflow: hidden;
+    background: linear-gradient(135deg, var(--maroon) 0%, var(--maroon-dark) 100%);
+    padding: 32px 24px; text-align: center; position: relative;
+  }
+  .about-hero::before { content:''; position:absolute; top:-30px; right:-30px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,0.05); }
+  .about-avatar { width: 90px; height: 90px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); object-fit: cover; margin: 0 auto 14px; display: block; }
+  .about-name { font-family: var(--font-en); font-size: 20px; font-weight: 700; color: white; margin-bottom: 4px; }
+  .about-role { font-size: 13px; color: rgba(255,255,255,0.75); }
+  .about-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--gray-200); margin: 16px; border-radius: var(--radius-md); overflow: hidden; }
+  .about-stat { background: var(--white); padding: 16px 8px; text-align: center; }
+  .about-stat-value { font-family: var(--font-en); font-size: 20px; font-weight: 700; color: var(--maroon); }
+  .about-stat-label { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+  .about-section { padding: 0 16px 16px; }
+  .about-section-title { font-size: 15px; font-weight: 700; color: var(--gray-700); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .about-section-title svg { width: 18px; height: 18px; color: var(--maroon); }
+  .about-card { background: var(--gray-50); border-radius: var(--radius-md); padding: 16px; margin-bottom: 10px; }
+  .about-bio { font-size: 14px; color: var(--gray-500); line-height: 1.8; }
+  .skill-tag { display: inline-block; padding: 6px 12px; background: var(--maroon-pale); color: var(--maroon); border-radius: 20px; font-size: 12px; font-weight: 500; margin: 4px; }
+  .social-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .social-link { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--gray-50); border-radius: var(--radius-sm); font-size: 13px; color: var(--gray-700); text-decoration: none; flex: 1; min-width: 120px; border: 1.5px solid var(--gray-200); cursor: pointer; }
+  .social-link svg { width: 18px; height: 18px; color: var(--maroon); }
+
+  /* ========== OPPORTUNITIES PAGE ========== */
+  .opp-card {
+    margin: 12px 16px; border-radius: var(--radius-lg); overflow: hidden;
+    background: var(--white); box-shadow: var(--shadow-md); border: 1px solid var(--gray-200);
+  }
+  .opp-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+  .opp-body { padding: 16px; }
+  .opp-title { font-size: 16px; font-weight: 700; color: var(--gray-700); margin-bottom: 6px; }
+  .opp-desc { font-size: 13px; color: var(--gray-500); line-height: 1.7; margin-bottom: 14px; }
+  .opp-vid-wrap { margin: 0 16px 12px; border-radius: var(--radius-md); overflow: hidden; background: #000; }
+  .opp-vid-wrap video { width: 100%; max-height: 220px; display: block; }
+  .btn-visit { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border: none; border-radius: var(--radius-sm); background: var(--maroon); color: white; font-family: var(--font-ar); font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-visit svg { width: 16px; height: 16px; }
+
+  /* ========== COURSERA PAGE ========== */
+  .coursera-hero { margin: 16px; background: linear-gradient(135deg, #0056D2 0%, #003d99 100%); border-radius: var(--radius-lg); padding: 28px 20px; text-align: center; }
+  .coursera-logo { font-family: var(--font-en); font-size: 28px; font-weight: 800; color: white; margin-bottom: 6px; letter-spacing: -1px; }
+  .coursera-hero p { font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.6; }
+  .coursera-form { margin: 0 16px; background: var(--white); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-md); border: 1px solid var(--gray-200); }
+  .coursera-form-title { font-size: 16px; font-weight: 700; color: var(--gray-700); margin-bottom: 16px; text-align: center; }
+  .info-box { margin: 16px; padding: 14px; background: #EBF3FF; border-radius: var(--radius-sm); border-right: 3px solid #0056D2; font-size: 13px; color: #003d99; line-height: 1.6; }
+
+  /* ========== CERTIFICATES PAGE ========== */
+  .certs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px 16px; }
+  .cert-card { border-radius: var(--radius-md); overflow: hidden; position: relative; cursor: pointer; box-shadow: var(--shadow-sm); }
+  .cert-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+  .cert-blur {
+    position: absolute; inset: 0; background: rgba(123,28,46,0.55);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.3s;
+  }
+  .cert-card:active .cert-blur,
+  .cert-card.revealed .cert-blur { opacity: 0; }
+  .cert-blur svg { width: 28px; height: 28px; color: white; margin-bottom: 6px; }
+  .cert-blur-text { font-size: 11px; color: rgba(255,255,255,0.9); font-weight: 500; }
+  .cert-info { padding: 10px; background: var(--white); }
+  .cert-title { font-size: 12px; font-weight: 600; color: var(--gray-700); }
+  .cert-company { font-size: 10px; color: var(--gray-400); margin-top: 2px; }
+  .cert-tag { display: inline-block; padding: 2px 8px; background: var(--maroon-pale); color: var(--maroon); border-radius: 10px; font-size: 10px; font-weight: 600; margin-top: 4px; }
+
+  /* ========== CYBER REPORTS PAGE ========== */
+  .report-access { padding: 40px 20px; text-align: center; }
+  .report-icon { width: 80px; height: 80px; border-radius: 50%; background: var(--maroon-pale); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+  .report-icon svg { width: 38px; height: 38px; color: var(--maroon); }
+  .report-code-input { width: 100%; padding: 16px; text-align: center; letter-spacing: 4px; font-family: var(--font-en); font-size: 18px; font-weight: 600; border: 2px solid var(--gray-200); border-radius: var(--radius-md); background: var(--gray-50); outline: none; color: var(--gray-700); }
+  .report-code-input:focus { border-color: var(--maroon); }
+  .report-view { padding: 16px; }
+  .report-header-card { background: linear-gradient(135deg, var(--maroon) 0%, var(--maroon-dark) 100%); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; color: white; }
+  .report-header-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .report-header-date { font-size: 12px; opacity: 0.8; }
+  .report-desc { font-size: 14px; line-height: 1.8; color: var(--gray-500); background: var(--gray-50); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; }
+  .report-media-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .report-media-item { border-radius: var(--radius-sm); overflow: hidden; position: relative; }
+  .report-media-item img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+  .report-pdf-item { background: var(--maroon-pale); border-radius: var(--radius-sm); padding: 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; margin-bottom: 10px; }
+  .report-pdf-item svg { width: 28px; height: 28px; color: var(--maroon); flex-shrink: 0; }
+  .report-pdf-name { font-size: 13px; font-weight: 600; color: var(--maroon); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .btn-dl { padding: 8px 14px; border: none; border-radius: var(--radius-sm); background: var(--maroon); color: white; font-family: var(--font-ar); font-size: 12px; font-weight: 600; cursor: pointer; }
+  .report-dl-all { width: 100%; padding: 14px; border: none; border-radius: var(--radius-md); background: var(--maroon); color: white; font-family: var(--font-ar); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+  /* PDF VIEWER INLINE */
+  .pdf-viewer-overlay { position:fixed; inset:0; background:#1a1a1a; z-index:500; display:flex; flex-direction:column; }
+  .pdf-viewer-overlay.hidden { display:none; }
+  .pdf-toolbar { padding:12px 16px; background:#2a2a2a; display:flex; align-items:center; gap:12px; }
+  .pdf-back { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.1); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .pdf-back svg { width:18px; height:18px; color:white; }
+  .pdf-title { flex:1; font-size:14px; font-weight:600; color:white; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pdf-frame { flex:1; border:none; }
+
+  /* ========== CYBER INFO PAGE ========== */
+  .post-card { margin: 12px 16px; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--gray-200); overflow: hidden; }
+  .post-top { padding: 14px 16px; display: flex; align-items: center; gap: 10px; }
+  .post-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--maroon-pale); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+  .post-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .post-name { font-size: 14px; font-weight: 600; color: var(--gray-700); }
+  .post-time { font-size: 11px; color: var(--gray-400); }
+  .post-slider { position: relative; overflow: hidden; }
+  .post-slides { display: flex; transition: transform 0.35s ease; }
+  .post-slide { min-width: 100%; }
+  .post-slide img { width: 100%; display: block; object-fit: contain; background: var(--gray-100); max-height: 320px; }
+  .post-indicators { display: flex; gap: 5px; justify-content: center; padding: 8px; }
+  .post-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gray-300); transition: all 0.2s; }
+  .post-dot.active { background: var(--maroon); width: 18px; border-radius: 3px; }
+  .post-caption { padding: 12px 16px 16px; font-size: 13px; color: var(--gray-500); line-height: 1.7; }
+  .post-noctx { display: flex; align-items: center; gap: 6px; padding: 10px 16px; border-top: 1px solid var(--gray-100); font-size: 12px; color: var(--gray-400); }
+  .post-noctx svg { width: 14px; height: 14px; }
+
+  /* ========== CONTACT PAGE ========== */
+  .contact-hero { margin: 16px; background: linear-gradient(135deg, var(--maroon) 0%, var(--maroon-dark) 100%); border-radius: var(--radius-lg); padding: 24px; text-align: center; }
+  .contact-hero-title { font-size: 20px; font-weight: 700; color: white; margin-bottom: 6px; }
+  .contact-hero-sub { font-size: 13px; color: rgba(255,255,255,0.8); }
+  .contact-form { margin: 0 16px; background: var(--white); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-md); border: 1px solid var(--gray-200); }
+  .contact-replies { padding: 16px; }
+  .reply-card { background: var(--gray-50); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; border-right: 3px solid var(--maroon); }
+  .reply-meta { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .reply-sender { font-size: 12px; font-weight: 600; color: var(--maroon); }
+  .reply-date { font-size: 11px; color: var(--gray-400); }
+  .reply-msg { font-size: 13px; color: var(--gray-500); line-height: 1.6; }
+  .reply-answer { background: var(--maroon-pale); border-radius: var(--radius-sm); padding: 10px; margin-top: 8px; font-size: 12px; color: var(--maroon); }
+
+  /* ========== SETTINGS PAGE ========== */
+  .settings-section { padding: 20px 16px 8px; }
+  .settings-section-title { font-size: 12px; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .settings-list { background: var(--white); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200); overflow: hidden; }
+  .settings-item { display: flex; align-items: center; gap: 14px; padding: 16px; border-bottom: 1px solid var(--gray-100); cursor: pointer; }
+  .settings-item:last-child { border-bottom: none; }
+  .settings-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--maroon-pale); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .settings-icon svg { width: 18px; height: 18px; color: var(--maroon); }
+  .settings-text { flex: 1; }
+  .settings-label { font-size: 14px; font-weight: 500; color: var(--gray-700); }
+  .settings-sublabel { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+  .settings-arrow { width: 18px; height: 18px; color: var(--gray-300); }
+  .settings-toggle { width: 46px; height: 26px; border-radius: 13px; background: var(--gray-200); position: relative; cursor: pointer; border: none; transition: background 0.3s; flex-shrink: 0; }
+  .settings-toggle.on { background: var(--maroon); }
+  .settings-toggle::after { content:''; position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%; background:white; transition:transform 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .settings-toggle.on::after { transform:translateX(-20px); }
+  .user-profile-card { margin: 16px; background: var(--white); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-md); border: 1px solid var(--gray-200); display: flex; align-items: center; gap: 14px; }
+  .user-avatar-big { width: 60px; height: 60px; border-radius: 50%; background: var(--maroon-pale); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: var(--maroon); flex-shrink: 0; overflow: hidden; }
+  .user-avatar-big img { width: 100%; height: 100%; object-fit: cover; }
+  .user-info { flex: 1; }
+  .user-display-name { font-size: 16px; font-weight: 700; color: var(--gray-700); }
+  .user-email { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+  .user-role { display: inline-block; padding: 3px 10px; background: var(--maroon-pale); color: var(--maroon); border-radius: 10px; font-size: 11px; font-weight: 600; margin-top: 4px; }
+  .btn-logout { width: calc(100% - 32px); margin: 0 16px 16px; padding: 14px; border: 1.5px solid #e0e0e0; border-radius: var(--radius-md); background: transparent; font-family: var(--font-ar); font-size: 14px; font-weight: 600; color: #c0392b; cursor: pointer; }
+
+  /* ========== NOTIFICATIONS PANEL ========== */
+  .notif-panel { position:fixed; top:0; right:0; bottom:0; width:85%; max-width:360px; background:white; z-index:300; transform:translateX(100%); transition:transform 0.3s ease; box-shadow: var(--shadow-lg); display:flex; flex-direction:column; }
+  .notif-panel.open { transform:translateX(0); }
+  .notif-panel-header { padding:52px 20px 16px; border-bottom:1px solid var(--gray-100); display:flex; align-items:center; justify-content:space-between; }
+  .notif-panel-title { font-size:18px; font-weight:700; color:var(--gray-700); }
+  .notif-list { flex:1; overflow-y:auto; }
+  .notif-item { display:flex; gap:12px; padding:14px 20px; border-bottom:1px solid var(--gray-100); }
+  .notif-dot { width:8px; height:8px; border-radius:50%; background:var(--maroon); margin-top:4px; flex-shrink:0; }
+  .notif-dot.read { background:var(--gray-300); }
+  .notif-text { font-size:13px; color:var(--gray-500); line-height:1.6; flex:1; }
+  .notif-time { font-size:11px; color:var(--gray-400); margin-top:4px; }
+  .notif-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.3); z-index:299; display:none; }
+  .notif-overlay.open { display:block; }
+
+  /* ========== PARTNER TICKER ========== */
+  .partner-ticker { background: var(--gray-50); border-top: 1px solid var(--gray-200); border-bottom: 1px solid var(--gray-200); overflow: hidden; padding: 10px 0; position: relative; }
+  .partner-ticker::before, .partner-ticker::after { content:''; position:absolute; top:0; bottom:0; width:40px; z-index:1; }
+  .partner-ticker::before { right:0; background:linear-gradient(to left, var(--gray-50), transparent); }
+  .partner-ticker::after { left:0; background:linear-gradient(to right, var(--gray-50), transparent); }
+  .ticker-track { display: flex; gap: 32px; animation: tickerMove 20s linear infinite; white-space: nowrap; }
+  @keyframes tickerMove { from{transform:translateX(0);} to{transform:translateX(-50%);} }
+  .ticker-item { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .ticker-logo { height: 32px; width: auto; max-width: 90px; object-fit: contain; display: block; filter: grayscale(30%); opacity: 0.85; transition: opacity 0.2s, filter 0.2s; }
+  .ticker-logo:hover { opacity: 1; filter: grayscale(0%); }
+  .ticker-divider { width: 1px; height: 24px; background: var(--gray-200); flex-shrink: 0; }
+
+  /* ========== LOADING ========== */
+  .loading-spinner { display: flex; align-items: center; justify-content: center; padding: 40px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--maroon-pale); border-top-color: var(--maroon); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg);} }
+  .empty-state { text-align: center; padding: 60px 20px; }
+  .empty-state svg { width: 56px; height: 56px; color: var(--gray-300); margin: 0 auto 16px; display: block; }
+  .empty-state p { font-size: 14px; color: var(--gray-400); }
+
+  /* ========== TOAST ========== */
+  .toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--gray-700); color:white; padding:10px 20px; border-radius:20px; font-size:13px; font-weight:500; z-index:9999; opacity:0; transition:all 0.3s; white-space:nowrap; max-width:80vw; overflow:hidden; text-overflow:ellipsis; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.success { background:var(--maroon); }
+  .toast.error { background:#c0392b; }
+
+  /* ========== DEEP LINK BANNER ========== */
+  .deeplink-banner { margin:16px; background:var(--maroon-pale); border-radius:var(--radius-md); padding:14px 16px; display:flex; align-items:center; gap:12px; border:1.5px solid rgba(123,28,46,0.2); }
+  .deeplink-banner svg { width:22px; height:22px; color:var(--maroon); flex-shrink:0; }
+  .deeplink-banner p { font-size:13px; color:var(--maroon); flex:1; line-height:1.5; }
+  .deeplink-banner button { padding:8px 14px; border:none; border-radius:var(--radius-sm); background:var(--maroon); color:white; font-family:var(--font-ar); font-size:12px; font-weight:600; cursor:pointer; flex-shrink:0; }
+
+  /* ========== ADMIN PANEL ========== */
+  #admin-panel { position:fixed; inset:0; background:var(--white); z-index:800; display:flex; flex-direction:column; }
+  #admin-panel.hidden { display:none; }
+  .admin-header { padding:52px 20px 16px; background:var(--maroon); display:flex; align-items:center; gap:12px; }
+  .admin-header-title { flex:1; font-size:18px; font-weight:700; color:white; }
+  .admin-back { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.15); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .admin-back svg { width:20px; height:20px; color:white; }
+  .admin-tabs { display:flex; overflow-x:auto; padding:12px 16px; gap:8px; border-bottom:1px solid var(--gray-100); background:white; }
+  .admin-tabs::-webkit-scrollbar { display:none; }
+  .admin-tab-btn { padding:8px 14px; border-radius:20px; border:1.5px solid var(--gray-200); background:var(--white); font-family:var(--font-ar); font-size:13px; font-weight:500; color:var(--gray-500); cursor:pointer; white-space:nowrap; transition:all 0.2s; }
+  .admin-tab-btn.active { background:var(--maroon); border-color:var(--maroon); color:white; font-weight:600; }
+  .admin-content { flex:1; overflow-y:auto; padding:16px; }
+  .admin-section { display:none; }
+  .admin-section.active { display:block; }
+  .admin-card { background:var(--white); border-radius:var(--radius-md); padding:16px; margin-bottom:14px; box-shadow:var(--shadow-sm); border:1px solid var(--gray-200); }
+  .admin-card-title { font-size:15px; font-weight:700; color:var(--gray-700); margin-bottom:14px; }
+  .admin-img-preview { width:100%; border-radius:var(--radius-sm); margin-top:8px; max-height:200px; object-fit:cover; display:none; }
+  .admin-img-preview.show { display:block; }
+  .admin-file-btn { width:100%; padding:12px; border:2px dashed var(--gray-300); border-radius:var(--radius-sm); background:var(--gray-50); font-family:var(--font-ar); font-size:13px; color:var(--gray-500); cursor:pointer; text-align:center; }
+  .admin-file-btn:hover { border-color:var(--maroon); color:var(--maroon); }
+  .admin-list-item { display:flex; align-items:center; gap:10px; padding:12px; background:var(--gray-50); border-radius:var(--radius-sm); margin-bottom:8px; }
+  .admin-list-img { width:44px; height:44px; border-radius:8px; object-fit:cover; flex-shrink:0; }
+  .admin-list-info { flex:1; min-width:0; }
+  .admin-list-name { font-size:13px; font-weight:600; color:var(--gray-700); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .admin-list-sub { font-size:11px; color:var(--gray-400); margin-top:2px; }
+  .admin-action-btns { display:flex; gap:8px; }
+  .btn-edit { padding:6px 12px; border:1.5px solid var(--maroon); border-radius:6px; background:transparent; color:var(--maroon); font-size:12px; font-weight:600; cursor:pointer; }
+  .btn-del { padding:6px 12px; border:1.5px solid #c0392b; border-radius:6px; background:transparent; color:#c0392b; font-size:12px; font-weight:600; cursor:pointer; }
+  .btn-save { width:100%; padding:13px; border:none; border-radius:var(--radius-md); background:var(--maroon); color:white; font-family:var(--font-ar); font-size:14px; font-weight:600; cursor:pointer; margin-top:12px; }
+  .admin-stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .admin-stat-card { background:var(--maroon-pale); border-radius:var(--radius-md); padding:16px; text-align:center; }
+  .admin-stat-num { font-family:var(--font-en); font-size:28px; font-weight:700; color:var(--maroon); }
+  .admin-stat-lbl { font-size:12px; color:var(--maroon); opacity:0.8; margin-top:2px; }
+  .reply-textarea { width:100%; padding:12px; border:1.5px solid var(--gray-200); border-radius:var(--radius-sm); background:var(--gray-50); font-family:var(--font-ar); font-size:13px; resize:none; outline:none; min-height:80px; }
+  .reply-textarea:focus { border-color:var(--maroon); }
+  .contact-msg-item { background:var(--gray-50); border-radius:var(--radius-md); padding:14px; margin-bottom:10px; }
+  .contact-msg-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+  .contact-msg-name { font-size:13px; font-weight:700; color:var(--gray-700); }
+  .contact-msg-date { font-size:11px; color:var(--gray-400); }
+  .contact-msg-body { font-size:13px; color:var(--gray-500); line-height:1.6; margin-bottom:10px; }
+  .contact-replied-badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; }
+  .contact-replied-badge.yes { background:#e8f5e9; color:#2e7d32; }
+  .contact-replied-badge.no { background:#fce4ec; color:#c62828; }
+
+  /* Deep link unique URL */
+  .share-bar { display:flex; align-items:center; gap:8px; padding:10px 16px; background:var(--gray-50); border-top:1px solid var(--gray-100); }
+  .share-url { flex:1; font-size:11px; color:var(--gray-400); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:var(--font-en); }
+  .share-copy { padding:6px 12px; border:1.5px solid var(--maroon); border-radius:6px; background:transparent; color:var(--maroon); font-family:var(--font-ar); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+
+  /* ========== FLOATING ADS ========== */
+  .floating-ad { position:fixed; bottom:90px; right:16px; background:var(--white); border-radius:var(--radius-md); box-shadow:var(--shadow-lg); padding:12px 14px; max-width:200px; z-index:200; border:1px solid var(--gray-200); animation:adPop 0.3s ease; }
+  @keyframes adPop { from{transform:scale(0.8) translateY(10px); opacity:0;} to{transform:scale(1) translateY(0); opacity:1;} }
+  .ad-title { font-size:12px; font-weight:700; color:var(--gray-700); margin-bottom:4px; }
+  .ad-body { font-size:11px; color:var(--gray-500); line-height:1.5; }
+  .ad-close { position:absolute; top:6px; left:6px; width:20px; height:20px; border-radius:50%; background:var(--gray-100); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--gray-400); }
+
+  
+  /* ========== SIDEBAR DRAWER ========== */
+  .sidebar-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:399; display:none; }
+  .sidebar-overlay.open { display:block; }
+  .sidebar { position:fixed; top:0; right:0; bottom:0; width:78%; max-width:300px; background:var(--white); z-index:400; transform:translateX(100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; box-shadow:var(--shadow-lg); }
+  .sidebar.open { transform:translateX(0); }
+  .sidebar-header { padding:52px 20px 20px; background:linear-gradient(135deg,var(--maroon),var(--maroon-dark)); }
+  .sidebar-user-name { font-size:16px; font-weight:700; color:white; margin-bottom:2px; }
+  .sidebar-user-email { font-size:12px; color:rgba(255,255,255,0.75); }
+  .sidebar-nav { flex:1; overflow-y:auto; padding:12px 0; }
+  .sidebar-item { display:flex; align-items:center; gap:14px; padding:14px 20px; cursor:pointer; transition:background 0.15s; border-bottom:1px solid var(--gray-100); }
+  .sidebar-item:hover, .sidebar-item.active { background:var(--maroon-pale); }
+  .sidebar-item svg { width:20px; height:20px; color:var(--maroon); flex-shrink:0; }
+  .sidebar-item-label { font-size:14px; font-weight:500; color:var(--gray-700); }
+  .sidebar-item.active .sidebar-item-label { color:var(--maroon); font-weight:700; }
+  .sidebar-footer { padding:16px 20px 32px; border-top:1px solid var(--gray-100); }
+  .sidebar-logout { width:100%; padding:12px; border:1.5px solid #e0e0e0; border-radius:var(--radius-md); background:transparent; font-family:var(--font-ar); font-size:14px; font-weight:600; color:#c0392b; cursor:pointer; }
+  .menu-btn { width:38px; height:38px; border-radius:50%; border:none; background:var(--gray-100); cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .menu-btn svg { width:18px; height:18px; color:var(--maroon); }
+
+  /* ========== ARTICLES PAGE ========== */
+  .article-card { margin:12px 16px; background:var(--white); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); border:1px solid var(--gray-200); overflow:hidden; }
+  .article-img { width:100%; aspect-ratio:16/7; object-fit:cover; display:block; }
+  .article-body { padding:16px; }
+  .article-cat { display:inline-block; padding:3px 10px; background:var(--maroon-pale); color:var(--maroon); border-radius:20px; font-size:11px; font-weight:600; margin-bottom:8px; }
+  .article-title { font-size:16px; font-weight:700; color:var(--gray-700); margin-bottom:6px; line-height:1.4; }
+  .article-excerpt { font-size:13px; color:var(--gray-500); line-height:1.7; margin-bottom:12px; }
+  .article-meta { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--gray-400); }
+  .article-meta svg { width:13px; height:13px; }
+  .article-read-btn { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:11px; border:1.5px solid var(--maroon); border-radius:var(--radius-sm); background:transparent; color:var(--maroon); font-family:var(--font-ar); font-size:13px; font-weight:600; cursor:pointer; margin-top:10px; }
+
+  /* Article viewer modal */
+  .article-viewer { position:fixed; inset:0; background:var(--white); z-index:600; display:flex; flex-direction:column; transform:translateY(100%); transition:transform 0.35s ease; }
+  .article-viewer.open { transform:translateY(0); }
+  .article-viewer-toolbar { padding:52px 16px 12px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--gray-100); background:var(--white); }
+  .article-viewer-back { width:36px; height:36px; border-radius:50%; background:var(--gray-100); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .article-viewer-back svg { width:18px; height:18px; color:var(--maroon); }
+  .article-viewer-title { flex:1; font-size:15px; font-weight:700; color:var(--gray-700); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .article-viewer-body { flex:1; overflow-y:auto; padding:20px 20px 40px; }
+  .article-viewer-body img { width:100%; border-radius:var(--radius-md); margin:12px 0; }
+  .article-content { font-size:14px; color:var(--gray-500); line-height:1.9; }
+  .article-content h2 { font-size:17px; font-weight:700; color:var(--gray-700); margin:20px 0 8px; }
+  .article-content h3 { font-size:15px; font-weight:600; color:var(--gray-700); margin:16px 0 6px; }
+  .article-content strong { color:var(--gray-700); }
+  .article-content p { margin-bottom:12px; }
+  .article-viewer-img { width:100%; max-height:240px; object-fit:cover; border-radius:0; }
+
+  /* ========== APPS PAGE ========== */
+  .app-card { margin:12px 16px; background:var(--white); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); border:1px solid var(--gray-200); padding:16px; display:flex; gap:14px; align-items:flex-start; }
+  .app-icon { width:60px; height:60px; border-radius:16px; object-fit:cover; flex-shrink:0; background:var(--gray-100); border:1px solid var(--gray-200); }
+  .app-info { flex:1; min-width:0; }
+  .app-name { font-size:15px; font-weight:700; color:var(--gray-700); margin-bottom:4px; }
+  .app-desc { font-size:12px; color:var(--gray-500); line-height:1.6; margin-bottom:10px; }
+  .app-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+  .app-tag { padding:3px 10px; background:var(--maroon-pale); color:var(--maroon); border-radius:20px; font-size:11px; font-weight:600; }
+  .app-dl-btn { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:10px; border:none; border-radius:var(--radius-sm); background:var(--maroon); color:white; font-family:var(--font-ar); font-size:13px; font-weight:600; cursor:pointer; }
+  .app-dl-btn svg { width:16px; height:16px; }
+  .app-version { font-size:10px; color:var(--gray-400); font-family:var(--font-en); margin-top:4px; }
+
+  /* ========== CERT HOLD IMPROVED ========== */
+  .cert-card .cert-blur { transition: opacity 0.25s ease; }
+  .cert-card.hold-ready .cert-blur { opacity: 0.4; }
+  .cert-card.revealed .cert-blur { opacity: 0; }
+
+  @media (max-width: 360px) {
+    .certs-grid { grid-template-columns: 1fr; }
+    .report-media-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- PDF VIEWER -->
+<div class="pdf-viewer-overlay hidden" id="pdfViewer">
+  <div class="pdf-toolbar">
+    <button class="pdf-back" onclick="closePdfViewer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <span class="pdf-title" id="pdfTitle">مستند</span>
+    <button class="btn-dl" id="pdfDlBtn" onclick="downloadCurrentPdf()">تحميل</button>
+  </div>
+  <iframe class="pdf-frame" id="pdfFrame"></iframe>
+</div>
+
+<!-- NOTIFICATION OVERLAY -->
+<div class="notif-overlay" id="notifOverlay" onclick="closeNotifications()"></div>
+
+<!-- NOTIFICATION PANEL -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-panel-header">
+    <span class="notif-panel-title">الإشعارات</span>
+    <button class="icon-btn" onclick="closeNotifications()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="notif-list" id="notifList">
+    <div class="loading-spinner"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- SPLASH SCREEN -->
+<div id="splash-screen">
+  <div class="splash-bg">
+    <div class="splash-circle"></div>
+    <div class="splash-circle"></div>
+    <div class="splash-circle"></div>
+  </div>
+  <img id="splashLogo" src="https://i.ibb.co/Sk9D0cT/logo.png" alt="Logo" style="width:100px;height:100px;border-radius:24px;object-fit:cover;position:relative;z-index:1;box-shadow:0 8px 32px rgba(123,28,46,0.25);" onerror="this.style.display='none'">
+  <div style="margin-top:24px;position:relative;z-index:1;">
+    <div class="spinner"></div>
+  </div>
+</div>
+
+<!-- ONBOARDING -->
+<div id="onboarding" class="hidden">
+  <div class="onboarding-slide active" id="ob1">
+    <div class="ob-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="ob-title">منصة متكاملة</div>
+    <div class="ob-desc">استعرض الشهادات، الفرص التعليمية، والتقارير الأمنية في مكان واحد</div>
+  </div>
+  <div class="onboarding-slide" id="ob2">
+    <div class="ob-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div class="ob-title">أمان وخصوصية</div>
+    <div class="ob-desc">تقارير سيبرانية محمية بكود سري، وحماية كاملة للمحتوى</div>
+  </div>
+  <div class="onboarding-slide" id="ob3">
+    <div class="ob-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
+    </div>
+    <div class="ob-title">ابدأ الآن</div>
+    <div class="ob-desc">سجل حساب مجاني واستمتع بجميع المميزات الحصرية</div>
+  </div>
+  <div class="ob-dots">
+    <div class="ob-dot active" id="dot1"></div>
+    <div class="ob-dot" id="dot2"></div>
+    <div class="ob-dot" id="dot3"></div>
+  </div>
+  <div class="ob-bottom">
+    <button class="btn-ob-skip" onclick="skipOnboarding()">تخطي</button>
+    <button class="btn-ob-next" id="obNextBtn" onclick="nextOnboarding()">التالي</button>
+  </div>
+</div>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="hidden">
+  <div class="auth-header">
+    <img id="authLogo" src="https://i.ibb.co/Sk9D0cT/logo.png" alt="Logo" class="auth-logo" onerror="this.style.display='none'">
+    <div style="font-family:var(--font-en);font-size:11px;color:var(--gray-400);letter-spacing:1px;text-transform:uppercase;margin-top:4px;">Portfolio</div>
+  </div>
+  
+  <!-- AUTH TABS -->
+  <div class="auth-tabs">
+    <button class="auth-tab active" onclick="switchAuthTab('login')">تسجيل الدخول</button>
+    <button class="auth-tab" onclick="switchAuthTab('register')">إنشاء حساب</button>
+  </div>
+
+  <!-- LOGIN FORM -->
+  <div class="auth-form" id="loginForm">
+    <div id="loginOptions" style="display:flex;flex-direction:column;gap:10px;">
+      <div class="input-group">
+        <label class="input-label">البريد الإلكتروني / اسم المستخدم / الهاتف</label>
+        <input type="text" class="input-field" id="loginId" placeholder="أدخل بياناتك" autocomplete="username">
+      </div>
+      <div class="input-group">
+        <label class="input-label">كلمة المرور</label>
+        <input type="password" class="input-field" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-primary" onclick="handleLogin()">دخول</button>
+      <div class="forgot-link" onclick="showForgotModal()">نسيت كلمة المرور؟</div>
+    </div>
+  </div>
+
+  <!-- REGISTER FORM -->
+  <div class="auth-form hidden" id="registerForm">
+    <div class="input-group">
+      <label class="input-label">الاسم الكامل</label>
+      <input type="text" class="input-field" id="regName" placeholder="الاسم الكامل">
+    </div>
+    <div class="input-group">
+      <label class="input-label">البريد الإلكتروني</label>
+      <input type="email" class="input-field" id="regEmail" placeholder="email@example.com" dir="ltr">
+    </div>
+    <div class="input-group">
+      <label class="input-label">رقم الهاتف</label>
+      <input type="tel" class="input-field" id="regPhone" placeholder="+20xxxxxxxxxx" dir="ltr">
+    </div>
+    <div class="input-group">
+      <label class="input-label">الدولة</label>
+      <select class="input-field" id="regCountry">
+        <option value="">اختر الدولة</option>
+        <option>مصر</option><option>السعودية</option><option>الإمارات</option><option>الكويت</option>
+        <option>قطر</option><option>البحرين</option><option>الأردن</option><option>لبنان</option>
+        <option>العراق</option><option>سوريا</option><option>المغرب</option><option>تونس</option>
+        <option>الجزائر</option><option>ليبيا</option><option>السودان</option><option>أخرى</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label class="input-label">النوع</label>
+      <select class="input-field" id="regGender">
+        <option value="">اختر</option>
+        <option>ذكر</option><option>أنثى</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label class="input-label">اسم المستخدم</label>
+      <input type="text" class="input-field" id="regUsername" placeholder="@username" dir="ltr">
+    </div>
+    <div class="input-group">
+      <label class="input-label">كلمة المرور</label>
+      <input type="password" class="input-field" id="regPass" placeholder="8+ أحرف">
+    </div>
+    <div class="input-group">
+      <label class="input-label">تأكيد كلمة المرور</label>
+      <input type="password" class="input-field" id="regPassConfirm" placeholder="أعد كلمة المرور">
+    </div>
+    <button class="btn-primary" onclick="handleRegister()">إنشاء الحساب</button>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div class="modal-overlay hidden" id="forgotModal">
+  <div class="modal-sheet" style="position:relative;">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="hideForgotModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="modal-title">استعادة كلمة المرور</div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="input-group">
+        <label class="input-label">البريد الإلكتروني / الهاتف / اسم المستخدم</label>
+        <input type="text" class="input-field" id="forgotId" placeholder="أدخل أي من البيانات المسجلة">
+      </div>
+      <div id="forgotNewPassGroup" style="display:none;flex-direction:column;gap:14px;">
+        <div class="input-group">
+          <label class="input-label">كلمة المرور الجديدة</label>
+          <input type="password" class="input-field" id="forgotNewPass" placeholder="••••••••">
+        </div>
+        <div class="input-group">
+          <label class="input-label">تأكيد كلمة المرور</label>
+          <input type="password" class="input-field" id="forgotConfPass" placeholder="••••••••">
+        </div>
+      </div>
+      <button class="btn-primary" id="forgotBtn" onclick="handleForgot()">بحث</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app" class="hidden">
+  <!-- SIDEBAR OVERLAY + SIDEBAR -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-user-name" id="sidebarName">خالد أحمد</div>
+      <div class="sidebar-user-email" id="sidebarEmail"></div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="sidebar-item active" id="sb-about" onclick="navigate('about');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="sidebar-item-label">عني</span>
+      </div>
+      <div class="sidebar-item" id="sb-articles" onclick="navigate('articles');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span class="sidebar-item-label">المقالات</span>
+      </div>
+      <div class="sidebar-item" id="sb-opps" onclick="navigate('opps');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        <span class="sidebar-item-label">الفرص</span>
+      </div>
+      <div class="sidebar-item" id="sb-certs" onclick="navigate('certs');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+        <span class="sidebar-item-label">شهاداتي</span>
+      </div>
+      <div class="sidebar-item" id="sb-reports" onclick="navigate('reports');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span class="sidebar-item-label">تقارير سيبرانية</span>
+      </div>
+      <div class="sidebar-item" id="sb-info" onclick="navigate('info');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="sidebar-item-label">معلومة سيبرانية</span>
+      </div>
+      <div class="sidebar-item" id="sb-apps" onclick="navigate('apps');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="9" height="9" rx="2"/><rect x="13" y="2" width="9" height="9" rx="2"/><rect x="2" y="13" width="9" height="9" rx="2"/><rect x="13" y="13" width="9" height="9" rx="2"/></svg>
+        <span class="sidebar-item-label">التطبيقات</span>
+      </div>
+      <div class="sidebar-item" id="sb-coursera" onclick="navigate('coursera');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        <span class="sidebar-item-label">Coursera Pro</span>
+      </div>
+      <div class="sidebar-item" id="sb-contact" onclick="navigate('contact');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span class="sidebar-item-label">تواصل معي</span>
+      </div>
+      <div class="sidebar-item" id="sb-settings" onclick="navigate('settings');closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="sidebar-item-label">الإعدادات</span>
+      </div>
+      <div class="sidebar-item" id="sb-admin" style="display:none" onclick="openAdmin();closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="sidebar-item-label">لوحة الإدارة</span>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="sidebar-logout" onclick="handleLogout()">تسجيل الخروج</button>
+    </div>
+  </div>
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <button class="menu-btn" onclick="openSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <img id="mainLogo" src="https://i.ibb.co/Sk9D0cT/logo.png" alt="Logo" class="top-bar-logo" style="position:absolute;left:50%;transform:translateX(-50%);" onerror="this.style.display='none'">
+    <div class="top-bar-actions">
+      <button class="icon-btn notif-badge" id="notifBtn" data-count="0" onclick="openNotifications()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <button class="icon-btn" id="adminBtn" onclick="openAdmin()" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06-.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- PAGES -->
+  <div class="app-content">
+    <!-- ABOUT PAGE -->
+    <div class="page active" id="page-about">
+      <div class="about-hero">
+        <img id="aboutAvatar" src="" alt="Avatar" class="about-avatar" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22rgba(255,255,255,0.1)%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2260%22 x=%2220%22>KA</text></svg>'">
+        <div class="about-name" id="aboutName">Khaled Ahmed</div>
+        <div class="about-role" id="aboutRole">Cybersecurity Specialist</div>
+      </div>
+      <div class="about-stats" id="aboutStats"></div>
+      <div class="about-section">
+        <div class="about-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          نبذة عني
+        </div>
+        <div class="about-card"><p class="about-bio" id="aboutBio">جاري التحميل...</p></div>
+      </div>
+      <div class="about-section">
+        <div class="about-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          المهارات
+        </div>
+        <div class="about-card" id="skillsContainer"></div>
+      </div>
+      <div class="about-section">
+        <div class="about-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          التواصل الاجتماعي
+        </div>
+        <div class="social-row" id="socialLinks"></div>
+      </div>
+    </div>
+
+    <!-- OPPORTUNITIES PAGE -->
+    <div class="page" id="page-opps">
+      <div class="page-header">
+        <div class="page-title">الفرص</div>
+        <div class="page-subtitle">منصات ودورات تعليمية مميزة</div>
+      </div>
+      <div id="oppsContainer"><div class="loading-spinner"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- COURSERA PAGE -->
+    <div class="page" id="page-coursera">
+      <div class="coursera-hero">
+        <div class="coursera-logo">Coursera</div>
+        <p>احصل على اشتراك Coursera Pro مجاناً عبر ملء النموذج أدناه</p>
+      </div>
+      <div class="info-box">عند تفعيل طلبك، ستصلك رسالة على بريدك الإلكتروني في Coursera تحتوي على رابط التفعيل. يستغرق ذلك من 1-3 أيام عمل.</div>
+      <div class="coursera-form">
+        <div class="coursera-form-title">نموذج الاشتراك</div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="input-group">
+            <label class="input-label">الاسم الكامل بالعربية</label>
+            <input type="text" class="input-field" id="crsNameAr" placeholder="الاسم باللغة العربية">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Full Name in English</label>
+            <input type="text" class="input-field" id="crsNameEn" placeholder="Full Name" dir="ltr">
+          </div>
+          <div class="input-group">
+            <label class="input-label">تاريخ الميلاد</label>
+            <input type="date" class="input-field" id="crsDob">
+          </div>
+          <div class="input-group">
+            <label class="input-label">الدولة</label>
+            <input type="text" class="input-field" id="crsCntry" placeholder="اكتب اسم دولتك">
+          </div>
+          <div class="input-group">
+            <label class="input-label">البريد الإلكتروني في Coursera</label>
+            <input type="email" class="input-field" id="crsEmail" placeholder="your@email.com" dir="ltr">
+          </div>
+          <button class="btn-primary" onclick="submitCoursera()">تقديم الطلب</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CERTIFICATES PAGE -->
+    <div class="page" id="page-certs">
+      <div class="page-header">
+        <div class="page-title">شهاداتي</div>
+        <div class="page-subtitle">اضغط مع الاستمرار لعرض الشهادة</div>
+      </div>
+      <div class="certs-grid" id="certsGrid">
+        <div class="loading-spinner" style="grid-column:1/-1;"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- CYBER REPORTS PAGE -->
+    <div class="page" id="page-reports">
+      <div id="reportAccessView">
+        <div class="report-access">
+          <div class="report-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div class="page-title" style="margin-bottom:8px;">التقارير السيبرانية</div>
+          <div class="page-subtitle" style="margin-bottom:32px;">أدخل كود التقرير السري للوصول إليه</div>
+          <input type="text" class="report-code-input" id="reportCodeInput" placeholder="XXXX-XXXX" maxlength="20">
+          <button class="btn-primary" style="margin-top:16px;" onclick="fetchReport()">الوصول للتقرير</button>
+        </div>
+      </div>
+      <div id="reportView" style="display:none;"></div>
+    </div>
+
+    <!-- CYBER INFO PAGE -->
+    <div class="page" id="page-info">
+      <div class="page-header">
+        <div class="page-title">معلومة سيبرانية</div>
+        <div class="page-subtitle">محتوى توعوي أمني متجدد</div>
+      </div>
+      <div id="infoContainer"><div class="loading-spinner"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- CONTACT PAGE -->
+    <div class="page" id="page-contact">
+      <div class="contact-hero">
+        <div class="contact-hero-title">تواصل معي</div>
+        <div class="contact-hero-sub">سأرد عليك في أقرب وقت ممكن</div>
+      </div>
+      <div class="contact-form" style="margin-top:16px;">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="input-group">
+            <label class="input-label">الاسم</label>
+            <input type="text" class="input-field" id="ctcName" placeholder="اسمك الكامل">
+          </div>
+          <div class="input-group">
+            <label class="input-label">البريد الإلكتروني</label>
+            <input type="email" class="input-field" id="ctcEmail" placeholder="email@example.com" dir="ltr">
+          </div>
+          <div class="input-group">
+            <label class="input-label">الموضوع</label>
+            <input type="text" class="input-field" id="ctcSubject" placeholder="موضوع رسالتك">
+          </div>
+          <div class="input-group">
+            <label class="input-label">الرسالة</label>
+            <textarea class="input-field" id="ctcMsg" rows="4" placeholder="اكتب رسالتك هنا..."></textarea>
+          </div>
+          <button class="btn-primary" onclick="submitContact()">إرسال الرسالة</button>
+        </div>
+      </div>
+      <div class="contact-replies" id="myReplies">
+        <div style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:12px;">ردودي عليك</div>
+        <div id="repliesContainer"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ARTICLES PAGE -->
+    <div class="page" id="page-articles">
+      <div class="page-header">
+        <div class="page-title">المقالات</div>
+        <div class="page-subtitle">مقالات ومحتوى تعليمي في مجال الأمن السيبراني</div>
+      </div>
+      <div id="articlesContainer"><div class="loading-spinner"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- APPS PAGE -->
+    <div class="page" id="page-apps">
+      <div class="page-header">
+        <div class="page-title">التطبيقات</div>
+        <div class="page-subtitle">تطبيقات وأدوات يمكنك تحميلها</div>
+      </div>
+      <div id="appsContainer"><div class="loading-spinner"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div class="page" id="page-settings">
+      <div class="user-profile-card" id="profileCard">
+        <div class="user-avatar-big" id="profileAvatar">KA</div>
+        <div class="user-info">
+          <div class="user-display-name" id="profileName">المستخدم</div>
+          <div class="user-email" id="profileEmail"></div>
+          <span class="user-role" id="profileRole">مستخدم</span>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">الحساب</div>
+        <div class="settings-list">
+          <div class="settings-item" onclick="showEditProfile()">
+            <div class="settings-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+            <div class="settings-text"><div class="settings-label">تعديل الملف الشخصي</div></div>
+            <svg class="settings-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <div class="settings-item" onclick="showChangePass()">
+            <div class="settings-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div class="settings-text"><div class="settings-label">تغيير كلمة المرور</div></div>
+            <svg class="settings-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">الإشعارات</div>
+        <div class="settings-list">
+          <div class="settings-item">
+            <div class="settings-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+            <div class="settings-text"><div class="settings-label">الإشعارات</div><div class="settings-sublabel">تلقي تنبيهات جديدة</div></div>
+            <button class="settings-toggle on" id="notifToggle" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">التطبيق</div>
+        <div class="settings-list">
+          <div class="settings-item" onclick="showAboutApp()">
+            <div class="settings-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div>
+            <div class="settings-text"><div class="settings-label">عن التطبيق</div><div class="settings-sublabel">الإصدار 1.0.0</div></div>
+            <svg class="settings-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <div class="settings-item" onclick="showCopyright()">
+            <div class="settings-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M14.83 14.83A4 4 0 1 1 9.17 9.17"/></svg></div>
+            <div class="settings-text"><div class="settings-label">حقوق الملكية</div></div>
+            <svg class="settings-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+        </div>
+      </div>
+      <div style="padding:16px 0 8px;">
+        <button class="btn-logout" onclick="handleLogout()">تسجيل الخروج</button>
+      </div>
+      <div style="text-align:center;padding:0 16px 32px;font-size:12px;color:var(--gray-400);">جميع الحقوق محفوظة لدى خالد أحمد</div>
+    </div>
+  </div>
+
+  <!-- PARTNER TICKER -->
+  <div class="partner-ticker" id="partnerTicker">
+    <div class="ticker-track" id="tickerTrack">
+      <!-- يُملأ من قاعدة البيانات -->
+    </div>
+  </div>
+
+  <!-- Article viewer -->
+  <div class="article-viewer" id="articleViewer">
+    <div class="article-viewer-toolbar">
+      <button class="article-viewer-back" onclick="closeArticleViewer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      </button>
+      <span class="article-viewer-title" id="articleViewerTitle"></span>
+      <button class="share-copy" style="font-size:12px;" id="articleShareBtn">مشاركة</button>
+    </div>
+    <div class="article-viewer-body" id="articleViewerBody"></div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel" class="hidden">
+  <div class="admin-header">
+    <button class="admin-back" onclick="closeAdmin()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <span class="admin-header-title">لوحة الإدارة</span>
+  </div>
+  <div class="admin-tabs">
+    <button class="admin-tab-btn active" onclick="switchAdminTab('dashboard')">لوحة التحكم</button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('about')">عني</button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('opps')">الفرص</button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('certs')">الشهادات</button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('reports')">التقارير</button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('info')">المعلومات</button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('coursera')">كورسيرا</button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('contacts')">التواصل</button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('users')">المستخدمون</button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('notifs')">الإشعارات</button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('partners')">الشركاء</button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('articles')">المقالات</button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('apps')">التطبيقات</button>
+  </div>
+  <div class="admin-content">
+
+    <!-- DASHBOARD -->
+    <div class="admin-section active" id="admin-dashboard">
+      <div class="admin-stat-grid" id="adminStats">
+        <div class="admin-stat-card"><div class="admin-stat-num" id="statUsers">0</div><div class="admin-stat-lbl">مستخدم</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-num" id="statCerts">0</div><div class="admin-stat-lbl">شهادة</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-num" id="statReports">0</div><div class="admin-stat-lbl">تقرير</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-num" id="statContacts">0</div><div class="admin-stat-lbl">رسالة</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-num" id="statOpps">0</div><div class="admin-stat-lbl">فرصة</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-num" id="statCoursera">0</div><div class="admin-stat-lbl">طلب كورسيرا</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-num" id="statArticles">0</div><div class="admin-stat-lbl">مقال</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-num" id="statApps">0</div><div class="admin-stat-lbl">تطبيق</div></div>
+      </div>
+    </div>
+
+    <!-- ABOUT ADMIN -->
+    <div class="admin-section" id="admin-about">
+      <div class="admin-card">
+        <div class="admin-card-title">بيانات صفحة عني</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="input-group"><label class="input-label">صورة البروفايل (رابط أو رفع)</label>
+            <input type="file" accept="image/*" id="adminAvatarFile" style="display:none" onchange="uploadAdminImg(this,'adminAvatarPreview','aboutAvatarUrl')">
+            <button class="admin-file-btn" onclick="document.getElementById('adminAvatarFile').click()">رفع صورة البروفايل</button>
+            <img id="adminAvatarPreview" class="admin-img-preview">
+            <input type="text" class="input-field" style="margin-top:8px;" id="aboutAvatarUrl" placeholder="أو أدخل رابط الصورة">
+          </div>
+          <div class="input-group"><label class="input-label">الاسم</label><input type="text" class="input-field" id="adminAboutName" placeholder="الاسم الكامل"></div>
+          <div class="input-group"><label class="input-label">المسمى الوظيفي</label><input type="text" class="input-field" id="adminAboutRole" placeholder="Cybersecurity Specialist"></div>
+          <div class="input-group"><label class="input-label">نبذة (Bio)</label><textarea class="input-field" id="adminAboutBio" rows="4" placeholder="اكتب نبذة عنك..."></textarea></div>
+          <div class="input-group"><label class="input-label">المهارات (مفصولة بفاصلة)</label><input type="text" class="input-field" id="adminAboutSkills" placeholder="Cybersecurity, Networking, Python"></div>
+          <div class="input-group"><label class="input-label">الإحصائيات (JSON: [{label,value}])</label><textarea class="input-field" id="adminAboutStats" rows="3" placeholder='[{"label":"شهادة","value":"15"},{"label":"خبرة","value":"5+"}]'></textarea></div>
+          <div class="input-group"><label class="input-label">روابط التواصل (JSON: [{name,url,icon}])</label><textarea class="input-field" id="adminAboutSocial" rows="3" placeholder='[{"name":"LinkedIn","url":"https://linkedin.com/in/..."}]'></textarea></div>
+          <button class="btn-save" onclick="saveAbout()">حفظ البيانات</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPPS ADMIN -->
+    <div class="admin-section" id="admin-opps">
+      <div class="admin-card">
+        <div class="admin-card-title">إضافة فرصة جديدة</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="input-group"><label class="input-label">صورة رئيسية</label>
+            <input type="file" accept="image/*" id="oppImgFile" style="display:none" onchange="uploadAdminImg(this,'oppImgPreview','oppImgUrl')">
+            <button class="admin-file-btn" onclick="document.getElementById('oppImgFile').click()">رفع الصورة</button>
+            <img id="oppImgPreview" class="admin-img-preview">
+            <input type="text" class="input-field" style="margin-top:8px;" id="oppImgUrl" placeholder="أو رابط الصورة">
+          </div>
+          <div class="input-group"><label class="input-label">العنوان</label><input type="text" class="input-field" id="oppTitle" placeholder="اسم المنصة أو الفرصة"></div>
+          <div class="input-group"><label class="input-label">الوصف</label><textarea class="input-field" id="oppDesc" rows="3" placeholder="وصف الفرصة..."></textarea></div>
+          <div class="input-group"><label class="input-label">الرابط</label><input type="url" class="input-field" id="oppUrl" placeholder="https://" dir="ltr"></div>
+          <div class="input-group"><label class="input-label">رابط فيديو مباشر أو يوتيوب</label><input type="url" class="input-field" id="oppVideoUrl" placeholder="https://..." dir="ltr"></div>
+          <div class="input-group"><label class="input-label">فيديو (MP4 - رفع)</label>
+            <input type="file" accept="video/mp4" id="oppVideoFile" style="display:none" onchange="handleOppVideo(this)">
+            <button class="admin-file-btn" onclick="document.getElementById('oppVideoFile').click()">رفع فيديو MP4</button>
+            <div id="oppVideoName" style="font-size:12px;color:var(--gray-500);margin-top:6px;"></div>
+          </div>
+          <button class="btn-save" onclick="saveOpp()">حفظ الفرصة</button>
+        </div>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-title">الفرص الحالية</div>
+        <div id="adminOppsList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- CERTS ADMIN -->
+    <div class="admin-section" id="admin-certs">
+      <div class="admin-card">
+        <div class="admin-card-title">إضافة شهادة جديدة</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="input-group"><label class="input-label">صورة الشهادة</label>
+            <input type="file" accept="image/*" id="certImgFile" style="display:none" onchange="uploadAdminImg(this,'certImgPreview','certImgUrl')">
+            <button class="admin-file-btn" onclick="document.getElementById('certImgFile').click()">رفع صورة الشهادة</button>
+            <img id="certImgPreview" class="admin-img-preview">
+            <input type="text" class="input-field" style="margin-top:8px;" id="certImgUrl" placeholder="أو رابط الصورة">
+          </div>
+          <div class="input-group"><label class="input-label">credential_id</label><input type="text" class="input-field" id="certCredId" placeholder="CERT-001" dir="ltr"></div>
+          <div class="input-group"><label class="input-label">العنوان</label><input type="text" class="input-field" id="certTitle" placeholder="اسم الشهادة"></div>
+          <div class="input-group"><label class="input-label">الوصف (JSON أو نص)</label><textarea class="input-field" id="certDesc" rows="2" placeholder="وصف الشهادة"></textarea></div>
+          <div class="input-group"><label class="input-label">الجهة المانحة</label><input type="text" class="input-field" id="certCompany" placeholder="Coursera / Google / ..."></div>
+          <div class="input-group"><label class="input-label">المجال</label><input type="text" class="input-field" id="certField" placeholder="Cybersecurity"></div>
+          <div class="input-group"><label class="input-label">تاريخ الإصدار</label><input type="date" class="input-field" id="certIssue"></div>
+          <div class="input-group"><label class="input-label">تاريخ الانتهاء (اختياري)</label><input type="date" class="input-field" id="certExpiry"></div>
+          <div class="input-group"><label class="input-label">الحالة</label>
+            <select class="input-field" id="certActive"><option value="true">نشط</option><option value="false">غير نشط</option></select>
+          </div>
+          <button class="btn-save" onclick="saveCert()">حفظ الشهادة</button>
+        </div>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-title">الشهادات الحالية</div>
+        <div id="adminCertsList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- REPORTS ADMIN -->
+    <div class="admin-section" id="admin-reports">
+      <div class="admin-card">
+        <div class="admin-card-title">إضافة تقرير سيبراني</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="input-group"><label class="input-label">كود التقرير السري</label><input type="text" class="input-field" id="repCode" placeholder="XXXX-XXXX" dir="ltr"></div>
+          <div class="input-group"><label class="input-label">العنوان</label><input type="text" class="input-field" id="repTitle" placeholder="عنوان التقرير"></div>
+          <div class="input-group"><label class="input-label">الشرح (JSON أو نص)</label><textarea class="input-field" id="repDesc" rows="3" placeholder="شرح مفصل للتقرير..."></textarea></div>
+          <div class="input-group"><label class="input-label">صور التقرير (روابط مفصولة بفاصلة)</label><textarea class="input-field" id="repImgs" rows="2" placeholder="https://ibb.co/..., https://ibb.co/..."></textarea></div>
+          <div class="input-group"><label class="input-label">رفع صور إضافية</label>
+            <input type="file" accept="image/*" multiple id="repImgFiles" style="display:none" onchange="uploadReportImages(this)">
+            <button class="admin-file-btn" onclick="document.getElementById('repImgFiles').click()">رفع صور</button>
+            <div id="repImgsUploadStatus" style="font-size:12px;color:var(--gray-500);margin-top:6px;"></div>
+          </div>
+          <div class="input-group"><label class="input-label">ملف PDF (رابط)</label><input type="url" class="input-field" id="repPdf" placeholder="https://...pdf" dir="ltr"></div>
+          <div class="input-group"><label class="input-label">تاريخ التقرير</label><input type="date" class="input-field" id="repDate"></div>
+          <button class="btn-save" onclick="saveReport()">حفظ التقرير</button>
+        </div>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-title">التقارير الحالية</div>
+        <div id="adminReportsList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- INFO ADMIN -->
+    <div class="admin-section" id="admin-info">
+      <div class="admin-card">
+        <div class="admin-card-title">إضافة منشور معلومة سيبرانية</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="input-group"><label class="input-label">الوصف / التعليق</label><textarea class="input-field" id="infoCaption" rows="3" placeholder="اكتب المحتوى..."></textarea></div>
+          <div class="input-group"><label class="input-label">صور المنشور (حتى 16 صورة - رفع)</label>
+            <input type="file" accept="image/*" multiple id="infoImgFiles" style="display:none" onchange="uploadInfoImages(this)">
+            <button class="admin-file-btn" onclick="document.getElementById('infoImgFiles').click()">رفع الصور</button>
+            <div id="infoImgsStatus" style="font-size:12px;color:var(--gray-500);margin-top:6px;"></div>
+          </div>
+          <div class="input-group"><label class="input-label">أو روابط الصور (مفصولة بفاصلة)</label><textarea class="input-field" id="infoImgUrls" rows="2" placeholder="https://..., https://..."></textarea></div>
+          <button class="btn-save" onclick="saveInfoPost()">نشر المعلومة</button>
+        </div>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-title">المنشورات الحالية</div>
+        <div id="adminInfoList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- COURSERA ADMIN -->
+    <div class="admin-section" id="admin-coursera">
+      <div class="admin-card">
+        <div class="admin-card-title">طلبات Coursera Pro</div>
+        <div id="adminCourseraList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- CONTACTS ADMIN -->
+    <div class="admin-section" id="admin-contacts">
+      <div class="admin-card">
+        <div class="admin-card-title">رسائل التواصل</div>
+        <div id="adminContactsList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- USERS ADMIN -->
+    <div class="admin-section" id="admin-users">
+      <div class="admin-card">
+        <div class="admin-card-title">المستخدمون المسجلون</div>
+        <div id="adminUsersList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS ADMIN -->
+    <div class="admin-section" id="admin-notifs">
+      <div class="admin-card">
+        <div class="admin-card-title">إرسال إشعار</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="input-group"><label class="input-label">نص الإشعار</label><textarea class="input-field" id="notifText" rows="3" placeholder="اكتب نص الإشعار..."></textarea></div>
+          <button class="btn-save" onclick="sendNotification()">إرسال للجميع</button>
+        </div>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-title">الإشعارات المرسلة</div>
+        <div id="adminNotifsList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- PARTNERS ADMIN -->
+    <div class="admin-section" id="admin-partners">
+      <div class="admin-card">
+        <div class="admin-card-title">إدارة الشركاء (الشريط المتحرك)</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="input-group"><label class="input-label">اسم الشريك</label><input type="text" class="input-field" id="partnerName" placeholder="اسم الشركة/المنصة"></div>
+          <div class="input-group">
+            <label class="input-label">لوجو الشريك</label>
+            <input type="file" accept="image/*" id="partnerLogoFile" style="display:none" onchange="uploadAdminImg(this,'partnerLogoPreview','partnerLogoUrl')">
+            <button class="admin-file-btn" onclick="document.getElementById('partnerLogoFile').click()">رفع اللوجو</button>
+            <img id="partnerLogoPreview" class="admin-img-preview" style="max-height:80px;object-fit:contain;background:var(--gray-50);padding:8px;">
+            <input type="text" class="input-field" style="margin-top:8px;" id="partnerLogoUrl" placeholder="أو أدخل رابط اللوجو مباشرة">
+          </div>
+          <button class="btn-save" onclick="savePartner()">إضافة شريك</button>
+        </div>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-title">الشركاء الحاليون</div>
+        <div id="adminPartnersList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+
+    <!-- ARTICLES ADMIN -->
+    <div class="admin-section" id="admin-articles">
+      <div class="admin-card">
+        <div class="admin-card-title">إضافة مقال جديد</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="input-group"><label class="input-label">صورة المقال (رفع)</label>
+            <input type="file" accept="image/*" id="artImgFile" style="display:none" onchange="uploadAdminImg(this,'artImgPreview','artImgUrl')">
+            <button class="admin-file-btn" onclick="document.getElementById('artImgFile').click()">رفع صورة</button>
+            <img id="artImgPreview" class="admin-img-preview">
+            <input type="text" class="input-field" style="margin-top:8px;" id="artImgUrl" placeholder="أو رابط الصورة">
+          </div>
+          <div class="input-group"><label class="input-label">عنوان المقال</label><input type="text" class="input-field" id="artTitle" placeholder="عنوان المقال"></div>
+          <div class="input-group"><label class="input-label">الفئة / التصنيف</label><input type="text" class="input-field" id="artCategory" placeholder="مثل: أمن سيبراني، تقنية..."></div>
+          <div class="input-group"><label class="input-label">مقتطف (ملخص قصير)</label><textarea class="input-field" id="artExcerpt" rows="2" placeholder="ملخص المقال..."></textarea></div>
+          <div class="input-group"><label class="input-label">محتوى المقال الكامل</label><textarea class="input-field" id="artContent" rows="8" placeholder="اكتب المقال هنا... (يمكن استخدام الأسطر للفقرات)"></textarea></div>
+          <button class="btn-save" onclick="saveArticle()">نشر المقال</button>
+        </div>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-title">المقالات المنشورة</div>
+        <div id="adminArticlesList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- APPS ADMIN -->
+    <div class="admin-section" id="admin-apps">
+      <div class="admin-card">
+        <div class="admin-card-title">إضافة تطبيق جديد</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="input-group"><label class="input-label">أيقونة التطبيق (رفع)</label>
+            <input type="file" accept="image/*" id="appIconFile" style="display:none" onchange="uploadAdminImg(this,'appIconPreview','appIconUrl')">
+            <button class="admin-file-btn" onclick="document.getElementById('appIconFile').click()">رفع الأيقونة</button>
+            <img id="appIconPreview" class="admin-img-preview" style="max-height:80px;object-fit:contain;">
+            <input type="text" class="input-field" style="margin-top:8px;" id="appIconUrl" placeholder="أو رابط الأيقونة">
+          </div>
+          <div class="input-group"><label class="input-label">اسم التطبيق</label><input type="text" class="input-field" id="appName" placeholder="اسم التطبيق"></div>
+          <div class="input-group"><label class="input-label">الوصف</label><textarea class="input-field" id="appDesc" rows="3" placeholder="وصف التطبيق..."></textarea></div>
+          <div class="input-group"><label class="input-label">الفئات / التاقات (مفصولة بفاصلة)</label><input type="text" class="input-field" id="appTags" placeholder="أمان، أدوات، مجاني"></div>
+          <div class="input-group"><label class="input-label">الإصدار</label><input type="text" class="input-field" id="appVersion" placeholder="1.0.0" dir="ltr"></div>
+          <div class="input-group"><label class="input-label">رابط التحميل المباشر (.apk / .ipa)</label><input type="url" class="input-field" id="appDlUrl" placeholder="https://..." dir="ltr"></div>
+          <div class="input-group"><label class="input-label">رابط المتجر (Google Play / App Store)</label><input type="url" class="input-field" id="appStoreUrl" placeholder="https://play.google.com/..." dir="ltr"></div>
+          <button class="btn-save" onclick="saveApp()">إضافة التطبيق</button>
+        </div>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-title">التطبيقات الحالية</div>
+        <div id="adminAppsList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal-overlay hidden" id="editProfileModal">
+  <div class="modal-sheet" style="position:relative;">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="hideEditProfile()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="modal-title">تعديل الملف الشخصي</div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="input-group"><label class="input-label">الاسم الكامل</label><input type="text" class="input-field" id="editName"></div>
+      <div class="input-group"><label class="input-label">رقم الهاتف</label><input type="tel" class="input-field" id="editPhone" dir="ltr"></div>
+      <div class="input-group"><label class="input-label">الدولة</label><input type="text" class="input-field" id="editCountry"></div>
+      <button class="btn-primary" onclick="saveProfile()">حفظ التغييرات</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASS MODAL -->
+<div class="modal-overlay hidden" id="changePassModal">
+  <div class="modal-sheet" style="position:relative;">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="hideChangePass()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="modal-title">تغيير كلمة المرور</div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="input-group"><label class="input-label">كلمة المرور الحالية</label><input type="password" class="input-field" id="curPass"></div>
+      <div class="input-group"><label class="input-label">كلمة المرور الجديدة</label><input type="password" class="input-field" id="newPass"></div>
+      <div class="input-group"><label class="input-label">تأكيد كلمة المرور الجديدة</label><input type="password" class="input-field" id="conPass"></div>
+      <button class="btn-primary" onclick="changePassword()">تغيير كلمة المرور</button>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT APP MODAL -->
+<div class="modal-overlay hidden" id="aboutAppModal">
+  <div class="modal-sheet" style="position:relative;text-align:center;">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="document.getElementById('aboutAppModal').classList.add('hidden')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <img src="https://i.ibb.co/Sk9D0cT/logo.png" style="width:64px;height:64px;border-radius:16px;margin:0 auto 16px;display:block;" onerror="this.style.display='none'">
+    <div class="modal-title">Khaled Ahmed Portfolio</div>
+    <p style="font-size:13px;color:var(--gray-500);line-height:1.7;margin-bottom:16px;">الإصدار 1.0.0<br>منصة شخصية متكاملة تضم الشهادات، الفرص التعليمية، والتقارير الأمنية</p>
+    <p style="font-size:12px;color:var(--gray-400);">جميع الحقوق محفوظة لدى خالد أحمد</p>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const SHEETSON_API = 'HlUZiTjLO1sp-Ou0JbsluuQNAWUoMP2XOYcVw5n6OxoroGNPfVpIDZq3fF0';
+const SHEET_ID = '1B603dMsMbDbXUYkt3zAeTa7PdEAinIKRnBRDB_sxzhs';
+const IMGBB_KEY = '36b0e2658ed6fad2ca48081442f1539b';
+const ADMIN_EMAIL = 'khwailedapp@gmail.com';
+const BASE_URL = `https://api.sheetson.com/v2/sheets`;
+const HEADERS = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SHEETSON_API}`, 'X-Spreadsheet-Id': SHEET_ID };
+
+// Sheet names
+const SHEETS = {
+  users: 'Users',
+  about: 'About',
+  opportunities: 'Opportunities',
+  certificates: 'Certificates',
+  reports: 'Reports',
+  info: 'Info',
+  coursera: 'Coursera',
+  contacts: 'Contacts',
+  notifications: 'Notifications',
+  partners: 'Partners',
+  articles: 'Articles',
+  apps: 'Apps'
+};
+
+// State
+let currentUser = null;
+let obSlide = 1;
+let currentPage = 'about';
+let currentPdfUrl = '';
+let forgotFoundRow = null;
+let oppVideos = {};
+let infoUploadedUrls = [];
+let reportUploadedImgs = [];
+
+// ============================================================
+// MANIFEST (PWA)
+// ============================================================
+const manifest = {
+  name: "KA",
+  short_name: "KA",
+  start_url: ".",
+  display: "standalone",
+  background_color: "#ffffff",
+  theme_color: "#ffffff",
+  icons: [
+    { src: "https://i.ibb.co/gFF6wxqf/icon.png", sizes: "192x192", type: "image/png" },
+    { src: "https://i.ibb.co/gFF6wxqf/icon.png", sizes: "512x512", type: "image/png" }
+  ]
+};
+const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+document.getElementById('manifest-placeholder').href = URL.createObjectURL(blob);
+
+// ============================================================
+// UTILITY
+// ============================================================
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+function encodeData(str) { try { return btoa(unescape(encodeURIComponent(str))); } catch(e) { return btoa(str); } }
+function decodeData(str) { try { return decodeURIComponent(escape(atob(str))); } catch(e) { try { return atob(str); } catch(e2) { return str; } } }
+
+function generateUID() { return Date.now().toString(36) + Math.random().toString(36).substr(2,8); }
+
+function isItemActive(r) {
+  if (!r) return false;
+  if (r.isActive === undefined || r.isActive === null || r.isActive === '') return true;
+  return String(r.isActive).toLowerCase() !== 'false';
+}
+
+async function apiGet(sheet, params='') {
+  const timestamp = `_t=${Date.now()}`;
+  const queryString = params ? `${params}&${timestamp}` : timestamp;
+  const url = `${BASE_URL}/${sheet}?${queryString}`;
+  const r = await fetch(url, { method: 'GET', headers: HEADERS, cache: 'no-store' });
+  if (!r.ok) {
+    const txt = await r.text();
+    console.error('apiGet error', r.status, txt);
+    if (r.status === 404 || r.status === 400) return { results: [], total: 0 };
+    throw new Error(`HTTP ${r.status}: ${txt}`);
+  }
+  let json = {};
+  try { json = await r.json(); } catch(e) { return { results: [], total: 0 }; }
+  if (json.error) { console.error('apiGet json error', json.error); throw new Error(json.error); }
+  return json;
+}
+
+async function apiPost(sheet, data) {
+  const url = `${BASE_URL}/${sheet}`;
+  const r = await fetch(url, { method: 'POST', headers: HEADERS, body: JSON.stringify(data) });
+  const json = await r.json();
+  if (!r.ok || json.error) {
+    console.error('apiPost error', r.status, json);
+    throw new Error(json.error || `HTTP ${r.status}`);
+  }
+  return json;
+}
+
+async function apiPatch(sheet, rowIndex, data) {
+  const url = `${BASE_URL}/${sheet}/${rowIndex}`;
+  let r = await fetch(url, { method: 'PATCH', headers: HEADERS, body: JSON.stringify(data) });
+  if (!r.ok) {
+    r = await fetch(url, { method: 'PUT', headers: HEADERS, body: JSON.stringify(data) });
+  }
+  const json = await r.json();
+  if (!r.ok || json.error) {
+    console.error('apiPatch error', r.status, json);
+    throw new Error(json.error || `HTTP ${r.status}`);
+  }
+  return json;
+}
+
+async function apiDelete(sheet, rowIndex) {
+  const url = `${BASE_URL}/${sheet}/${rowIndex}`;
+  const r = await fetch(url, { method: 'DELETE', headers: HEADERS });
+  let json = {};
+  try { json = await r.json(); } catch(e) {}
+  if (!r.ok && json.error) throw new Error(json.error || `HTTP ${r.status}`);
+  return json;
+}
+
+async function uploadToImgBB(file) {
+  const fd = new FormData(); fd.append('image', file);
+  const r = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method:'POST', body:fd });
+  const d = await r.json();
+  return d.data?.url || '';
+}
+
+// ============================================================
+// SPLASH + ONBOARDING (معدل ومحمي لضمان الفتح الفوري وعدم التعليق)
+// ============================================================
+let isAppStarted = false;
+function initSplash() {
+  if (isAppStarted) return;
+  isAppStarted = true;
+  const hash = window.location.hash;
+  const session = localStorage.getItem('ka_session');
+  
+  setTimeout(() => {
+    const splash = document.getElementById('splash-screen');
+    if (splash) splash.style.display = 'none';
+    
+    if (session) {
+      try {
+        currentUser = JSON.parse(session);
+      } catch(e) {
+        currentUser = null;
+      }
+      if (currentUser) {
+        startApp();
+        if (hash) handleDeepLink(hash);
+        return;
+      }
+    }
+    const seenOb = localStorage.getItem('ka_onboarding');
+    if (seenOb) { showAuth(); }
+    else { document.getElementById('onboarding').classList.remove('hidden'); }
+  }, 1200);
+}
+
+// تشغيل مزدوج مع مؤقت احتياطي لضمان الفتح حتى لو تأخر الإنترنت
+window.addEventListener('load', initSplash);
+document.addEventListener('DOMContentLoaded', () => setTimeout(initSplash, 800));
+setTimeout(initSplash, 2500); // الأمان المطلق ضد التعليق
+
+function nextOnboarding() {
+  if (obSlide < 3) {
+    obSlide++;
+    document.querySelectorAll('.onboarding-slide').forEach((s,i) => s.classList.toggle('active', i===obSlide-1));
+    document.querySelectorAll('.ob-dot').forEach((d,i) => d.classList.toggle('active', i===obSlide-1));
+    if (obSlide === 3) document.getElementById('obNextBtn').textContent = 'ابدأ';
+  } else { skipOnboarding(); }
+}
+function skipOnboarding() {
+  localStorage.setItem('ka_onboarding','1');
+  document.getElementById('onboarding').classList.add('hidden');
+  showAuth();
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+function showAuth() {
+  document.getElementById('auth-screen').classList.remove('hidden');
+}
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.getElementById('loginForm').classList.toggle('hidden', tab!=='login');
+  document.getElementById('registerForm').classList.toggle('hidden', tab!=='register');
+}
+
+async function handleLogin() {
+  const id = document.getElementById('loginId').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  if (!id || !pass) { showToast('أدخل البيانات كاملة', 'error'); return; }
+  const btn = document.querySelector('#loginForm .btn-primary');
+  btn.textContent = 'جاري التحقق...'; btn.disabled = true;
+  try {
+    const data = await apiGet(SHEETS.users, 'limit=1000');
+    const rows = data.results || [];
+    const user = rows.find(u => {
+      const match = (u.email === id || u.username === id || u.phone === id);
+      if (!match) return false;
+      try {
+        return decodeData(u.password) === pass || u.password === pass;
+      } catch(e) { return u.password === pass; }
+    });
+    if (!user) { showToast('البريد أو كلمة المرور غير صحيحة', 'error'); return; }
+    if (String(user.isActive).toLowerCase() === 'false') { showToast('الحساب موقوف', 'error'); return; }
+    if ((user.email||'').toLowerCase() === ADMIN_EMAIL.toLowerCase() && user.role !== 'admin') {
+      try { await apiPatch(SHEETS.users, user.rowIndex, { role: 'admin' }); } catch(e) {}
+      user.role = 'admin';
+    }
+    currentUser = user;
+    localStorage.setItem('ka_session', JSON.stringify(user));
+    document.getElementById('auth-screen').classList.add('hidden');
+    startApp();
+    showToast('أهلاً ' + (user.name||'') , 'success');
+  } catch(e) {
+    console.error('Login error:', e);
+    showToast('خطأ في الاتصال: ' + e.message, 'error');
+  } finally {
+    btn.textContent = 'دخول'; btn.disabled = false;
+  }
+}
+
+async function handleRegister() {
+  const name     = document.getElementById('regName').value.trim();
+  const email    = document.getElementById('regEmail').value.trim();
+  const phone    = document.getElementById('regPhone').value.trim();
+  const country  = document.getElementById('regCountry').value;
+  const gender   = document.getElementById('regGender').value;
+  const username = document.getElementById('regUsername').value.trim().replace(/^@/,'');
+  const pass     = document.getElementById('regPass').value;
+  const conf     = document.getElementById('regPassConfirm').value;
+
+  if (!name)     { showToast('أدخل الاسم الكامل', 'error'); return; }
+  if (!email || !email.includes('@')) { showToast('أدخل بريد إلكتروني صحيح', 'error'); return; }
+  if (!phone)    { showToast('أدخل رقم الهاتف', 'error'); return; }
+  if (!country)  { showToast('اختر الدولة', 'error'); return; }
+  if (!gender)   { showToast('اختر النوع', 'error'); return; }
+  if (!username) { showToast('أدخل اسم المستخدم', 'error'); return; }
+  if (!pass)     { showToast('أدخل كلمة المرور', 'error'); return; }
+  if (pass.length < 8) { showToast('كلمة المرور يجب أن تكون 8 أحرف على الأقل', 'error'); return; }
+  if (pass !== conf)   { showToast('كلمتا المرور غير متطابقتين', 'error'); return; }
+
+  const btn = document.querySelector('#registerForm .btn-primary');
+  btn.textContent = 'جاري التحقق...'; btn.disabled = true;
+
+  try {
+    showToast('جاري التحقق من البيانات...');
+    let rows = [];
+    try {
+      const data = await apiGet(SHEETS.users, 'limit=1000');
+      rows = data.results || [];
+    } catch(e) {
+      console.warn('Users sheet empty or error, proceeding:', e.message);
+    }
+
+    const emailLC    = email.toLowerCase();
+    const usernameLC = username.toLowerCase();
+    if (rows.find(u => (u.email||'').toLowerCase() === emailLC)) {
+      showToast('البريد الإلكتروني مسجل مسبقاً', 'error');
+      btn.textContent = 'إنشاء الحساب'; btn.disabled = false; return;
+    }
+    if (rows.find(u => (u.username||'').toLowerCase() === usernameLC)) {
+      showToast('اسم المستخدم محجوز، اختر اسماً آخر', 'error');
+      btn.textContent = 'إنشاء الحساب'; btn.disabled = false; return;
+    }
+    if (rows.find(u => u.phone === phone)) {
+      showToast('رقم الهاتف مسجل مسبقاً', 'error');
+      btn.textContent = 'إنشاء الحساب'; btn.disabled = false; return;
+    }
+
+    showToast('جاري إنشاء الحساب...');
+    const newUser = {
+      uid:        generateUID(),
+      name,
+      email,
+      phone,
+      country,
+      gender,
+      username,
+      password:   encodeData(pass),
+      role:       email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'user',
+      isActive:   'true',
+      created_at: new Date().toISOString()
+    };
+
+    const res = await apiPost(SHEETS.users, newUser);
+    console.log('Register response:', res);
+
+    currentUser = { ...newUser, rowIndex: res.rowIndex };
+    localStorage.setItem('ka_session', JSON.stringify(currentUser));
+    document.getElementById('auth-screen').classList.add('hidden');
+    startApp();
+    showToast('تم إنشاء الحساب بنجاح، أهلاً ' + name, 'success');
+
+  } catch(e) {
+    console.error('Register error:', e);
+    showToast('فشل الإنشاء: ' + (e.message || 'تحقق من الاتصال'), 'error');
+  } finally {
+    btn.textContent = 'إنشاء الحساب'; btn.disabled = false;
+  }
+}
+
+function showForgotModal() { document.getElementById('forgotModal').classList.remove('hidden'); forgotFoundRow = null; document.getElementById('forgotNewPassGroup').style.display='none'; document.getElementById('forgotBtn').textContent='بحث'; }
+function hideForgotModal() { document.getElementById('forgotModal').classList.add('hidden'); }
+
+async function handleForgot() {
+  const btn = document.getElementById('forgotBtn');
+  if (!forgotFoundRow) {
+    const id = document.getElementById('forgotId').value.trim();
+    if (!id) { showToast('أدخل البيانات', 'error'); return; }
+    btn.textContent = 'جاري البحث...'; btn.disabled = true;
+    try {
+      const data = await apiGet(SHEETS.users, 'limit=1000');
+      const rows = data.results || [];
+      const idLC = id.toLowerCase();
+      const user = rows.find(u =>
+        (u.email||'').toLowerCase() === idLC ||
+        (u.username||'').toLowerCase() === idLC ||
+        u.phone === id
+      );
+      if (!user) { showToast('لم يتم العثور على حساب بهذه البيانات', 'error'); return; }
+      forgotFoundRow = user;
+      document.getElementById('forgotNewPassGroup').style.display='flex';
+      btn.textContent = 'تغيير كلمة المرور';
+      showToast('تم العثور على الحساب', 'success');
+    } catch(e) {
+      showToast('خطأ في الاتصال: ' + e.message, 'error');
+    } finally { btn.disabled = false; }
+  } else {
+    const np = document.getElementById('forgotNewPass').value;
+    const cp = document.getElementById('forgotConfPass').value;
+    if (!np || np!==cp) { showToast('كلمتا المرور غير متطابقتين', 'error'); return; }
+    if (np.length<8) { showToast('كلمة المرور يجب أن تكون 8 أحرف على الأقل', 'error'); return; }
+    btn.textContent = 'جاري الحفظ...'; btn.disabled = true;
+    try {
+      await apiPatch(SHEETS.users, forgotFoundRow.rowIndex, { password: encodeData(np) });
+      showToast('تم تغيير كلمة المرور بنجاح', 'success');
+      hideForgotModal();
+    } catch(e) {
+      showToast('فشل تغيير كلمة المرور: ' + e.message, 'error');
+    } finally { btn.textContent = 'تغيير كلمة المرور'; btn.disabled = false; }
+  }
+}
+
+// ============================================================
+// APP START
+// ============================================================
+function startApp() {
+  document.getElementById('main-app').classList.remove('hidden');
+  if (currentUser && (currentUser.email||'').toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+    currentUser.role = 'admin';
+    localStorage.setItem('ka_session', JSON.stringify(currentUser));
+  }
+  if (currentUser?.role === 'admin') {
+    document.getElementById('adminBtn').style.display='flex';
+    const sbAdmin = document.getElementById('sb-admin');
+    if (sbAdmin) sbAdmin.style.display='flex';
+  }
+  const sn = document.getElementById('sidebarName');
+  const se = document.getElementById('sidebarEmail');
+  if (sn) sn.textContent = currentUser?.name || 'خالد أحمد';
+  if (se) se.textContent = currentUser?.email || '';
+  updateProfileUI();
+  loadNotifications();
+  loadAbout();
+  loadPartners();
+  const pendingPage = sessionStorage.getItem('ka_pending_page');
+  if (pendingPage) {
+    sessionStorage.removeItem('ka_pending_page');
+    navigate(pendingPage);
+  } else {
+    navigate('about');
+    checkDeepLink();
+  }
+  setTimeout(showFloatingAd, 5000);
+}
+
+function checkDeepLink() {
+  const hash = window.location.hash;
+  if (hash) handleDeepLink(hash);
+}
+
+function handleDeepLink(hash) {
+  if (!hash.startsWith('#page-')) return;
+  const parts = hash.replace('#page-', '').split('-');
+  const section = parts[0];
+  const needsAuth = ['cert','report','opp','info','article','app'].includes(section);
+  if (needsAuth && !currentUser) {
+    sessionStorage.setItem('ka_pending_page', section === 'cert' ? 'certs' : section === 'opp' ? 'opps' : section === 'article' ? 'articles' : section === 'app' ? 'apps' : section + 's');
+    if (section === 'report') sessionStorage.setItem('ka_pending_code', parts.slice(1).join('-'));
+    showToast('أنشئ حساباً أو سجل دخولك للمتابعة', 'error');
+    return;
+  }
+  if (section === 'cert') navigate('certs');
+  else if (section === 'report') {
+    navigate('reports');
+    const code = sessionStorage.getItem('ka_pending_code') || parts.slice(1).join('-');
+    sessionStorage.removeItem('ka_pending_code');
+    if (code) { setTimeout(() => { document.getElementById('reportCodeInput').value = code; fetchReport(); }, 300); }
+  }
+  else if (section === 'opp') navigate('opps');
+  else if (section === 'info') navigate('info');
+  else if (section === 'article') navigate('articles');
+  else if (section === 'app') navigate('apps');
+}
+
+function updateProfileUI() {
+  if (!currentUser) return;
+  const initials = (currentUser.name||'KA').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('profileAvatar').innerHTML = initials;
+  document.getElementById('profileName').textContent = currentUser.name || 'المستخدم';
+  document.getElementById('profileEmail').textContent = currentUser.email || '';
+  document.getElementById('profileRole').textContent = currentUser.role === 'admin' ? 'مدير' : 'مستخدم';
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function navigate(page) {
+  if (!currentUser && ['reports','info','contact','certs','articles','apps'].includes(page)) {
+    showToast('يجب تسجيل الدخول أولاً، أنشئ حساباً أو سجل دخولك', 'error');
+    setTimeout(() => { document.getElementById('auth-screen').classList.remove('hidden'); }, 1200);
+    return;
+  }
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  const sb = document.getElementById('sb-'+page);
+  if (sb) sb.classList.add('active');
+  const p = document.getElementById('page-'+page);
+  if (p) p.classList.add('active');
+  if (page === 'about') loadAbout();
+  if (page === 'opps') loadOpps();
+  if (page === 'certs') loadCerts();
+  if (page === 'info') loadInfo();
+  if (page === 'contact') loadMyReplies();
+  if (page === 'settings') { loadPartners(); updateProfileUI(); }
+  if (page === 'articles') loadArticles();
+  if (page === 'apps') loadApps();
+}
+
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+// ============================================================
+// ABOUT PAGE
+// ============================================================
+async function loadAbout() {
+  try {
+    const data = await apiGet(SHEETS.about, 'limit=1');
+    const row = (data.results||[])[0];
+    if (!row) return;
+    const avatar = row.avatar || '';
+    if (avatar) { document.getElementById('aboutAvatar').src = avatar; document.getElementById('aboutAvatar').style.display='block'; }
+    document.getElementById('aboutName').textContent = row.name || 'Khaled Ahmed';
+    document.getElementById('aboutRole').textContent = row.role || '';
+    document.getElementById('aboutBio').textContent = row.bio || '';
+    const statsEl = document.getElementById('aboutStats');
+    try {
+      const stats = JSON.parse(row.stats || '[]');
+      statsEl.innerHTML = stats.map(s => `<div class="about-stat"><div class="about-stat-value">${s.value}</div><div class="about-stat-label">${s.label}</div></div>`).join('');
+    } catch(e) { statsEl.innerHTML = ''; }
+    const skillsEl = document.getElementById('skillsContainer');
+    const skills = (row.skills||'').split(',').map(s=>s.trim()).filter(Boolean);
+    skillsEl.innerHTML = skills.map(s => `<span class="skill-tag">${s}</span>`).join('');
+    const socialEl = document.getElementById('socialLinks');
+    try {
+      const links = JSON.parse(row.social || '[]');
+      socialEl.innerHTML = links.map(l => `<div class="social-link" onclick="openLink('${l.url}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>${l.name}</div>`).join('');
+    } catch(e) { socialEl.innerHTML = ''; }
+  } catch(e) { console.log('About load error', e); }
+}
+
+function openLink(url) { window.open(url, '_blank'); }
+
+// ============================================================
+// OPPORTUNITIES PAGE
+// ============================================================
+async function loadOpps() {
+  const c = document.getElementById('oppsContainer');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  try {
+    const data = await apiGet(SHEETS.opportunities, 'limit=50');
+    const rows = (data.results||[]).filter(isItemActive);
+    if (!rows.length) { c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><p>لا توجد فرص متاحة</p></div>'; return; }
+    c.innerHTML = rows.map((r,i) => {
+      const uid = r.uid || r.rowIndex;
+      const shareUrl = `${location.href.split('#')[0]}#page-opp-${uid}`;
+      return `
+        <div class="opp-card" id="oppcard-${i}">
+          ${r.image ? `<img src="${r.image}" class="opp-img" alt="${r.title}" onerror="this.style.display='none'">` : ''}
+          <div class="opp-body">
+            <div class="opp-title">${r.title||''}</div>
+            <div class="opp-desc">${r.description||''}</div>
+            ${r.url ? `<button class="btn-visit" onclick="openLink('${r.url}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>زيارة المنصة</button>` : ''}
+          </div>
+          ${r.video ? `<div class="opp-vid-wrap"><video controls preload="none" src="${r.video}"></video></div>` : ''}
+          <div class="share-bar">
+            <span class="share-url">${shareUrl}</span>
+            <button class="share-copy" onclick="copyLink('${shareUrl}')">نسخ الرابط</button>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) { c.innerHTML = '<div class="empty-state"><p>خطأ في التحميل</p></div>'; }
+}
+
+// ============================================================
+// CERTIFICATES PAGE
+// ============================================================
+async function loadCerts() {
+  const grid = document.getElementById('certsGrid');
+  grid.innerHTML = '<div class="loading-spinner" style="grid-column:1/-1;"><div class="spinner"></div></div>';
+  try {
+    const data = await apiGet(SHEETS.certificates, 'limit=100');
+    const rows = (data.results||[]).filter(isItemActive);
+    if (!rows.length) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>لا توجد شهادات</p></div>'; return; }
+    grid.innerHTML = rows.map((r,i) => {
+      const uid = r.credential_id || r.rowIndex;
+      return `
+        <div class="cert-card" id="cert-${i}" onpointerdown="certHoldStart(${i})" onpointerup="certHoldEnd(${i})" onpointerleave="certHoldEnd(${i})">
+          <img src="${r.image||''}" class="cert-img" alt="${r.title||''}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 150%22><rect fill=%22%23f5e8eb%22 width=%22200%22 height=%22150%22/></svg>'">
+          <div class="cert-blur">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div class="cert-blur-text">اضغط مع الاستمرار</div>
+          </div>
+          <div class="cert-info">
+            <div class="cert-title">${r.title||''}</div>
+            <div class="cert-company">${r.company||''}</div>
+            ${r.field ? `<div class="cert-tag">${r.field}</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>خطأ في التحميل</p></div>'; }
+}
+
+let certHoldTimer = null;
+let certHoldReadyTimer = null;
+function certHoldStart(i) {
+  const el = document.getElementById('cert-'+i);
+  if (el) el.classList.add('hold-ready');
+  certHoldTimer = setTimeout(() => {
+    if (el) {
+      el.classList.remove('hold-ready');
+      el.classList.add('revealed');
+      if (navigator.vibrate) navigator.vibrate(30);
+    }
+  }, 500);
+}
+function certHoldEnd(i) {
+  clearTimeout(certHoldTimer);
+  const el = document.getElementById('cert-'+i);
+  if (el) { el.classList.remove('revealed'); el.classList.remove('hold-ready'); }
+}
+
+// ============================================================
+// CYBER REPORTS PAGE
+// ============================================================
+async function fetchReport() {
+  const code = document.getElementById('reportCodeInput').value.trim();
+  if (!code) { showToast('أدخل كود التقرير', 'error'); return; }
+  showToast('جاري البحث...');
+  try {
+    const data = await apiGet(SHEETS.reports, 'limit=200');
+    const rows = data.results || [];
+    const report = rows.find(r => r.code === code || r.code === code.toUpperCase());
+    if (!report) { showToast('كود غير صحيح أو التقرير غير موجود', 'error'); return; }
+    renderReport(report);
+  } catch(e) { showToast('خطأ في الاتصال', 'error'); }
+}
+
+function renderReport(r) {
+  document.getElementById('reportAccessView').style.display = 'none';
+  const view = document.getElementById('reportView');
+  view.style.display = 'block';
+  
+  let imgs = [];
+  try { imgs = JSON.parse(r.images||'[]'); } catch(e) {
+    imgs = (r.images||'').split(',').map(s=>s.trim()).filter(Boolean);
+  }
+  let desc = r.description || '';
+  try { const d = JSON.parse(desc); desc = typeof d === 'string' ? d : JSON.stringify(d, null, 2); } catch(e) {}
+  
+  const shareUrl = `${location.href.split('#')[0]}#page-report-${r.code}`;
+  
+  view.innerHTML = `
+    <div class="report-view">
+      <div class="report-header-card">
+        <div class="report-header-title">${r.title||'تقرير سيبراني'}</div>
+        <div class="report-header-date">${r.date||''}</div>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" width="14" height="14"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span style="font-size:12px;opacity:0.7;font-family:var(--font-en);">${r.code}</span>
+        </div>
+      </div>
+      ${desc ? `<div class="report-desc">${desc}</div>` : ''}
+      ${imgs.length ? `<div class="report-media-grid">${imgs.map((img,i) => `<div class="report-media-item"><img src="${img}" alt="img" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;border-radius:8px;"><button class="btn-dl" style="position:absolute;bottom:6px;left:6px;" onclick="downloadFile('${img}','report-img-${i+1}.jpg')">تحميل</button></div>`).join('')}</div>` : ''}
+      ${r.pdf ? `<div class="report-pdf-item" onclick="openPdf('${r.pdf}','${r.title||'تقرير'}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="report-pdf-name">${r.title||'التقرير'}.pdf</span><button class="btn-dl" onclick="event.stopPropagation();downloadFile('${r.pdf}','${r.title||'report'}.pdf')">تحميل</button></div>` : ''}
+      ${imgs.length || r.pdf ? `<button class="report-dl-all" onclick="downloadAllReport(${JSON.stringify(imgs).replace(/"/g,'&quot;')},'${r.pdf||''}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>تحميل الكل</button>` : ''}
+      <div style="margin:12px 0 0;">
+        <div class="share-bar">
+          <span class="share-url">${shareUrl}</span>
+          <button class="share-copy" onclick="copyLink('${shareUrl}')">نسخ</button>
+        </div>
+      </div>
+      <button class="btn-primary" style="margin:12px 0 16px;" onclick="resetReportView()">تقرير آخر</button>
+    </div>`;
+}
+
+function resetReportView() {
+  document.getElementById('reportAccessView').style.display = 'block';
+  document.getElementById('reportView').style.display = 'none';
+  document.getElementById('reportCodeInput').value = '';
+}
+
+function openPdf(url, title) {
+  currentPdfUrl = url;
+  document.getElementById('pdfTitle').textContent = title;
+  document.getElementById('pdfFrame').src = url;
+  document.getElementById('pdfViewer').classList.remove('hidden');
+}
+function closePdfViewer() {
+  document.getElementById('pdfViewer').classList.add('hidden');
+  document.getElementById('pdfFrame').src = '';
+  currentPdfUrl = '';
+}
+function downloadCurrentPdf() { if (currentPdfUrl) downloadFile(currentPdfUrl, 'report.pdf'); }
+
+async function downloadFile(url, name) {
+  try {
+    const a = document.createElement('a'); a.href = url; a.download = name; a.target='_blank';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  } catch(e) { window.open(url, '_blank'); }
+}
+
+async function downloadAllReport(imgs, pdfUrl) {
+  for (let i = 0; i < imgs.length; i++) { await downloadFile(imgs[i], `report-img-${i+1}.jpg`); await sleep(300); }
+  if (pdfUrl) { await sleep(300); downloadFile(pdfUrl, 'report.pdf'); }
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ============================================================
+// CYBER INFO PAGE
+// ============================================================
+async function loadInfo() {
+  const c = document.getElementById('infoContainer');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  try {
+    const data = await apiGet(SHEETS.info, 'limit=100');
+    const rows = (data.results||[]).filter(isItemActive).reverse();
+    if (!rows.length) { c.innerHTML = '<div class="empty-state"><p>لا توجد منشورات</p></div>'; return; }
+    c.innerHTML = rows.map((r,pi) => {
+      let imgs = [];
+      try { imgs = JSON.parse(r.images||'[]'); } catch(e) {
+        imgs = (r.images||'').split(',').map(s=>s.trim()).filter(Boolean);
+      }
+      imgs = imgs.slice(0, 16);
+      const shareUrl = `${location.href.split('#')[0]}#page-info-${r.uid||r.rowIndex}`;
+      return `
+        <div class="post-card">
+          <div class="post-top">
+            <div class="post-avatar"><img src="https://i.ibb.co/Sk9D0cT/logo.png" onerror="this.parentNode.textContent='KA'" alt="KA"></div>
+            <div><div class="post-name">خالد أحمد</div><div class="post-time">${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div></div>
+          </div>
+          ${imgs.length ? `
+            <div class="post-slider">
+              <div class="post-slides" id="slides-${pi}" style="will-change:transform;">
+                ${imgs.map(img => `<div class="post-slide"><img src="${img}" alt="info" draggable="false" oncontextmenu="return false"></div>`).join('')}
+              </div>
+              ${imgs.length > 1 ? `
+                <div style="position:absolute;bottom:8px;right:8px;z-index:1;">
+                  <span style="background:rgba(0,0,0,0.5);color:white;font-size:11px;padding:3px 8px;border-radius:10px;font-family:var(--font-en);" id="counter-${pi}">1/${imgs.length}</span>
+                </div>
+              ` : ''}
+            </div>
+            ${imgs.length > 1 ? `<div class="post-indicators" id="indicators-${pi}">${imgs.map((_,i) => `<div class="post-dot ${i===0?'active':''}" onclick="goToSlide(${pi},${i},${imgs.length})"></div>`).join('')}</div>` : ''}
+          ` : ''}
+          ${r.caption ? `<div class="post-caption">${r.caption}</div>` : ''}
+          <div class="post-noctx">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+            حفظ الصور غير مسموح
+            <div style="flex:1;"></div>
+            <button class="share-copy" style="font-size:11px;padding:4px 10px;" onclick="copyLink('${shareUrl}')">مشاركة</button>
+          </div>
+        </div>`;
+    }).join('');
+    rows.forEach((_,pi) => {
+      let imgs2 = [];
+      try { imgs2 = JSON.parse(rows[pi].images||'[]'); } catch(e) {
+        imgs2 = (rows[pi].images||'').split(',').map(s=>s.trim()).filter(Boolean);
+      }
+      if (imgs2.length > 1) setupPostSwipe(pi, imgs2.length);
+    });
+  } catch(e) { c.innerHTML = '<div class="empty-state"><p>خطأ في التحميل</p></div>'; }
+}
+
+let postSlideIndexes = {};
+function setupPostSwipe(pi, total) {
+  postSlideIndexes[pi] = 0;
+  const track = document.getElementById('slides-'+pi);
+  if (!track) return;
+  let startX = 0, isDragging = false;
+  track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; isDragging = true; }, {passive:true});
+  track.addEventListener('touchend', e => {
+    if (!isDragging) return; isDragging = false;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) goToSlide(pi, postSlideIndexes[pi] + (dx < 0 ? 1 : -1), total);
+  });
+}
+function goToSlide(pi, idx, total) {
+  idx = Math.max(0, Math.min(idx, total-1));
+  postSlideIndexes[pi] = idx;
+  const track = document.getElementById('slides-'+pi);
+  if (track) track.style.transform = `translateX(${idx * 100}%)`;
+  const ctr = document.getElementById('counter-'+pi);
+  if (ctr) ctr.textContent = `${idx+1}/${total}`;
+  const dots = document.querySelectorAll(`#indicators-${pi} .post-dot`);
+  dots.forEach((d,i) => d.classList.toggle('active', i===idx));
+}
+
+// ============================================================
+// CONTACT PAGE
+// ============================================================
+async function submitContact() {
+  const name    = document.getElementById('ctcName').value.trim();
+  const email   = document.getElementById('ctcEmail').value.trim();
+  const subject = document.getElementById('ctcSubject').value.trim();
+  const msg     = document.getElementById('ctcMsg').value.trim();
+  if (!name||!email||!subject||!msg) { showToast('أكمل جميع الحقول', 'error'); return; }
+  const btn = document.querySelector('#page-contact .btn-primary');
+  btn.textContent = 'جاري الإرسال...'; btn.disabled = true;
+  try {
+    await apiPost(SHEETS.contacts, {
+      name, email, subject,
+      message:    msg,
+      user_id:    currentUser?.uid || '',
+      replied:    'false',
+      reply:      '',
+      created_at: new Date().toISOString()
+    });
+    ['ctcName','ctcEmail','ctcSubject','ctcMsg'].forEach(id => document.getElementById(id).value = '');
+    showToast('تم إرسال رسالتك بنجاح', 'success');
+    loadMyReplies();
+  } catch(e) {
+    showToast('فشل الإرسال: ' + e.message, 'error');
+  } finally { btn.textContent = 'إرسال الرسالة'; btn.disabled = false; }
+}
+
+async function loadMyReplies() {
+  const c = document.getElementById('repliesContainer');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  try {
+    const data = await apiGet(SHEETS.contacts, 'limit=200');
+    const rows = (data.results||[]).filter(r => r.email === currentUser?.email || r.user_id === currentUser?.uid);
+    if (!rows.length) { c.innerHTML = '<div class="empty-state"><p>لا توجد رسائل</p></div>'; return; }
+    c.innerHTML = rows.reverse().map(r => `
+      <div class="reply-card">
+        <div class="reply-meta">
+          <span class="reply-sender">${r.subject||'رسالة'}</span>
+          <span class="reply-date">${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</span>
+        </div>
+        <div class="reply-msg">${r.message||''}</div>
+        ${r.reply ? `<div class="reply-answer">رد: ${r.reply}</div>` : '<div style="font-size:11px;color:var(--gray-400);margin-top:4px;">في انتظار الرد</div>'}
+      </div>`).join('');
+  } catch(e) { c.innerHTML = '<div class="empty-state"><p>خطأ في التحميل</p></div>'; }
+}
+
+// ============================================================
+// COURSERA FORM
+// ============================================================
+async function submitCoursera() {
+  const nameAr  = document.getElementById('crsNameAr').value.trim();
+  const nameEn  = document.getElementById('crsNameEn').value.trim();
+  const dob     = document.getElementById('crsDob').value;
+  const country = document.getElementById('crsCntry').value.trim();
+  const email   = document.getElementById('crsEmail').value.trim();
+  if (!nameAr||!nameEn||!dob||!country||!email) { showToast('أكمل جميع الحقول', 'error'); return; }
+  const btn = document.querySelector('#page-coursera .btn-primary');
+  btn.textContent = 'جاري الإرسال...'; btn.disabled = true;
+  try {
+    await apiPost(SHEETS.coursera, {
+      name_ar: nameAr, name_en: nameEn, dob, country, email,
+      user_id:    currentUser?.uid || '',
+      status:     'pending',
+      created_at: new Date().toISOString()
+    });
+    ['crsNameAr','crsNameEn','crsDob','crsCntry','crsEmail'].forEach(id => document.getElementById(id).value = '');
+    showToast('تم تقديم الطلب. ستصلك رسالة على بريدك عند التفعيل', 'success');
+  } catch(e) {
+    showToast('فشل الإرسال: ' + e.message, 'error');
+  } finally { btn.textContent = 'تقديم الطلب'; btn.disabled = false; }
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+async function loadNotifications() {
+  try {
+    const data = await apiGet(SHEETS.notifications, 'limit=100');
+    const rows = (data.results||[]).reverse();
+    const list = document.getElementById('notifList');
+    if (!rows.length) { list.innerHTML = '<div class="empty-state"><p>لا توجد إشعارات</p></div>'; return; }
+    const seen = JSON.parse(localStorage.getItem('ka_seen_notifs')||'[]');
+    const unseen = rows.filter(r => !seen.includes(r.rowIndex?.toString()));
+    const btn = document.getElementById('notifBtn');
+    if (unseen.length) { btn.setAttribute('data-count', unseen.length); }
+    else { btn.removeAttribute('data-count'); }
+    list.innerHTML = rows.map(r => `
+      <div class="notif-item">
+        <div class="notif-dot ${seen.includes(r.rowIndex?.toString())?'read':''}"></div>
+        <div><div class="notif-text">${r.text||''}</div><div class="notif-time">${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div></div>
+      </div>`).join('');
+  } catch(e) {}
+}
+
+function openNotifications() {
+  document.getElementById('notifPanel').classList.add('open');
+  document.getElementById('notifOverlay').classList.add('open');
+  document.getElementById('notifBtn').removeAttribute('data-count');
+}
+function closeNotifications() {
+  document.getElementById('notifPanel').classList.remove('open');
+  document.getElementById('notifOverlay').classList.remove('open');
+}
+
+// ============================================================
+// PARTNERS TICKER
+// ============================================================
+async function loadPartners() {
+  try {
+    const data = await apiGet(SHEETS.partners, 'limit=100');
+    const rows = data.results || [];
+    const track = document.getElementById('tickerTrack');
+    const ticker = document.getElementById('partnerTicker');
+    if (!rows.length) { track.innerHTML = ''; if(ticker) ticker.style.display='none'; return; }
+    if(ticker) ticker.style.display='block';
+    const items = rows.map(r => {
+      if (r.logo) {
+        return `<div class="ticker-item"><img class="ticker-logo" src="${r.logo}" alt="${r.name||''}" onerror="this.style.display='none'"></div><div class="ticker-divider"></div>`;
+      } else {
+        return `<div class="ticker-item" style="font-size:13px;font-weight:600;color:var(--gray-500);letter-spacing:0.3px;">${r.name||''}</div><div class="ticker-divider"></div>`;
+      }
+    }).join('');
+    track.innerHTML = items + items;
+  } catch(e) {}
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function handleLogout() {
+  localStorage.removeItem('ka_session');
+  currentUser = null;
+  location.reload();
+}
+
+function showEditProfile() {
+  document.getElementById('editName').value = currentUser?.name||'';
+  document.getElementById('editPhone').value = currentUser?.phone||'';
+  document.getElementById('editCountry').value = currentUser?.country||'';
+  document.getElementById('editProfileModal').classList.remove('hidden');
+}
+function hideEditProfile() { document.getElementById('editProfileModal').classList.add('hidden'); }
+async function saveProfile() {
+  const name    = document.getElementById('editName').value.trim();
+  const phone   = document.getElementById('editPhone').value.trim();
+  const country = document.getElementById('editCountry').value.trim();
+  if (!name) { showToast('أدخل الاسم', 'error'); return; }
+  const btn = document.querySelector('#editProfileModal .btn-primary');
+  btn.textContent = 'جاري الحفظ...'; btn.disabled = true;
+  try {
+    await apiPatch(SHEETS.users, currentUser.rowIndex, {name, phone, country});
+    currentUser = {...currentUser, name, phone, country};
+    localStorage.setItem('ka_session', JSON.stringify(currentUser));
+    updateProfileUI();
+    hideEditProfile();
+    showToast('تم تحديث الملف الشخصي', 'success');
+  } catch(e) {
+    showToast('فشل الحفظ: ' + e.message, 'error');
+  } finally { btn.textContent = 'حفظ التغييرات'; btn.disabled = false; }
+}
+
+function showChangePass() { document.getElementById('changePassModal').classList.remove('hidden'); }
+function hideChangePass() { document.getElementById('changePassModal').classList.add('hidden'); }
+async function changePassword() {
+  const cur = document.getElementById('curPass').value;
+  const nw  = document.getElementById('newPass').value;
+  const cn  = document.getElementById('conPass').value;
+  let curOk = false;
+  try { curOk = decodeData(currentUser.password) === cur; } catch(e) {}
+  if (!curOk) curOk = currentUser.password === cur;
+  if (!curOk) { showToast('كلمة المرور الحالية غير صحيحة', 'error'); return; }
+  if (!nw || nw !== cn) { showToast('كلمتا المرور غير متطابقتين', 'error'); return; }
+  if (nw.length < 8) { showToast('كلمة المرور يجب أن تكون 8 أحرف على الأقل', 'error'); return; }
+  const btn = document.querySelector('#changePassModal .btn-primary');
+  btn.textContent = 'جاري الحفظ...'; btn.disabled = true;
+  try {
+    const encoded = encodeData(nw);
+    await apiPatch(SHEETS.users, currentUser.rowIndex, { password: encoded });
+    currentUser.password = encoded;
+    localStorage.setItem('ka_session', JSON.stringify(currentUser));
+    hideChangePass();
+    document.getElementById('curPass').value = '';
+    document.getElementById('newPass').value = '';
+    document.getElementById('conPass').value = '';
+    showToast('تم تغيير كلمة المرور بنجاح', 'success');
+  } catch(e) {
+    showToast('فشل التغيير: ' + e.message, 'error');
+  } finally { btn.textContent = 'تغيير كلمة المرور'; btn.disabled = false; }
+}
+
+function showAboutApp() { document.getElementById('aboutAppModal').classList.remove('hidden'); }
+function showCopyright() { showToast('جميع الحقوق محفوظة لدى خالد أحمد'); }
+
+// ============================================================
+// COPY LINK
+// ============================================================
+function copyLink(url) {
+  navigator.clipboard.writeText(url).then(() => showToast('تم نسخ الرابط', 'success')).catch(() => {
+    const inp = document.createElement('input'); inp.value = url; document.body.appendChild(inp); inp.select(); document.execCommand('copy'); document.body.removeChild(inp); showToast('تم نسخ الرابط', 'success');
+  });
+}
+
+// ============================================================
+// FLOATING AD
+// ============================================================
+function showFloatingAd() {
+  const ad = document.createElement('div');
+  ad.className = 'floating-ad';
+  ad.innerHTML = `<button class="ad-close" onclick="this.parentNode.remove()">x</button><div class="ad-title">تقارير سيبرانية</div><div class="ad-body">اكتشف أحدث التقارير الأمنية بكود سري خاص</div>`;
+  document.body.appendChild(ad);
+  setTimeout(() => { if (ad.parentNode) ad.remove(); }, 8000);
+}
+
+// ============================================================
+// ADMIN PANEL
+// ============================================================
+function openAdmin() { document.getElementById('admin-panel').classList.remove('hidden'); loadAdminData(); }
+function closeAdmin() { 
+  document.getElementById('admin-panel').classList.add('hidden');
+  loadNotifications();
+  loadAbout();
+  loadPartners();
+  navigate(currentPage);
+}
+
+function switchAdminTab(tab) {
+  document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  if (event && event.target && event.target.classList) event.target.classList.add('active');
+  document.getElementById('admin-'+tab)?.classList.add('active');
+  if (tab==='certs') loadAdminCerts();
+  if (tab==='opps') loadAdminOpps();
+  if (tab==='reports') loadAdminReports();
+  if (tab==='info') loadAdminInfo();
+  if (tab==='coursera') loadAdminCoursera();
+  if (tab==='contacts') loadAdminContacts();
+  if (tab==='users') loadAdminUsers();
+  if (tab==='notifs') loadAdminNotifs();
+  if (tab==='partners') loadAdminPartners();
+  if (tab==='articles') loadAdminArticles();
+  if (tab==='apps') loadAdminApps();
+  if (tab==='about') loadAdminAbout();
+  if (tab==='dashboard') loadDashboard();
+}
+
+async function loadAdminData() { loadDashboard(); }
+
+async function loadDashboard() {
+  const sheets = [SHEETS.users, SHEETS.certificates, SHEETS.reports, SHEETS.contacts, SHEETS.opportunities, SHEETS.coursera, SHEETS.articles, SHEETS.apps];
+  const ids = ['statUsers','statCerts','statReports','statContacts','statOpps','statCoursera','statArticles','statApps'];
+  for (let i=0; i<sheets.length; i++) {
+    try {
+      const d = await apiGet(sheets[i], 'limit=1000');
+      document.getElementById(ids[i]).textContent = d.total || (d.results||[]).length || 0;
+    } catch(e) {}
+  }
+}
+
+async function uploadAdminImg(input, previewId, urlFieldId) {
+  const file = input.files[0]; if (!file) return;
+  showToast('جاري الرفع...');
+  const url = await uploadToImgBB(file);
+  if (url) {
+    const prev = document.getElementById(previewId);
+    prev.src = url; prev.classList.add('show');
+    if (urlFieldId) document.getElementById(urlFieldId).value = url;
+    showToast('تم الرفع', 'success');
+  } else showToast('فشل الرفع', 'error');
+}
+
+function handleOppVideo(input) {
+  const file = input.files[0]; if (!file) return;
+  const name = file.name;
+  document.getElementById('oppVideoName').textContent = 'الملف: ' + name;
+  oppVideos['current'] = file;
+}
+
+// LOAD & SAVE ABOUT
+async function loadAdminAbout() {
+  try {
+    const data = await apiGet(SHEETS.about, 'limit=1');
+    const row = (data.results || [])[0];
+    if (!row) return;
+    document.getElementById('adminAboutName').value = row.name || '';
+    document.getElementById('adminAboutRole').value = row.role || '';
+    document.getElementById('adminAboutBio').value = row.bio || '';
+    document.getElementById('adminAboutSkills').value = row.skills || '';
+    document.getElementById('adminAboutStats').value = row.stats || '';
+    document.getElementById('adminAboutSocial').value = row.social || '';
+    document.getElementById('aboutAvatarUrl').value = row.avatar || '';
+    if (row.avatar) {
+      const prev = document.getElementById('adminAvatarPreview');
+      prev.src = row.avatar; prev.classList.add('show');
+    }
+  } catch(e) { console.error('loadAdminAbout error', e); }
+}
+
+async function saveAbout() {
+  const previewSrc = document.getElementById('adminAvatarPreview').src;
+  const avatar = document.getElementById('aboutAvatarUrl').value.trim() ||
+    (previewSrc && !previewSrc.includes('data:') ? previewSrc : '');
+  const name   = document.getElementById('adminAboutName').value.trim();
+  const role   = document.getElementById('adminAboutRole').value.trim();
+  const bio    = document.getElementById('adminAboutBio').value.trim();
+  const skills = document.getElementById('adminAboutSkills').value.trim();
+  const stats  = document.getElementById('adminAboutStats').value.trim();
+  const social = document.getElementById('adminAboutSocial').value.trim();
+  const btn = document.querySelector('#admin-about .btn-save');
+  btn.textContent = 'جاري الحفظ...'; btn.disabled = true;
+  try {
+    const existing = await apiGet(SHEETS.about, 'limit=1');
+    const rows = existing.results || [];
+    const payload = { avatar, name, role, bio, skills, stats, social, updated_at: new Date().toISOString() };
+    if (rows.length && rows[0].rowIndex) {
+      await apiPatch(SHEETS.about, rows[0].rowIndex, payload);
+    } else {
+      await apiPost(SHEETS.about, payload);
+    }
+    showToast('تم الحفظ بنجاح', 'success');
+    loadAbout();
+  } catch(e) {
+    showToast('فشل الحفظ: ' + e.message, 'error');
+  } finally { btn.textContent = 'حفظ البيانات'; btn.disabled = false; }
+}
+
+// SAVE OPP
+async function saveOpp() {
+  const img   = document.getElementById('oppImgUrl').value.trim();
+  const title = document.getElementById('oppTitle').value.trim();
+  const desc  = document.getElementById('oppDesc').value.trim();
+  const url   = document.getElementById('oppUrl').value.trim();
+  const video = document.getElementById('oppVideoUrl').value.trim();
+  if (!title) { showToast('أدخل العنوان', 'error'); return; }
+  const btn = document.querySelector('#admin-opps .btn-save');
+  btn.textContent = 'جاري الحفظ...'; btn.disabled = true;
+  try {
+    await apiPost(SHEETS.opportunities, {
+      uid: generateUID(), image: img, title, description: desc, url, video,
+      isActive: 'true', created_at: new Date().toISOString()
+    });
+    showToast('تم حفظ الفرصة', 'success');
+    ['oppImgUrl','oppTitle','oppDesc','oppUrl','oppVideoUrl'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('oppImgPreview').classList.remove('show');
+    document.getElementById('oppVideoName').textContent = '';
+    loadAdminOpps();
+  } catch(e) { showToast('فشل الحفظ: ' + e.message, 'error'); }
+  finally { btn.textContent = 'حفظ الفرصة'; btn.disabled = false; }
+}
+
+async function loadAdminOpps() {
+  const c = document.getElementById('adminOppsList');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  const data = await apiGet(SHEETS.opportunities, 'limit=100');
+  const rows = data.results || [];
+  c.innerHTML = rows.length ? rows.map(r => `
+    <div class="admin-list-item">
+      ${r.image ? `<img class="admin-list-img" src="${r.image}" onerror="this.style.display='none'">` : ''}
+      <div class="admin-list-info"><div class="admin-list-name">${r.title||''}</div><div class="admin-list-sub">${r.url||''}</div></div>
+      <div class="admin-action-btns">
+        <button class="btn-del" onclick="deleteRow('${SHEETS.opportunities}',${r.rowIndex||r.id||0},'adminOppsList','loadAdminOpps')">حذف</button>
+      </div>
+    </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد فرص</p>';
+}
+
+// SAVE CERT
+async function saveCert() {
+  const img    = document.getElementById('certImgUrl').value.trim();
+  const credId = document.getElementById('certCredId').value.trim();
+  const title  = document.getElementById('certTitle').value.trim();
+  const desc   = document.getElementById('certDesc').value.trim();
+  const company= document.getElementById('certCompany').value.trim();
+  const field  = document.getElementById('certField').value.trim();
+  const issue  = document.getElementById('certIssue').value;
+  const expiry = document.getElementById('certExpiry').value;
+  const active = document.getElementById('certActive').value;
+  if (!title) { showToast('أدخل عنوان الشهادة', 'error'); return; }
+  if (!img)   { showToast('أدخل صورة الشهادة', 'error'); return; }
+  const btn = document.querySelector('#admin-certs .btn-save');
+  btn.textContent = 'جاري الحفظ...'; btn.disabled = true;
+  try {
+    await apiPost(SHEETS.certificates, {
+      credential_id: credId, title, description: desc, image: img,
+      company, field, issue_date: issue, expiry_date: expiry, isActive: active
+    });
+    showToast('تم حفظ الشهادة', 'success');
+    ['certImgUrl','certCredId','certTitle','certDesc','certCompany','certField','certIssue','certExpiry'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('certImgPreview').classList.remove('show');
+    loadAdminCerts();
+  } catch(e) { showToast('فشل الحفظ: ' + e.message, 'error'); }
+  finally { btn.textContent = 'حفظ الشهادة'; btn.disabled = false; }
+}
+
+async function loadAdminCerts() {
+  const c = document.getElementById('adminCertsList');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  const data = await apiGet(SHEETS.certificates, 'limit=100');
+  const rows = data.results || [];
+  c.innerHTML = rows.length ? rows.map(r => `
+    <div class="admin-list-item">
+      <img class="admin-list-img" src="${r.image||''}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 44 44%22><rect fill=%22%23f5e8eb%22 width=%2244%22 height=%2244%22/></svg>'">
+      <div class="admin-list-info"><div class="admin-list-name">${r.title||''}</div><div class="admin-list-sub">${r.company||''} • ${r.field||''}</div></div>
+      <div class="admin-action-btns">
+        <button class="btn-del" onclick="deleteRow('${SHEETS.certificates}',${r.rowIndex||r.id||0},'adminCertsList','loadAdminCerts')">حذف</button>
+      </div>
+    </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد شهادات</p>';
+}
+
+// SAVE REPORT
+async function uploadReportImages(input) {
+  const files = Array.from(input.files).slice(0, 20);
+  const s = document.getElementById('repImgsUploadStatus');
+  s.textContent = 'جاري الرفع...';
+  reportUploadedImgs = [];
+  for (const f of files) {
+    const url = await uploadToImgBB(f);
+    if (url) reportUploadedImgs.push(url);
+  }
+  s.textContent = `تم رفع ${reportUploadedImgs.length} صورة`;
+  const existing = document.getElementById('repImgs').value.trim();
+  const all = [...(existing ? existing.split(',').map(s=>s.trim()).filter(Boolean) : []), ...reportUploadedImgs];
+  document.getElementById('repImgs').value = all.join(', ');
+}
+
+async function saveReport() {
+  const code    = document.getElementById('repCode').value.trim();
+  const title   = document.getElementById('repTitle').value.trim();
+  const desc    = document.getElementById('repDesc').value.trim();
+  const imgsRaw = document.getElementById('repImgs').value.trim();
+  const pdf     = document.getElementById('repPdf').value.trim();
+  const date    = document.getElementById('repDate').value;
+  if (!code)  { showToast('أدخل الكود السري', 'error'); return; }
+  if (!title) { showToast('أدخل عنوان التقرير', 'error'); return; }
+  const btn = document.querySelector('#admin-reports .btn-save');
+  btn.textContent = 'جاري الحفظ...'; btn.disabled = true;
+  try {
+    const imgList = imgsRaw ? imgsRaw.split(',').map(s=>s.trim()).filter(Boolean) : [];
+    await apiPost(SHEETS.reports, {
+      code: code.toUpperCase(), title, description: desc,
+      images: JSON.stringify(imgList), pdf, date,
+      created_at: new Date().toISOString()
+    });
+    showToast('تم حفظ التقرير', 'success');
+    ['repCode','repTitle','repDesc','repImgs','repPdf','repDate'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('repImgsUploadStatus').textContent = '';
+    reportUploadedImgs = [];
+    loadAdminReports();
+  } catch(e) { showToast('فشل الحفظ: ' + e.message, 'error'); }
+  finally { btn.textContent = 'حفظ التقرير'; btn.disabled = false; }
+}
+
+async function loadAdminReports() {
+  const c = document.getElementById('adminReportsList');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  const data = await apiGet(SHEETS.reports, 'limit=100');
+  const rows = data.results || [];
+  c.innerHTML = rows.length ? rows.map(r => `
+    <div class="admin-list-item">
+      <div class="admin-list-info"><div class="admin-list-name">${r.title||''}</div><div class="admin-list-sub" style="font-family:var(--font-en);">${r.code||''} • ${r.date||''}</div></div>
+      <div class="admin-action-btns">
+        <button class="btn-del" onclick="deleteRow('${SHEETS.reports}',${r.rowIndex||r.id||0},'adminReportsList','loadAdminReports')">حذف</button>
+      </div>
+    </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد تقارير</p>';
+}
+
+// SAVE INFO POST
+async function uploadInfoImages(input) {
+  const files = Array.from(input.files).slice(0, 16);
+  const s = document.getElementById('infoImgsStatus');
+  s.textContent = 'جاري الرفع...';
+  infoUploadedUrls = [];
+  for (const f of files) {
+    const url = await uploadToImgBB(f);
+    if (url) infoUploadedUrls.push(url);
+    s.textContent = `تم رفع ${infoUploadedUrls.length}/${files.length}`;
+  }
+  s.textContent = `تم رفع ${infoUploadedUrls.length} صورة بنجاح`;
+}
+
+async function saveInfoPost() {
+  const caption = document.getElementById('infoCaption').value.trim();
+  const urlsRaw = document.getElementById('infoImgUrls').value.trim();
+  const urlList = urlsRaw ? urlsRaw.split(',').map(s=>s.trim()).filter(Boolean) : [];
+  const allImgs = [...infoUploadedUrls, ...urlList].slice(0,16);
+  if (!caption && !allImgs.length) { showToast('أدخل الوصف أو الصور', 'error'); return; }
+  const btn = document.querySelector('#admin-info .btn-save');
+  btn.textContent = 'جاري النشر...'; btn.disabled = true;
+  try {
+    await apiPost(SHEETS.info, {
+      uid: generateUID(), caption,
+      images: JSON.stringify(allImgs),
+      isActive: 'true', created_at: new Date().toISOString()
+    });
+    showToast('تم نشر المعلومة', 'success');
+    infoUploadedUrls = [];
+    document.getElementById('infoCaption').value = '';
+    document.getElementById('infoImgUrls').value = '';
+    document.getElementById('infoImgsStatus').textContent = '';
+    loadAdminInfo();
+  } catch(e) { showToast('فشل النشر: ' + e.message, 'error'); }
+  finally { btn.textContent = 'نشر المعلومة'; btn.disabled = false; }
+}
+
+async function sendReply(rowIndex, textareaId) {
+  const reply = document.getElementById(textareaId)?.value.trim();
+  if (!reply) { showToast('اكتب ردك أولاً', 'error'); return; }
+  try {
+    await apiPatch(SHEETS.contacts, rowIndex, { reply, replied: 'true' });
+    showToast('تم إرسال الرد', 'success');
+    loadAdminContacts();
+  } catch(e) { showToast('فشل إرسال الرد: ' + e.message, 'error'); }
+}
+
+async function sendNotification() {
+  const text = document.getElementById('notifText').value.trim();
+  if (!text) { showToast('أدخل نص الإشعار', 'error'); return; }
+  const btn = document.querySelector('#admin-notifs .btn-save');
+  btn.textContent = 'جاري الإرسال...'; btn.disabled = true;
+  try {
+    await apiPost(SHEETS.notifications, { text, created_at: new Date().toISOString() });
+    document.getElementById('notifText').value = '';
+    showToast('تم إرسال الإشعار', 'success');
+    loadAdminNotifs();
+  } catch(e) { showToast('فشل الإرسال: ' + e.message, 'error'); }
+  finally { btn.textContent = 'إرسال للجميع'; btn.disabled = false; }
+}
+
+async function deleteRow(sheet, rowIndex, listId, reloadFn) {
+  if (!confirm('هل تريد حذف هذا العنصر؟')) return;
+  try {
+    await apiDelete(sheet, rowIndex);
+    showToast('تم الحذف', 'success');
+    if (typeof reloadFn === 'function') reloadFn();
+    else if (typeof window[reloadFn] === 'function') window[reloadFn]();
+  } catch(e) { showToast('فشل الحذف: ' + e.message, 'error'); }
+}
+
+async function loadAdminInfo() {
+  const c = document.getElementById('adminInfoList');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  const data = await apiGet(SHEETS.info, 'limit=100');
+  const rows = data.results || [];
+  c.innerHTML = rows.length ? rows.reverse().map(r => `
+    <div class="admin-list-item">
+      <div class="admin-list-info"><div class="admin-list-name">${(r.caption||'').slice(0,40)||'منشور'}</div><div class="admin-list-sub">${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div></div>
+      <div class="admin-action-btns">
+        <button class="btn-del" onclick="deleteRow('${SHEETS.info}',${r.rowIndex||r.id||0},'adminInfoList','loadAdminInfo')">حذف</button>
+      </div>
+    </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد منشورات</p>';
+}
+
+async function loadAdminCoursera() {
+  const c = document.getElementById('adminCourseraList');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  const data = await apiGet(SHEETS.coursera, 'limit=200');
+  const rows = data.results || [];
+  c.innerHTML = rows.length ? rows.map(r => `
+    <div class="contact-msg-item">
+      <div class="contact-msg-header">
+        <div class="contact-msg-name">${r.name_ar||''} / ${r.name_en||''}</div>
+        <div class="contact-msg-date">${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div>
+      </div>
+      <div class="contact-msg-body">البريد: ${r.email||''}<br>الدولة: ${r.country||''}<br>الميلاد: ${r.dob||''}</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="contact-replied-badge ${r.status==='approved'?'yes':'no'}">${r.status==='approved'?'مفعّل':'قيد المراجعة'}</span>
+        ${r.status!=='approved' ? `<button class="btn-edit" onclick="approveCoursera(${r.rowIndex||r.id||0})">تفعيل</button>` : ''}
+      </div>
+    </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد طلبات</p>';
+}
+async function approveCoursera(idx) {
+  try {
+    await apiPatch(SHEETS.coursera, idx, {status:'approved'});
+    showToast('تم التفعيل', 'success');
+    loadAdminCoursera();
+  } catch(e) { showToast('فشل التفعيل: ' + e.message, 'error'); }
+}
+
+async function loadAdminContacts() {
+  const c = document.getElementById('adminContactsList');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  const data = await apiGet(SHEETS.contacts, 'limit=200');
+  const rows = data.results || [];
+  c.innerHTML = rows.length ? rows.reverse().map(r => `
+    <div class="contact-msg-item">
+      <div class="contact-msg-header">
+        <div class="contact-msg-name">${r.name||''} — ${r.subject||''}</div>
+        <div class="contact-msg-date">${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div>
+      </div>
+      <div class="contact-msg-body">${r.message||''}</div>
+      <div style="font-size:11px;color:var(--gray-400);margin-bottom:8px;">${r.email||''}</div>
+      ${r.reply ? `<div class="reply-answer">ردك: ${r.reply}</div>` : ''}
+      <textarea class="reply-textarea" id="rep-${r.rowIndex||r.id||0}" placeholder="اكتب ردك...">${r.reply||''}</textarea>
+      <button class="btn-edit" style="margin-top:8px;width:100%;" onclick="sendReply(${r.rowIndex||r.id||0},'rep-${r.rowIndex||r.id||0}')">إرسال الرد</button>
+    </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد رسائل</p>';
+}
+async function loadAdminUsers() {
+  const c = document.getElementById('adminUsersList');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  let rows = [];
+  try {
+    const data = await apiGet(SHEETS.users, 'limit=1000');
+    rows = data.results || [];
+  } catch(e) { c.innerHTML = `<p style="color:red;font-size:13px;">خطأ: ${e.message}</p>`; return; }
+  c.innerHTML = rows.length ? rows.map(r => `
+    <div class="admin-list-item">
+      <div class="user-avatar-big" style="width:40px;height:40px;font-size:16px;">${(r.name||'U').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+      <div class="admin-list-info"><div class="admin-list-name">${r.name||''}</div><div class="admin-list-sub">${r.email||''} • ${r.role||'user'}</div></div>
+      <div class="admin-action-btns">
+        ${r.role!=='admin' ? `<button class="btn-edit" onclick="setAdmin(${r.rowIndex||r.id||0})">أدمن</button>` : ''}
+        <button class="btn-del" onclick="deleteRow('${SHEETS.users}',${r.rowIndex||r.id||0},'adminUsersList','loadAdminUsers')">حذف</button>
+      </div>
+    </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا يوجد مستخدمون</p>';
+}
+async function setAdmin(idx) {
+  try {
+    await apiPatch(SHEETS.users, idx, {role:'admin'});
+    showToast('تم ترقية المستخدم للأدمن', 'success');
+    loadAdminUsers();
+  } catch(e) { showToast('فشل: ' + e.message, 'error'); }
+}
+
+async function loadAdminNotifs() {
+  const c = document.getElementById('adminNotifsList');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  const data = await apiGet(SHEETS.notifications, 'limit=100');
+  const rows = data.results || [];
+  c.innerHTML = rows.length ? rows.reverse().map(r => `
+    <div class="admin-list-item">
+      <div class="admin-list-info"><div class="admin-list-name">${r.text||''}</div><div class="admin-list-sub">${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div></div>
+      <button class="btn-del" onclick="deleteRow('${SHEETS.notifications}',${r.rowIndex||r.id||0},'adminNotifsList','loadAdminNotifs')">حذف</button>
+    </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد إشعارات</p>';
+}
+
+async function loadAdminPartners() {
+  const c = document.getElementById('adminPartnersList');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  const data = await apiGet(SHEETS.partners, 'limit=100');
+  const rows = data.results || [];
+  c.innerHTML = rows.length ? rows.map(r => `
+    <div class="admin-list-item">
+      ${r.logo ? `<img src="${r.logo}" style="height:36px;width:auto;max-width:80px;object-fit:contain;background:var(--gray-50);padding:4px;border-radius:6px;border:1px solid var(--gray-200);" onerror="this.style.display='none'">` : ''}
+      <div class="admin-list-info"><div class="admin-list-name">${r.name||''}</div><div class="admin-list-sub">${r.logo ? 'لوجو مرفوع' : 'بدون لوجو'}</div></div>
+      <button class="btn-del" onclick="deleteRow('${SHEETS.partners}',${r.rowIndex||r.id||0},'adminPartnersList','loadAdminPartners')">حذف</button>
+    </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا يوجد شركاء</p>';
+}
+async function savePartner() {
+  const name = document.getElementById('partnerName').value.trim();
+  const logo = document.getElementById('partnerLogoUrl').value.trim();
+  if (!name) { showToast('أدخل اسم الشريك', 'error'); return; }
+  const btn = document.querySelector('#admin-partners .btn-save');
+  btn.textContent = 'جاري الإضافة...'; btn.disabled = true;
+  try {
+    await apiPost(SHEETS.partners, {name, logo});
+    document.getElementById('partnerName').value = '';
+    document.getElementById('partnerLogoUrl').value = '';
+    document.getElementById('partnerLogoPreview').classList.remove('show');
+    showToast('تم إضافة الشريك', 'success');
+    loadAdminPartners();
+    loadPartners();
+  } catch(e) { showToast('فشل الإضافة: ' + e.message, 'error'); }
+  finally { btn.textContent = 'إضافة شريك'; btn.disabled = false; }
+}
+
+
+// ============================================================
+// ADMIN - ARTICLES
+// ============================================================
+async function saveArticle() {
+  const img      = document.getElementById('artImgUrl').value.trim();
+  const title    = document.getElementById('artTitle').value.trim();
+  const category = document.getElementById('artCategory').value.trim();
+  const excerpt  = document.getElementById('artExcerpt').value.trim();
+  const content  = document.getElementById('artContent').value.trim();
+  if (!title)   { showToast('أدخل عنوان المقال', 'error'); return; }
+  if (!content) { showToast('أدخل محتوى المقال', 'error'); return; }
+  const btn = document.querySelector('#admin-articles .btn-save');
+  btn.textContent = 'جاري النشر...'; btn.disabled = true;
+  try {
+    await apiPost(SHEETS.articles, {
+      uid: generateUID(), image: img, title, category, excerpt, content,
+      isActive: 'true', created_at: new Date().toISOString()
+    });
+    showToast('تم نشر المقال', 'success');
+    ['artImgUrl','artTitle','artCategory','artExcerpt','artContent'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('artImgPreview').classList.remove('show');
+    loadAdminArticles();
+  } catch(e) { showToast('فشل النشر: ' + e.message, 'error'); }
+  finally { btn.textContent = 'نشر المقال'; btn.disabled = false; }
+}
+
+async function loadAdminArticles() {
+  const c = document.getElementById('adminArticlesList');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  try {
+    const data = await apiGet(SHEETS.articles, 'limit=100');
+    const rows = data.results || [];
+    c.innerHTML = rows.length ? rows.map(r => `
+      <div class="admin-list-item">
+        ${r.image ? `<img class="admin-list-img" src="${r.image}" onerror="this.style.display='none'">` : ''}
+        <div class="admin-list-info"><div class="admin-list-name">${r.title||''}</div><div class="admin-list-sub">${r.category||''} • ${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div></div>
+        <div class="admin-action-btns">
+          <button class="btn-del" onclick="deleteRow('${SHEETS.articles}',${r.rowIndex||r.id||0},'adminArticlesList','loadAdminArticles')">حذف</button>
+        </div>
+      </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد مقالات</p>';
+  } catch(e) { c.innerHTML = '<p style="color:red;font-size:13px;">خطأ: ' + e.message + '</p>'; }
+}
+
+// ============================================================
+// ADMIN - APPS
+// ============================================================
+async function saveApp() {
+  const icon     = document.getElementById('appIconUrl').value.trim();
+  const name     = document.getElementById('appName').value.trim();
+  const desc     = document.getElementById('appDesc').value.trim();
+  const tags     = document.getElementById('appTags').value.trim();
+  const version  = document.getElementById('appVersion').value.trim();
+  const dlUrl    = document.getElementById('appDlUrl').value.trim();
+  const storeUrl = document.getElementById('appStoreUrl').value.trim();
+  if (!name) { showToast('أدخل اسم التطبيق', 'error'); return; }
+  if (!dlUrl && !storeUrl) { showToast('أدخل رابط التحميل أو المتجر', 'error'); return; }
+  const btn = document.querySelector('#admin-apps .btn-save');
+  btn.textContent = 'جاري الإضافة...'; btn.disabled = true;
+  try {
+    await apiPost(SHEETS.apps, {
+      uid: generateUID(), icon, name, description: desc, tags, version,
+      download_url: dlUrl, store_url: storeUrl, isActive: 'true',
+      created_at: new Date().toISOString()
+    });
+    showToast('تم إضافة التطبيق', 'success');
+    ['appIconUrl','appName','appDesc','appTags','appVersion','appDlUrl','appStoreUrl'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('appIconPreview').classList.remove('show');
+    loadAdminApps();
+  } catch(e) { showToast('فشل الإضافة: ' + e.message, 'error'); }
+  finally { btn.textContent = 'إضافة التطبيق'; btn.disabled = false; }
+}
+
+async function loadAdminApps() {
+  const c = document.getElementById('adminAppsList');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  try {
+    const data = await apiGet(SHEETS.apps, 'limit=100');
+    const rows = data.results || [];
+    c.innerHTML = rows.length ? rows.map(r => `
+      <div class="admin-list-item">
+        ${r.icon ? `<img class="admin-list-img" src="${r.icon}" onerror="this.style.display='none'" style="border-radius:12px;">` : ''}
+        <div class="admin-list-info"><div class="admin-list-name">${r.name||''}</div><div class="admin-list-sub">v${r.version||'1.0'} • ${r.tags||''}</div></div>
+        <div class="admin-action-btns">
+          <button class="btn-del" onclick="deleteRow('${SHEETS.apps}',${r.rowIndex||r.id||0},'adminAppsList','loadAdminApps')">حذف</button>
+        </div>
+      </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد تطبيقات</p>';
+  } catch(e) { c.innerHTML = '<p style="color:red;font-size:13px;">خطأ: ' + e.message + '</p>'; }
+}
+
+// ============================================================
+// ARTICLES PAGE
+// ============================================================
+async function loadArticles() {
+  const c = document.getElementById('articlesContainer');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  try {
+    const data = await apiGet(SHEETS.articles, 'limit=100');
+    const rows = (data.results||[]).filter(r=>r.isActive!=='false').reverse();
+    if (!rows.length) { c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>لا توجد مقالات حتى الآن</p></div>'; return; }
+    c.innerHTML = rows.map((r,i) => {
+      const shareUrl = `${location.href.split('#')[0]}#page-article-${r.uid||r.rowIndex}`;
+      return `<div class="article-card">
+        ${r.image ? `<img class="article-img" src="${r.image}" alt="${r.title||''}" onerror="this.style.display='none'">` : ''}
+        <div class="article-body">
+          ${r.category ? `<span class="article-cat">${r.category}</span>` : ''}
+          <div class="article-title">${r.title||''}</div>
+          <div class="article-excerpt">${(r.excerpt||r.content||'').slice(0,120)}${(r.content||'').length>120?'...':''}</div>
+          <div class="article-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}
+            <span style="flex:1;"></span>
+            <button class="share-copy" style="font-size:11px;padding:4px 10px;" onclick="copyLink('${shareUrl}')">مشاركة</button>
+          </div>
+          <button class="article-read-btn" onclick="openArticle(${i},${JSON.stringify(rows).replace(/"/g,'&quot;').replace(/'/g,'&apos;')})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            قراءة المقال
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { c.innerHTML = '<div class="empty-state"><p>خطأ في تحميل المقالات</p></div>'; }
+}
+
+let _articlesCache = [];
+function openArticle(idx, rowsJson) {
+  let rows;
+  try { rows = typeof rowsJson === 'string' ? JSON.parse(rowsJson.replace(/&quot;/g,'"').replace(/&apos;/g,"'")) : rowsJson; } catch(e) { return; }
+  _articlesCache = rows;
+  const r = rows[idx];
+  if (!r) return;
+  const shareUrl = `${location.href.split('#')[0]}#page-article-${r.uid||r.rowIndex}`;
+  document.getElementById('articleViewerTitle').textContent = r.title || 'مقال';
+  document.getElementById('articleShareBtn').onclick = () => copyLink(shareUrl);
+  let content = r.content || r.excerpt || '';
+  content = content.split('\n').filter(l=>l.trim()).map(l=>`<p>${l}</p>`).join('');
+  document.getElementById('articleViewerBody').innerHTML = `
+    ${r.image ? `<img class="article-viewer-img" src="${r.image}" alt="${r.title||''}" onerror="this.style.display='none'">` : ''}
+    <div style="padding:0 0 12px;">
+      ${r.category ? `<span class="article-cat" style="margin:16px 0 0;display:inline-block;">${r.category}</span>` : ''}
+      <div style="font-size:20px;font-weight:700;color:var(--gray-700);margin:12px 0 6px;">${r.title||''}</div>
+      <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px;">${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div>
+      <div class="article-content">${content}</div>
+    </div>`;
+  document.getElementById('articleViewer').classList.add('open');
+}
+
+function closeArticleViewer() {
+  document.getElementById('articleViewer').classList.remove('open');
+}
+
+// ============================================================
+// APPS PAGE
+// ============================================================
+async function loadApps() {
+  const c = document.getElementById('appsContainer');
+  c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  try {
+    const data = await apiGet(SHEETS.apps, 'limit=100');
+    const rows = (data.results||[]).filter(r=>r.isActive!=='false');
+    if (!rows.length) { c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="9" height="9" rx="2"/><rect x="13" y="2" width="9" height="9" rx="2"/><rect x="2" y="13" width="9" height="9" rx="2"/><rect x="13" y="13" width="9" height="9" rx="2"/></svg><p>لا توجد تطبيقات متاحة حتى الآن</p></div>'; return; }
+    c.innerHTML = rows.map(r => {
+      const tags = (r.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+      return `<div class="app-card">
+        ${r.icon ? `<img class="app-icon" src="${r.icon}" alt="${r.name||''}" onerror="this.style.display='none'">` : `<div class="app-icon" style="display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:var(--maroon);">${(r.name||'A')[0]}</div>`}
+        <div class="app-info">
+          <div class="app-name">${r.name||''}</div>
+          <div class="app-desc">${r.description||''}</div>
+          ${tags.length ? `<div class="app-tags">${tags.map(t=>`<span class="app-tag">${t}</span>`).join('')}</div>` : ''}
+          ${r.version ? `<div class="app-version">v${r.version}</div>` : ''}
+          ${r.download_url ? `<button class="app-dl-btn" onclick="downloadFile('${r.download_url}','${r.name||'app'}.apk')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            تحميل التطبيق
+          </button>` : r.store_url ? `<button class="app-dl-btn" onclick="openLink('${r.store_url}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            فتح في المتجر
+          </button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { c.innerHTML = '<div class="empty-state"><p>خطأ في تحميل التطبيقات</p></div>'; }
+}
+
+// ============================================================
+// WINDOW REGISTRATIONS (for inline onclick from innerHTML)
+// ============================================================
+window.loadAdminOpps = loadAdminOpps;
+window.loadAdminCerts = loadAdminCerts;
+window.loadAdminReports = loadAdminReports;
+window.loadAdminInfo = loadAdminInfo;
+window.loadAdminCoursera = loadAdminCoursera;
+window.loadAdminContacts = loadAdminContacts;
+window.loadAdminUsers = loadAdminUsers;
+window.loadAdminNotifs = loadAdminNotifs;
+window.loadAdminPartners = loadAdminPartners;
+window.loadAdminArticles = loadAdminArticles;
+window.loadAdminApps = loadAdminApps;
+window.sendReply = sendReply;
+window.approveCoursera = approveCoursera;
+window.setAdmin = setAdmin;
+window.deleteRow = deleteRow;
+window.certHoldStart = certHoldStart;
+window.certHoldEnd = certHoldEnd;
+window.goToSlide = goToSlide;
+window.openLink = openLink;
+window.copyLink = copyLink;
+window.fetchReport = fetchReport;
+window.resetReportView = resetReportView;
+window.openPdf = openPdf;
+window.closePdfViewer = closePdfViewer;
+window.downloadCurrentPdf = downloadCurrentPdf;
+window.downloadFile = downloadFile;
+window.downloadAllReport = downloadAllReport;
+window.openArticle = openArticle;
+window.closeArticleViewer = closeArticleViewer;
+window.closeSidebar = closeSidebar;
+window.openSidebar = openSidebar;
+
+// ============================================================
+// DISABLE RIGHT CLICK + SCREENSHOTS PROTECTION
+// ============================================================
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey||e.metaKey) && ['s','u','p','c','a'].includes(e.key.toLowerCase())) e.preventDefault();
+  if (e.key === 'F12') e.preventDefault();
+});
+document.addEventListener('selectstart', e => { if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
+</script>
+</body>
+</html>
