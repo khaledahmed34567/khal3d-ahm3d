@@ -1356,6 +1356,7 @@
 const SHEETSON_API = 'HlUZiTjLO1sp-Ou0JbsluuQNAWUoMP2XOYcVw5n6OxoroGNPfVpIDZq3fF0';
 const SHEET_ID = '1B603dMsMbDbXUYkt3zAeTa7PdEAinIKRnBRDB_sxzhs';
 const IMGBB_KEY = '36b0e2658ed6fad2ca48081442f1539b';
+const ADMIN_EMAIL = 'khwailedapp@gmail.com';
 const BASE_URL = `https://api.sheetson.com/v2/sheets`;
 const HEADERS = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SHEETSON_API}`, 'X-Spreadsheet-Id': SHEET_ID };
 
@@ -1537,6 +1538,11 @@ async function handleLogin() {
     });
     if (!user) { showToast('البريد أو كلمة المرور غير صحيحة', 'error'); return; }
     if (user.isActive === 'false') { showToast('الحساب موقوف', 'error'); return; }
+    // Force admin role if ADMIN_EMAIL
+    if ((user.email||'').toLowerCase() === ADMIN_EMAIL.toLowerCase() && user.role !== 'admin') {
+      try { await apiPatch(SHEETS.users, user.rowIndex, { role: 'admin' }); } catch(e) {}
+      user.role = 'admin';
+    }
     currentUser = user;
     localStorage.setItem('ka_session', JSON.stringify(user));
     document.getElementById('auth-screen').classList.add('hidden');
@@ -1613,7 +1619,7 @@ async function handleRegister() {
       gender,
       username,
       password:   encodeData(pass),
-      role:       'user',
+      role:       email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'user',
       isActive:   'true',
       created_at: new Date().toISOString()
     };
@@ -1682,6 +1688,11 @@ async function handleForgot() {
 // ============================================================
 function startApp() {
   document.getElementById('main-app').classList.remove('hidden');
+  // Ensure ADMIN_EMAIL always has admin role
+  if (currentUser && (currentUser.email||'').toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+    currentUser.role = 'admin';
+    localStorage.setItem('ka_session', JSON.stringify(currentUser));
+  }
   if (currentUser?.role === 'admin') {
     document.getElementById('adminBtn').style.display='flex';
     const sbAdmin = document.getElementById('sb-admin');
