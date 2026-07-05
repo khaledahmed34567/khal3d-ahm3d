@@ -274,6 +274,10 @@
   .report-header-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
   .report-header-date { font-size: 12px; opacity: 0.8; }
   .report-desc { font-size: 14px; line-height: 1.8; color: var(--gray-500); background: var(--gray-50); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; }
+  .report-desc p { margin-bottom: 10px; }
+  .report-desc strong { color: var(--gray-700); }
+  .report-desc ul { padding-right: 20px; margin-bottom: 12px; }
+  .report-desc li { margin-bottom: 6px; }
   .report-media-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
   .report-media-item { border-radius: var(--radius-sm); overflow: hidden; position: relative; }
   .report-media-item img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
@@ -775,7 +779,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       </button>
       <button class="icon-btn" id="adminBtn" onclick="openAdmin()" style="display:none;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06-.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
     </div>
   </div>
@@ -1096,7 +1100,6 @@
           <div class="input-group"><label class="input-label">العنوان</label><input type="text" class="input-field" id="oppTitle" placeholder="اسم المنصة أو الفرصة"></div>
           <div class="input-group"><label class="input-label">الوصف</label><textarea class="input-field" id="oppDesc" rows="3" placeholder="وصف الفرصة..."></textarea></div>
           <div class="input-group"><label class="input-label">الرابط</label><input type="url" class="input-field" id="oppUrl" placeholder="https://" dir="ltr"></div>
-          <div class="input-group"><label class="input-label">رابط فيديو مباشر أو يوتيوب</label><input type="url" class="input-field" id="oppVideoUrl" placeholder="https://..." dir="ltr"></div>
           <div class="input-group"><label class="input-label">فيديو (MP4 - رفع)</label>
             <input type="file" accept="video/mp4" id="oppVideoFile" style="display:none" onchange="handleOppVideo(this)">
             <button class="admin-file-btn" onclick="document.getElementById('oppVideoFile').click()">رفع فيديو MP4</button>
@@ -1149,13 +1152,20 @@
           <div class="input-group"><label class="input-label">كود التقرير السري</label><input type="text" class="input-field" id="repCode" placeholder="XXXX-XXXX" dir="ltr"></div>
           <div class="input-group"><label class="input-label">العنوان</label><input type="text" class="input-field" id="repTitle" placeholder="عنوان التقرير"></div>
           <div class="input-group"><label class="input-label">الشرح (JSON أو نص)</label><textarea class="input-field" id="repDesc" rows="3" placeholder="شرح مفصل للتقرير..."></textarea></div>
-          <div class="input-group"><label class="input-label">صور التقرير (روابط مفصولة بفاصلة)</label><textarea class="input-field" id="repImgs" rows="2" placeholder="https://ibb.co/..., https://ibb.co/..."></textarea></div>
-          <div class="input-group"><label class="input-label">رفع صور إضافية</label>
+          <div class="input-group">
+            <label class="input-label">رفع صور التقرير مباشرة (حتى 20 صورة)</label>
             <input type="file" accept="image/*" multiple id="repImgFiles" style="display:none" onchange="uploadReportImages(this)">
-            <button class="admin-file-btn" onclick="document.getElementById('repImgFiles').click()">رفع صور</button>
+            <button class="admin-file-btn" onclick="document.getElementById('repImgFiles').click()">اختر الصور</button>
             <div id="repImgsUploadStatus" style="font-size:12px;color:var(--gray-500);margin-top:6px;"></div>
+            <div id="repImgsPreviews" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
           </div>
-          <div class="input-group"><label class="input-label">ملف PDF (رابط)</label><input type="url" class="input-field" id="repPdf" placeholder="https://...pdf" dir="ltr"></div>
+          <div class="input-group">
+            <label class="input-label">رفع ملف PDF مباشرة</label>
+            <input type="file" accept="application/pdf,.pdf" id="repPdfFile" style="display:none" onchange="uploadReportPdf(this)">
+            <button class="admin-file-btn" onclick="document.getElementById('repPdfFile').click()">اختر ملف PDF</button>
+            <div id="repPdfStatus" style="font-size:12px;color:var(--gray-500);margin-top:6px;"></div>
+          </div>
+          <div class="input-group"><label class="input-label">أو رابط PDF (اختياري)</label><input type="url" class="input-field" id="repPdf" placeholder="https://...pdf" dir="ltr"></div>
           <div class="input-group"><label class="input-label">تاريخ التقرير</label><input type="date" class="input-field" id="repDate"></div>
           <button class="btn-save" onclick="saveReport()">حفظ التقرير</button>
         </div>
@@ -1419,19 +1429,13 @@ function decodeData(str) { try { return decodeURIComponent(escape(atob(str))); }
 
 function generateUID() { return Date.now().toString(36) + Math.random().toString(36).substr(2,8); }
 
-function isItemActive(r) {
-  if (!r) return false;
-  if (r.isActive === undefined || r.isActive === null || r.isActive === '') return true;
-  return String(r.isActive).toLowerCase() !== 'false';
-}
-
 async function apiGet(sheet, params='') {
-  const timestamp = `_t=${Date.now()}`;
-  const queryString = params ? `${params}&${timestamp}` : timestamp;
-  const url = `${BASE_URL}/${sheet}?${queryString}`;
-  const r = await fetch(url, { method: 'GET', headers: HEADERS, cache: 'no-store' });
+  const url = params ? `${BASE_URL}/${sheet}?${params}` : `${BASE_URL}/${sheet}`;
+  let r;
+  try { r = await fetch(url, { headers: HEADERS }); }
+  catch(netErr) { console.error('apiGet network error', netErr); return { results: [], total: 0 }; }
   if (!r.ok) {
-    const txt = await r.text();
+    const txt = await r.text().catch(()=>'');
     console.error('apiGet error', r.status, txt);
     if (r.status === 404 || r.status === 400) return { results: [], total: 0 };
     throw new Error(`HTTP ${r.status}: ${txt}`);
@@ -1455,11 +1459,9 @@ async function apiPost(sheet, data) {
 
 async function apiPatch(sheet, rowIndex, data) {
   const url = `${BASE_URL}/${sheet}/${rowIndex}`;
-  let r = await fetch(url, { method: 'PATCH', headers: HEADERS, body: JSON.stringify(data) });
-  if (!r.ok) {
-    r = await fetch(url, { method: 'PUT', headers: HEADERS, body: JSON.stringify(data) });
-  }
-  const json = await r.json();
+  const r = await fetch(url, { method: 'PATCH', headers: HEADERS, body: JSON.stringify(data) });
+  let json = {};
+  try { json = await r.json(); } catch(e) { if (!r.ok) throw new Error(`HTTP ${r.status}`); return {}; }
   if (!r.ok || json.error) {
     console.error('apiPatch error', r.status, json);
     throw new Error(json.error || `HTTP ${r.status}`);
@@ -1484,41 +1486,26 @@ async function uploadToImgBB(file) {
 }
 
 // ============================================================
-// SPLASH + ONBOARDING (معدل ومحمي لضمان الفتح الفوري وعدم التعليق)
+// SPLASH + ONBOARDING
 // ============================================================
-let isAppStarted = false;
-function initSplash() {
-  if (isAppStarted) return;
-  isAppStarted = true;
+window.addEventListener('load', () => {
+  // Check URL hash for deep link
   const hash = window.location.hash;
-  const session = localStorage.getItem('ka_session');
   
+  const session = localStorage.getItem('ka_session');
   setTimeout(() => {
-    const splash = document.getElementById('splash-screen');
-    if (splash) splash.style.display = 'none';
-    
+    document.getElementById('splash-screen').style.display = 'none';
     if (session) {
-      try {
-        currentUser = JSON.parse(session);
-      } catch(e) {
-        currentUser = null;
-      }
-      if (currentUser) {
-        startApp();
-        if (hash) handleDeepLink(hash);
-        return;
-      }
+      currentUser = JSON.parse(session);
+      startApp();
+      if (hash) handleDeepLink(hash);
+    } else {
+      const seenOb = localStorage.getItem('ka_onboarding');
+      if (seenOb) { showAuth(); }
+      else { document.getElementById('onboarding').classList.remove('hidden'); }
     }
-    const seenOb = localStorage.getItem('ka_onboarding');
-    if (seenOb) { showAuth(); }
-    else { document.getElementById('onboarding').classList.remove('hidden'); }
-  }, 1200);
-}
-
-// تشغيل مزدوج مع مؤقت احتياطي لضمان الفتح حتى لو تأخر الإنترنت
-window.addEventListener('load', initSplash);
-document.addEventListener('DOMContentLoaded', () => setTimeout(initSplash, 800));
-setTimeout(initSplash, 2500); // الأمان المطلق ضد التعليق
+  }, 2000);
+});
 
 function nextOnboarding() {
   if (obSlide < 3) {
@@ -1558,12 +1545,14 @@ async function handleLogin() {
     const user = rows.find(u => {
       const match = (u.email === id || u.username === id || u.phone === id);
       if (!match) return false;
+      // try both encoded and plain
       try {
         return decodeData(u.password) === pass || u.password === pass;
       } catch(e) { return u.password === pass; }
     });
     if (!user) { showToast('البريد أو كلمة المرور غير صحيحة', 'error'); return; }
-    if (String(user.isActive).toLowerCase() === 'false') { showToast('الحساب موقوف', 'error'); return; }
+    if (user.isActive === 'false') { showToast('الحساب موقوف', 'error'); return; }
+    // Force admin role if ADMIN_EMAIL
     if ((user.email||'').toLowerCase() === ADMIN_EMAIL.toLowerCase() && user.role !== 'admin') {
       try { await apiPatch(SHEETS.users, user.rowIndex, { role: 'admin' }); } catch(e) {}
       user.role = 'admin';
@@ -1591,6 +1580,7 @@ async function handleRegister() {
   const pass     = document.getElementById('regPass').value;
   const conf     = document.getElementById('regPassConfirm').value;
 
+  //  validation 
   if (!name)     { showToast('أدخل الاسم الكامل', 'error'); return; }
   if (!email || !email.includes('@')) { showToast('أدخل بريد إلكتروني صحيح', 'error'); return; }
   if (!phone)    { showToast('أدخل رقم الهاتف', 'error'); return; }
@@ -1605,15 +1595,18 @@ async function handleRegister() {
   btn.textContent = 'جاري التحقق...'; btn.disabled = true;
 
   try {
+    //  check duplicates 
     showToast('جاري التحقق من البيانات...');
     let rows = [];
     try {
       const data = await apiGet(SHEETS.users, 'limit=1000');
       rows = data.results || [];
     } catch(e) {
+      // If sheet is empty or not created yet, continue
       console.warn('Users sheet empty or error, proceeding:', e.message);
     }
 
+    // client-side duplicate check (case-insensitive)
     const emailLC    = email.toLowerCase();
     const usernameLC = username.toLowerCase();
     if (rows.find(u => (u.email||'').toLowerCase() === emailLC)) {
@@ -1629,6 +1622,7 @@ async function handleRegister() {
       btn.textContent = 'إنشاء الحساب'; btn.disabled = false; return;
     }
 
+    //  create user 
     showToast('جاري إنشاء الحساب...');
     const newUser = {
       uid:        generateUID(),
@@ -1708,6 +1702,7 @@ async function handleForgot() {
 // ============================================================
 function startApp() {
   document.getElementById('main-app').classList.remove('hidden');
+  // Ensure ADMIN_EMAIL always has admin role
   if (currentUser && (currentUser.email||'').toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
     currentUser.role = 'admin';
     localStorage.setItem('ka_session', JSON.stringify(currentUser));
@@ -1717,6 +1712,7 @@ function startApp() {
     const sbAdmin = document.getElementById('sb-admin');
     if (sbAdmin) sbAdmin.style.display='flex';
   }
+  // Update sidebar header
   const sn = document.getElementById('sidebarName');
   const se = document.getElementById('sidebarEmail');
   if (sn) sn.textContent = currentUser?.name || 'خالد أحمد';
@@ -1725,6 +1721,7 @@ function startApp() {
   loadNotifications();
   loadAbout();
   loadPartners();
+  // Check pending deep link nav
   const pendingPage = sessionStorage.getItem('ka_pending_page');
   if (pendingPage) {
     sessionStorage.removeItem('ka_pending_page');
@@ -1734,6 +1731,8 @@ function startApp() {
     checkDeepLink();
   }
   setTimeout(showFloatingAd, 5000);
+  // بدء التحديث التلقائي كل 30 ثانية
+  startPolling();
 }
 
 function checkDeepLink() {
@@ -1785,19 +1784,26 @@ function navigate(page) {
   }
   currentPage = page;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // Update sidebar active state
   document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
   const sb = document.getElementById('sb-'+page);
   if (sb) sb.classList.add('active');
   const p = document.getElementById('page-'+page);
   if (p) p.classList.add('active');
-  if (page === 'about') loadAbout();
-  if (page === 'opps') loadOpps();
-  if (page === 'certs') loadCerts();
-  if (page === 'info') loadInfo();
-  if (page === 'contact') loadMyReplies();
+  // Load data on navigate
+  if (page === 'opps')     loadOpps();
+  if (page === 'certs')    loadCerts();
+  if (page === 'info')     loadInfo();
+  if (page === 'contact')  { loadMyReplies(); }
   if (page === 'settings') { loadPartners(); updateProfileUI(); }
   if (page === 'articles') loadArticles();
-  if (page === 'apps') loadApps();
+  if (page === 'apps')     loadApps();
+  if (page === 'reports')  { document.getElementById('reportCodeInput').value=''; resetReportView(); }
+  // إعادة ضبط مؤقت الـ polling ليبدأ من جديد عند تغيير الصفحة
+  if (typeof _pollTimer !== 'undefined' && _pollTimer) {
+    clearInterval(_pollTimer);
+    _pollTimer = setInterval(refreshCurrentPage, POLL_INTERVAL_MS);
+  }
 }
 
 function openSidebar() {
@@ -1822,21 +1828,53 @@ async function loadAbout() {
     document.getElementById('aboutName').textContent = row.name || 'Khaled Ahmed';
     document.getElementById('aboutRole').textContent = row.role || '';
     document.getElementById('aboutBio').textContent = row.bio || '';
+    // Stats
     const statsEl = document.getElementById('aboutStats');
     try {
       const stats = JSON.parse(row.stats || '[]');
       statsEl.innerHTML = stats.map(s => `<div class="about-stat"><div class="about-stat-value">${s.value}</div><div class="about-stat-label">${s.label}</div></div>`).join('');
     } catch(e) { statsEl.innerHTML = ''; }
+    // Skills
     const skillsEl = document.getElementById('skillsContainer');
     const skills = (row.skills||'').split(',').map(s=>s.trim()).filter(Boolean);
     skillsEl.innerHTML = skills.map(s => `<span class="skill-tag">${s}</span>`).join('');
+    // Social
     const socialEl = document.getElementById('socialLinks');
     try {
       const links = JSON.parse(row.social || '[]');
       socialEl.innerHTML = links.map(l => `<div class="social-link" onclick="openLink('${l.url}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>${l.name}</div>`).join('');
     } catch(e) { socialEl.innerHTML = ''; }
+    // حفظ row لاستخدامه لاحقاً في loadAdminAbout
+    window._aboutRow = row;
   } catch(e) { console.log('About load error', e); }
 }
+
+// تحميل بيانات about في نموذج الأدمن
+async function loadAdminAbout() {
+  try {
+    const data = await apiGet(SHEETS.about, 'limit=1');
+    const row = (data.results||[])[0];
+    if (!row) return;
+    window._aboutRow = row;
+    const nameEl = document.getElementById('adminAboutName');
+    const roleEl = document.getElementById('adminAboutRole');
+    const bioEl  = document.getElementById('adminAboutBio');
+    const skillsEl = document.getElementById('adminAboutSkills');
+    const statsEl  = document.getElementById('adminAboutStats');
+    const socialEl = document.getElementById('adminAboutSocial');
+    const avatarEl = document.getElementById('aboutAvatarUrl');
+    const prevEl   = document.getElementById('adminAvatarPreview');
+    if (nameEl)   nameEl.value   = row.name   || '';
+    if (roleEl)   roleEl.value   = row.role   || '';
+    if (bioEl)    bioEl.value    = row.bio    || '';
+    if (skillsEl) skillsEl.value = row.skills || '';
+    if (statsEl)  statsEl.value  = row.stats  || '';
+    if (socialEl) socialEl.value = row.social || '';
+    if (avatarEl) avatarEl.value = row.avatar || '';
+    if (prevEl && row.avatar) { prevEl.src = row.avatar; prevEl.classList.add('show'); }
+  } catch(e) { console.log('loadAdminAbout error', e); }
+}
+window.loadAdminAbout = loadAdminAbout;
 
 function openLink(url) { window.open(url, '_blank'); }
 
@@ -1848,7 +1886,7 @@ async function loadOpps() {
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
     const data = await apiGet(SHEETS.opportunities, 'limit=50');
-    const rows = (data.results||[]).filter(isItemActive);
+    const rows = (data.results||[]).filter(r=>r.isActive!=='false');
     if (!rows.length) { c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><p>لا توجد فرص متاحة</p></div>'; return; }
     c.innerHTML = rows.map((r,i) => {
       const uid = r.uid || r.rowIndex;
@@ -1879,7 +1917,7 @@ async function loadCerts() {
   grid.innerHTML = '<div class="loading-spinner" style="grid-column:1/-1;"><div class="spinner"></div></div>';
   try {
     const data = await apiGet(SHEETS.certificates, 'limit=100');
-    const rows = (data.results||[]).filter(isItemActive);
+    const rows = (data.results||[]).filter(r=>r.isActive!=='false');
     if (!rows.length) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>لا توجد شهادات</p></div>'; return; }
     grid.innerHTML = rows.map((r,i) => {
       const uid = r.credential_id || r.rowIndex;
@@ -1940,12 +1978,56 @@ function renderReport(r) {
   const view = document.getElementById('reportView');
   view.style.display = 'block';
   
+  // Parse images
   let imgs = [];
   try { imgs = JSON.parse(r.images||'[]'); } catch(e) {
     imgs = (r.images||'').split(',').map(s=>s.trim()).filter(Boolean);
   }
+  // Parse desc — دعم JSON كامل في الوصف
   let desc = r.description || '';
-  try { const d = JSON.parse(desc); desc = typeof d === 'string' ? d : JSON.stringify(d, null, 2); } catch(e) {}
+  try {
+    const parsed = JSON.parse(desc);
+    if (typeof parsed === 'string') {
+      // JSON string عادي
+      desc = parsed;
+    } else if (Array.isArray(parsed)) {
+      // مصفوفة من الفقرات [{title, text}] أو [string]
+      desc = parsed.map(item => {
+        if (typeof item === 'string') return `<p style="margin-bottom:10px;">${item}</p>`;
+        if (item.title && item.text) return `<div style="margin-bottom:14px;"><strong style="color:var(--gray-700);display:block;margin-bottom:4px;">${item.title}</strong><p>${item.text}</p></div>`;
+        if (item.title) return `<strong style="color:var(--gray-700);display:block;margin-bottom:4px;">${item.title}</strong>`;
+        if (item.text) return `<p style="margin-bottom:10px;">${item.text}</p>`;
+        return '';
+      }).join('');
+    } else if (typeof parsed === 'object') {
+      // object {title, body, sections:[]}
+      let parts = [];
+      if (parsed.title) parts.push(`<strong style="font-size:15px;color:var(--gray-700);display:block;margin-bottom:8px;">${parsed.title}</strong>`);
+      if (parsed.body) parts.push(`<p style="margin-bottom:12px;">${parsed.body}</p>`);
+      if (parsed.text) parts.push(`<p style="margin-bottom:12px;">${parsed.text}</p>`);
+      if (Array.isArray(parsed.sections)) {
+        parsed.sections.forEach(sec => {
+          if (typeof sec === 'string') parts.push(`<p style="margin-bottom:10px;">${sec}</p>`);
+          else if (sec.title && sec.text) parts.push(`<div style="margin-bottom:14px;"><strong style="color:var(--gray-700);display:block;margin-bottom:4px;">${sec.title}</strong><p>${sec.text}</p></div>`);
+        });
+      }
+      if (Array.isArray(parsed.points)) {
+        parts.push('<ul style="padding-right:20px;margin-bottom:12px;">');
+        parsed.points.forEach(pt => parts.push(`<li style="margin-bottom:6px;color:var(--gray-500);">${pt}</li>`));
+        parts.push('</ul>');
+      }
+      if (Array.isArray(parsed.steps)) {
+        parsed.steps.forEach((st, idx) => {
+          if (typeof st === 'string') parts.push(`<p style="margin-bottom:8px;"><strong>${idx+1}.</strong> ${st}</p>`);
+          else if (st.title) parts.push(`<p style="margin-bottom:8px;"><strong>${idx+1}. ${st.title}</strong>${st.text ? ': ' + st.text : ''}</p>`);
+        });
+      }
+      desc = parts.join('');
+    }
+  } catch(e) {
+    // نص عادي — حوّل الأسطر لفقرات
+    desc = desc.split('\n').filter(l => l.trim()).map(l => `<p style="margin-bottom:10px;">${l}</p>`).join('');
+  }
   
   const shareUrl = `${location.href.split('#')[0]}#page-report-${r.code}`;
   
@@ -1974,9 +2056,12 @@ function renderReport(r) {
 }
 
 function resetReportView() {
-  document.getElementById('reportAccessView').style.display = 'block';
-  document.getElementById('reportView').style.display = 'none';
-  document.getElementById('reportCodeInput').value = '';
+  const rav = document.getElementById('reportAccessView');
+  const rv  = document.getElementById('reportView');
+  const rci = document.getElementById('reportCodeInput');
+  if (rav) rav.style.display = 'block';
+  if (rv)  rv.style.display  = 'none';
+  if (rci) rci.value = '';
 }
 
 function openPdf(url, title) {
@@ -2013,7 +2098,7 @@ async function loadInfo() {
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
     const data = await apiGet(SHEETS.info, 'limit=100');
-    const rows = (data.results||[]).filter(isItemActive).reverse();
+    const rows = (data.results||[]).filter(r=>r.isActive!=='false').reverse();
     if (!rows.length) { c.innerHTML = '<div class="empty-state"><p>لا توجد منشورات</p></div>'; return; }
     c.innerHTML = rows.map((r,pi) => {
       let imgs = [];
@@ -2050,6 +2135,7 @@ async function loadInfo() {
           </div>
         </div>`;
     }).join('');
+    // Setup swipe for each post
     rows.forEach((_,pi) => {
       let imgs2 = [];
       try { imgs2 = JSON.parse(rows[pi].images||'[]'); } catch(e) {
@@ -2070,14 +2156,14 @@ function setupPostSwipe(pi, total) {
   track.addEventListener('touchend', e => {
     if (!isDragging) return; isDragging = false;
     const dx = e.changedTouches[0].clientX - startX;
-    if (Math.abs(dx) > 40) goToSlide(pi, postSlideIndexes[pi] + (dx < 0 ? 1 : -1), total);
+    if (Math.abs(dx) > 40) goToSlide(pi, postSlideIndexes[pi] + (dx > 0 ? 1 : -1), total);
   });
 }
 function goToSlide(pi, idx, total) {
   idx = Math.max(0, Math.min(idx, total-1));
   postSlideIndexes[pi] = idx;
   const track = document.getElementById('slides-'+pi);
-  if (track) track.style.transform = `translateX(${idx * 100}%)`;
+  if (track) track.style.transform = `translateX(${idx * 100 * (document.dir==='rtl' ? 1 : -1)}%)`;
   const ctr = document.getElementById('counter-'+pi);
   if (ctr) ctr.textContent = `${idx+1}/${total}`;
   const dots = document.querySelectorAll(`#indicators-${pi} .post-dot`);
@@ -2182,6 +2268,7 @@ async function loadNotifications() {
 function openNotifications() {
   document.getElementById('notifPanel').classList.add('open');
   document.getElementById('notifOverlay').classList.add('open');
+  // Mark as seen
   document.getElementById('notifBtn').removeAttribute('data-count');
 }
 function closeNotifications() {
@@ -2199,15 +2286,16 @@ async function loadPartners() {
     const track = document.getElementById('tickerTrack');
     const ticker = document.getElementById('partnerTicker');
     if (!rows.length) { track.innerHTML = ''; if(ticker) ticker.style.display='none'; return; }
-    if(ticker) ticker.style.display='block';
+    if(ticker) ticker.style.display='';
     const items = rows.map(r => {
       if (r.logo) {
         return `<div class="ticker-item"><img class="ticker-logo" src="${r.logo}" alt="${r.name||''}" onerror="this.style.display='none'"></div><div class="ticker-divider"></div>`;
       } else {
+        // fallback: name only if no logo
         return `<div class="ticker-item" style="font-size:13px;font-weight:600;color:var(--gray-500);letter-spacing:0.3px;">${r.name||''}</div><div class="ticker-divider"></div>`;
       }
     }).join('');
-    track.innerHTML = items + items;
+    track.innerHTML = items + items; // double for seamless loop
   } catch(e) {}
 }
 
@@ -2252,6 +2340,7 @@ async function changePassword() {
   const cur = document.getElementById('curPass').value;
   const nw  = document.getElementById('newPass').value;
   const cn  = document.getElementById('conPass').value;
+  // verify current password (support both encoded and plain)
   let curOk = false;
   try { curOk = decodeData(currentUser.password) === cur; } catch(e) {}
   if (!curOk) curOk = currentUser.password === cur;
@@ -2302,19 +2391,14 @@ function showFloatingAd() {
 // ADMIN PANEL
 // ============================================================
 function openAdmin() { document.getElementById('admin-panel').classList.remove('hidden'); loadAdminData(); }
-function closeAdmin() { 
-  document.getElementById('admin-panel').classList.add('hidden');
-  loadNotifications();
-  loadAbout();
-  loadPartners();
-  navigate(currentPage);
-}
+function closeAdmin() { document.getElementById('admin-panel').classList.add('hidden'); }
 
 function switchAdminTab(tab) {
   document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-  if (event && event.target && event.target.classList) event.target.classList.add('active');
+  event.target.classList.add('active');
   document.getElementById('admin-'+tab)?.classList.add('active');
+  if (tab==='about') loadAdminAbout();
   if (tab==='certs') loadAdminCerts();
   if (tab==='opps') loadAdminOpps();
   if (tab==='reports') loadAdminReports();
@@ -2326,7 +2410,6 @@ function switchAdminTab(tab) {
   if (tab==='partners') loadAdminPartners();
   if (tab==='articles') loadAdminArticles();
   if (tab==='apps') loadAdminApps();
-  if (tab==='about') loadAdminAbout();
   if (tab==='dashboard') loadDashboard();
 }
 
@@ -2337,9 +2420,15 @@ async function loadDashboard() {
   const ids = ['statUsers','statCerts','statReports','statContacts','statOpps','statCoursera','statArticles','statApps'];
   for (let i=0; i<sheets.length; i++) {
     try {
+      // نطلب limit=1000 عشان Sheetson يرجع العدد الفعلي في results
       const d = await apiGet(sheets[i], 'limit=1000');
-      document.getElementById(ids[i]).textContent = d.total || (d.results||[]).length || 0;
-    } catch(e) {}
+      const count = d.total != null ? d.total : (d.results||[]).length;
+      const el = document.getElementById(ids[i]);
+      if (el) el.textContent = count;
+    } catch(e) {
+      const el = document.getElementById(ids[i]);
+      if (el) el.textContent = '0';
+    }
   }
 }
 
@@ -2362,26 +2451,7 @@ function handleOppVideo(input) {
   oppVideos['current'] = file;
 }
 
-// LOAD & SAVE ABOUT
-async function loadAdminAbout() {
-  try {
-    const data = await apiGet(SHEETS.about, 'limit=1');
-    const row = (data.results || [])[0];
-    if (!row) return;
-    document.getElementById('adminAboutName').value = row.name || '';
-    document.getElementById('adminAboutRole').value = row.role || '';
-    document.getElementById('adminAboutBio').value = row.bio || '';
-    document.getElementById('adminAboutSkills').value = row.skills || '';
-    document.getElementById('adminAboutStats').value = row.stats || '';
-    document.getElementById('adminAboutSocial').value = row.social || '';
-    document.getElementById('aboutAvatarUrl').value = row.avatar || '';
-    if (row.avatar) {
-      const prev = document.getElementById('adminAvatarPreview');
-      prev.src = row.avatar; prev.classList.add('show');
-    }
-  } catch(e) { console.error('loadAdminAbout error', e); }
-}
-
+// SAVE ABOUT
 async function saveAbout() {
   const previewSrc = document.getElementById('adminAvatarPreview').src;
   const avatar = document.getElementById('aboutAvatarUrl').value.trim() ||
@@ -2405,6 +2475,7 @@ async function saveAbout() {
     }
     showToast('تم الحفظ بنجاح', 'success');
     loadAbout();
+    loadAdminAbout();
   } catch(e) {
     showToast('فشل الحفظ: ' + e.message, 'error');
   } finally { btn.textContent = 'حفظ البيانات'; btn.disabled = false; }
@@ -2416,20 +2487,34 @@ async function saveOpp() {
   const title = document.getElementById('oppTitle').value.trim();
   const desc  = document.getElementById('oppDesc').value.trim();
   const url   = document.getElementById('oppUrl').value.trim();
-  const video = document.getElementById('oppVideoUrl').value.trim();
   if (!title) { showToast('أدخل العنوان', 'error'); return; }
   const btn = document.querySelector('#admin-opps .btn-save');
   btn.textContent = 'جاري الحفظ...'; btn.disabled = true;
   try {
+    // رفع الفيديو إن وجد
+    let videoUrl = '';
+    if (oppVideos['current']) {
+      showToast('جاري رفع الفيديو...');
+      try {
+        const fd = new FormData();
+        fd.append('image', oppVideos['current']);
+        const vr = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method:'POST', body:fd });
+        const vd = await vr.json();
+        videoUrl = vd.data?.url || '';
+      } catch(ve) { console.warn('video upload failed', ve); }
+    }
     await apiPost(SHEETS.opportunities, {
-      uid: generateUID(), image: img, title, description: desc, url, video,
+      uid: generateUID(), image: img, title, description: desc, url,
+      video: videoUrl,
       isActive: 'true', created_at: new Date().toISOString()
     });
     showToast('تم حفظ الفرصة', 'success');
-    ['oppImgUrl','oppTitle','oppDesc','oppUrl','oppVideoUrl'].forEach(id => document.getElementById(id).value='');
+    ['oppImgUrl','oppTitle','oppDesc','oppUrl'].forEach(id => document.getElementById(id).value='');
     document.getElementById('oppImgPreview').classList.remove('show');
     document.getElementById('oppVideoName').textContent = '';
+    oppVideos['current'] = null;
     loadAdminOpps();
+    if (currentPage === 'opps') loadOpps();
   } catch(e) { showToast('فشل الحفظ: ' + e.message, 'error'); }
   finally { btn.textContent = 'حفظ الفرصة'; btn.disabled = false; }
 }
@@ -2444,7 +2529,7 @@ async function loadAdminOpps() {
       ${r.image ? `<img class="admin-list-img" src="${r.image}" onerror="this.style.display='none'">` : ''}
       <div class="admin-list-info"><div class="admin-list-name">${r.title||''}</div><div class="admin-list-sub">${r.url||''}</div></div>
       <div class="admin-action-btns">
-        <button class="btn-del" onclick="deleteRow('${SHEETS.opportunities}',${r.rowIndex||r.id||0},'adminOppsList','loadAdminOpps')">حذف</button>
+        <button class="btn-del" onclick="deleteRow('${SHEETS.opportunities}',${r.rowIndex},'adminOppsList','loadAdminOpps')">حذف</button>
       </div>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد فرص</p>';
 }
@@ -2473,6 +2558,7 @@ async function saveCert() {
     ['certImgUrl','certCredId','certTitle','certDesc','certCompany','certField','certIssue','certExpiry'].forEach(id => document.getElementById(id).value='');
     document.getElementById('certImgPreview').classList.remove('show');
     loadAdminCerts();
+    if (currentPage === 'certs') loadCerts();
   } catch(e) { showToast('فشل الحفظ: ' + e.message, 'error'); }
   finally { btn.textContent = 'حفظ الشهادة'; btn.disabled = false; }
 }
@@ -2487,7 +2573,7 @@ async function loadAdminCerts() {
       <img class="admin-list-img" src="${r.image||''}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 44 44%22><rect fill=%22%23f5e8eb%22 width=%2244%22 height=%2244%22/></svg>'">
       <div class="admin-list-info"><div class="admin-list-name">${r.title||''}</div><div class="admin-list-sub">${r.company||''} • ${r.field||''}</div></div>
       <div class="admin-action-btns">
-        <button class="btn-del" onclick="deleteRow('${SHEETS.certificates}',${r.rowIndex||r.id||0},'adminCertsList','loadAdminCerts')">حذف</button>
+        <button class="btn-del" onclick="deleteRow('${SHEETS.certificates}',${r.rowIndex},'adminCertsList','loadAdminCerts')">حذف</button>
       </div>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد شهادات</p>';
 }
@@ -2496,16 +2582,62 @@ async function loadAdminCerts() {
 async function uploadReportImages(input) {
   const files = Array.from(input.files).slice(0, 20);
   const s = document.getElementById('repImgsUploadStatus');
-  s.textContent = 'جاري الرفع...';
+  const previews = document.getElementById('repImgsPreviews');
+  s.textContent = `جاري الرفع... 0/${files.length}`;
+  if (previews) previews.innerHTML = '';
   reportUploadedImgs = [];
-  for (const f of files) {
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    s.textContent = `جاري الرفع... ${i+1}/${files.length}`;
     const url = await uploadToImgBB(f);
-    if (url) reportUploadedImgs.push(url);
+    if (url) {
+      reportUploadedImgs.push(url);
+      // أضف preview مصغر
+      if (previews) {
+        const img = document.createElement('img');
+        img.src = url;
+        img.style.cssText = 'width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--gray-200);';
+        previews.appendChild(img);
+      }
+    }
   }
-  s.textContent = `تم رفع ${reportUploadedImgs.length} صورة`;
-  const existing = document.getElementById('repImgs').value.trim();
-  const all = [...(existing ? existing.split(',').map(s=>s.trim()).filter(Boolean) : []), ...reportUploadedImgs];
-  document.getElementById('repImgs').value = all.join(', ');
+  s.textContent = `تم رفع ${reportUploadedImgs.length} صورة بنجاح`;
+}
+
+async function uploadReportPdf(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const s = document.getElementById('repPdfStatus');
+  s.textContent = 'جاري رفع PDF...';
+  try {
+    // رفع PDF عبر ImgBB (يقبل PDF)
+    const url = await uploadToImgBB(file);
+    if (url) {
+      document.getElementById('repPdf').value = url;
+      s.textContent = 'تم رفع PDF بنجاح';
+      s.style.color = 'var(--maroon)';
+    } else {
+      // محاولة رفع PDF عبر file reader كـ base64 data URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        // استخدام data URL مباشرة (يعمل للعرض داخل التطبيق)
+        document.getElementById('repPdf').value = e.target.result;
+        s.textContent = 'تم تحميل PDF (محلي)';
+        s.style.color = 'var(--maroon)';
+      };
+      reader.readAsDataURL(file);
+    }
+  } catch(e) {
+    // fallback: قراءة PDF كـ base64
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById('repPdf').value = e.target.result;
+      s.textContent = 'تم تحميل PDF';
+      s.style.color = 'var(--maroon)';
+    };
+    reader.readAsDataURL(file);
+    console.warn('PDF upload fallback to base64', e);
+  }
 }
 
 async function saveReport() {
@@ -2529,6 +2661,14 @@ async function saveReport() {
     showToast('تم حفظ التقرير', 'success');
     ['repCode','repTitle','repDesc','repImgs','repPdf','repDate'].forEach(id => document.getElementById(id).value='');
     document.getElementById('repImgsUploadStatus').textContent = '';
+    const prevEl = document.getElementById('repImgsPreviews');
+    if (prevEl) prevEl.innerHTML = '';
+    const pdfSt = document.getElementById('repPdfStatus');
+    if (pdfSt) { pdfSt.textContent = ''; pdfSt.style.color = ''; }
+    const pdfFile = document.getElementById('repPdfFile');
+    if (pdfFile) pdfFile.value = '';
+    const imgFiles = document.getElementById('repImgFiles');
+    if (imgFiles) imgFiles.value = '';
     reportUploadedImgs = [];
     loadAdminReports();
   } catch(e) { showToast('فشل الحفظ: ' + e.message, 'error'); }
@@ -2544,7 +2684,7 @@ async function loadAdminReports() {
     <div class="admin-list-item">
       <div class="admin-list-info"><div class="admin-list-name">${r.title||''}</div><div class="admin-list-sub" style="font-family:var(--font-en);">${r.code||''} • ${r.date||''}</div></div>
       <div class="admin-action-btns">
-        <button class="btn-del" onclick="deleteRow('${SHEETS.reports}',${r.rowIndex||r.id||0},'adminReportsList','loadAdminReports')">حذف</button>
+        <button class="btn-del" onclick="deleteRow('${SHEETS.reports}',${r.rowIndex},'adminReportsList','loadAdminReports')">حذف</button>
       </div>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد تقارير</p>';
 }
@@ -2583,6 +2723,7 @@ async function saveInfoPost() {
     document.getElementById('infoImgUrls').value = '';
     document.getElementById('infoImgsStatus').textContent = '';
     loadAdminInfo();
+    if (currentPage === 'info') loadInfo();
   } catch(e) { showToast('فشل النشر: ' + e.message, 'error'); }
   finally { btn.textContent = 'نشر المعلومة'; btn.disabled = false; }
 }
@@ -2594,6 +2735,7 @@ async function sendReply(rowIndex, textareaId) {
     await apiPatch(SHEETS.contacts, rowIndex, { reply, replied: 'true' });
     showToast('تم إرسال الرد', 'success');
     loadAdminContacts();
+    if (currentPage === 'contact') loadMyReplies();
   } catch(e) { showToast('فشل إرسال الرد: ' + e.message, 'error'); }
 }
 
@@ -2607,6 +2749,7 @@ async function sendNotification() {
     document.getElementById('notifText').value = '';
     showToast('تم إرسال الإشعار', 'success');
     loadAdminNotifs();
+    loadNotifications();
   } catch(e) { showToast('فشل الإرسال: ' + e.message, 'error'); }
   finally { btn.textContent = 'إرسال للجميع'; btn.disabled = false; }
 }
@@ -2618,6 +2761,22 @@ async function deleteRow(sheet, rowIndex, listId, reloadFn) {
     showToast('تم الحذف', 'success');
     if (typeof reloadFn === 'function') reloadFn();
     else if (typeof window[reloadFn] === 'function') window[reloadFn]();
+    // تحديث صفحة اليوزر المقابلة
+    const sheetToPage = {
+      [SHEETS.opportunities]: 'opps',
+      [SHEETS.certificates]:  'certs',
+      [SHEETS.info]:          'info',
+      [SHEETS.articles]:      'articles',
+      [SHEETS.apps]:          'apps',
+      [SHEETS.partners]:      null,
+    };
+    const targetPage = sheetToPage[sheet];
+    if (targetPage && currentPage === targetPage) {
+      const loaders = { opps: loadOpps, certs: loadCerts, info: loadInfo, articles: loadArticles, apps: loadApps };
+      if (loaders[targetPage]) loaders[targetPage]();
+    }
+    if (sheet === SHEETS.partners) loadPartners();
+    if (sheet === SHEETS.notifications) loadNotifications();
   } catch(e) { showToast('فشل الحذف: ' + e.message, 'error'); }
 }
 
@@ -2630,7 +2789,7 @@ async function loadAdminInfo() {
     <div class="admin-list-item">
       <div class="admin-list-info"><div class="admin-list-name">${(r.caption||'').slice(0,40)||'منشور'}</div><div class="admin-list-sub">${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div></div>
       <div class="admin-action-btns">
-        <button class="btn-del" onclick="deleteRow('${SHEETS.info}',${r.rowIndex||r.id||0},'adminInfoList','loadAdminInfo')">حذف</button>
+        <button class="btn-del" onclick="deleteRow('${SHEETS.info}',${r.rowIndex},'adminInfoList','loadAdminInfo')">حذف</button>
       </div>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد منشورات</p>';
 }
@@ -2649,7 +2808,7 @@ async function loadAdminCoursera() {
       <div class="contact-msg-body">البريد: ${r.email||''}<br>الدولة: ${r.country||''}<br>الميلاد: ${r.dob||''}</div>
       <div style="display:flex;gap:8px;align-items:center;">
         <span class="contact-replied-badge ${r.status==='approved'?'yes':'no'}">${r.status==='approved'?'مفعّل':'قيد المراجعة'}</span>
-        ${r.status!=='approved' ? `<button class="btn-edit" onclick="approveCoursera(${r.rowIndex||r.id||0})">تفعيل</button>` : ''}
+        ${r.status!=='approved' ? `<button class="btn-edit" onclick="approveCoursera(${r.rowIndex})">تفعيل</button>` : ''}
       </div>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد طلبات</p>';
 }
@@ -2675,8 +2834,8 @@ async function loadAdminContacts() {
       <div class="contact-msg-body">${r.message||''}</div>
       <div style="font-size:11px;color:var(--gray-400);margin-bottom:8px;">${r.email||''}</div>
       ${r.reply ? `<div class="reply-answer">ردك: ${r.reply}</div>` : ''}
-      <textarea class="reply-textarea" id="rep-${r.rowIndex||r.id||0}" placeholder="اكتب ردك...">${r.reply||''}</textarea>
-      <button class="btn-edit" style="margin-top:8px;width:100%;" onclick="sendReply(${r.rowIndex||r.id||0},'rep-${r.rowIndex||r.id||0}')">إرسال الرد</button>
+      <textarea class="reply-textarea" id="rep-${r.rowIndex}" placeholder="اكتب ردك...">${r.reply||''}</textarea>
+      <button class="btn-edit" style="margin-top:8px;width:100%;" onclick="sendReply(${r.rowIndex},'rep-${r.rowIndex}')">إرسال الرد</button>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد رسائل</p>';
 }
 async function loadAdminUsers() {
@@ -2692,8 +2851,8 @@ async function loadAdminUsers() {
       <div class="user-avatar-big" style="width:40px;height:40px;font-size:16px;">${(r.name||'U').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
       <div class="admin-list-info"><div class="admin-list-name">${r.name||''}</div><div class="admin-list-sub">${r.email||''} • ${r.role||'user'}</div></div>
       <div class="admin-action-btns">
-        ${r.role!=='admin' ? `<button class="btn-edit" onclick="setAdmin(${r.rowIndex||r.id||0})">أدمن</button>` : ''}
-        <button class="btn-del" onclick="deleteRow('${SHEETS.users}',${r.rowIndex||r.id||0},'adminUsersList','loadAdminUsers')">حذف</button>
+        ${r.role!=='admin' ? `<button class="btn-edit" onclick="setAdmin(${r.rowIndex})">أدمن</button>` : ''}
+        <button class="btn-del" onclick="deleteRow('${SHEETS.users}',${r.rowIndex},'adminUsersList','loadAdminUsers')">حذف</button>
       </div>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا يوجد مستخدمون</p>';
 }
@@ -2713,7 +2872,7 @@ async function loadAdminNotifs() {
   c.innerHTML = rows.length ? rows.reverse().map(r => `
     <div class="admin-list-item">
       <div class="admin-list-info"><div class="admin-list-name">${r.text||''}</div><div class="admin-list-sub">${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div></div>
-      <button class="btn-del" onclick="deleteRow('${SHEETS.notifications}',${r.rowIndex||r.id||0},'adminNotifsList','loadAdminNotifs')">حذف</button>
+      <button class="btn-del" onclick="deleteRow('${SHEETS.notifications}',${r.rowIndex},'adminNotifsList','loadAdminNotifs')">حذف</button>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد إشعارات</p>';
 }
 
@@ -2726,7 +2885,7 @@ async function loadAdminPartners() {
     <div class="admin-list-item">
       ${r.logo ? `<img src="${r.logo}" style="height:36px;width:auto;max-width:80px;object-fit:contain;background:var(--gray-50);padding:4px;border-radius:6px;border:1px solid var(--gray-200);" onerror="this.style.display='none'">` : ''}
       <div class="admin-list-info"><div class="admin-list-name">${r.name||''}</div><div class="admin-list-sub">${r.logo ? 'لوجو مرفوع' : 'بدون لوجو'}</div></div>
-      <button class="btn-del" onclick="deleteRow('${SHEETS.partners}',${r.rowIndex||r.id||0},'adminPartnersList','loadAdminPartners')">حذف</button>
+      <button class="btn-del" onclick="deleteRow('${SHEETS.partners}',${r.rowIndex},'adminPartnersList','loadAdminPartners')">حذف</button>
     </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا يوجد شركاء</p>';
 }
 async function savePartner() {
@@ -2770,6 +2929,7 @@ async function saveArticle() {
     ['artImgUrl','artTitle','artCategory','artExcerpt','artContent'].forEach(id => document.getElementById(id).value='');
     document.getElementById('artImgPreview').classList.remove('show');
     loadAdminArticles();
+    if (currentPage === 'articles') loadArticles();
   } catch(e) { showToast('فشل النشر: ' + e.message, 'error'); }
   finally { btn.textContent = 'نشر المقال'; btn.disabled = false; }
 }
@@ -2785,7 +2945,7 @@ async function loadAdminArticles() {
         ${r.image ? `<img class="admin-list-img" src="${r.image}" onerror="this.style.display='none'">` : ''}
         <div class="admin-list-info"><div class="admin-list-name">${r.title||''}</div><div class="admin-list-sub">${r.category||''} • ${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-EG') : ''}</div></div>
         <div class="admin-action-btns">
-          <button class="btn-del" onclick="deleteRow('${SHEETS.articles}',${r.rowIndex||r.id||0},'adminArticlesList','loadAdminArticles')">حذف</button>
+          <button class="btn-del" onclick="deleteRow('${SHEETS.articles}',${r.rowIndex},'adminArticlesList','loadAdminArticles')">حذف</button>
         </div>
       </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد مقالات</p>';
   } catch(e) { c.innerHTML = '<p style="color:red;font-size:13px;">خطأ: ' + e.message + '</p>'; }
@@ -2816,6 +2976,7 @@ async function saveApp() {
     ['appIconUrl','appName','appDesc','appTags','appVersion','appDlUrl','appStoreUrl'].forEach(id => document.getElementById(id).value='');
     document.getElementById('appIconPreview').classList.remove('show');
     loadAdminApps();
+    if (currentPage === 'apps') loadApps();
   } catch(e) { showToast('فشل الإضافة: ' + e.message, 'error'); }
   finally { btn.textContent = 'إضافة التطبيق'; btn.disabled = false; }
 }
@@ -2831,7 +2992,7 @@ async function loadAdminApps() {
         ${r.icon ? `<img class="admin-list-img" src="${r.icon}" onerror="this.style.display='none'" style="border-radius:12px;">` : ''}
         <div class="admin-list-info"><div class="admin-list-name">${r.name||''}</div><div class="admin-list-sub">v${r.version||'1.0'} • ${r.tags||''}</div></div>
         <div class="admin-action-btns">
-          <button class="btn-del" onclick="deleteRow('${SHEETS.apps}',${r.rowIndex||r.id||0},'adminAppsList','loadAdminApps')">حذف</button>
+          <button class="btn-del" onclick="deleteRow('${SHEETS.apps}',${r.rowIndex},'adminAppsList','loadAdminApps')">حذف</button>
         </div>
       </div>`).join('') : '<p style="color:var(--gray-400);font-size:13px;">لا توجد تطبيقات</p>';
   } catch(e) { c.innerHTML = '<p style="color:red;font-size:13px;">خطأ: ' + e.message + '</p>'; }
@@ -2882,6 +3043,7 @@ function openArticle(idx, rowsJson) {
   document.getElementById('articleViewerTitle').textContent = r.title || 'مقال';
   document.getElementById('articleShareBtn').onclick = () => copyLink(shareUrl);
   let content = r.content || r.excerpt || '';
+  // Render newlines as paragraphs
   content = content.split('\n').filter(l=>l.trim()).map(l=>`<p>${l}</p>`).join('');
   document.getElementById('articleViewerBody').innerHTML = `
     ${r.image ? `<img class="article-viewer-img" src="${r.image}" alt="${r.title||''}" onerror="this.style.display='none'">` : ''}
@@ -2933,6 +3095,7 @@ async function loadApps() {
 // ============================================================
 // WINDOW REGISTRATIONS (for inline onclick from innerHTML)
 // ============================================================
+window.uploadReportPdf = uploadReportPdf;
 window.loadAdminOpps = loadAdminOpps;
 window.loadAdminCerts = loadAdminCerts;
 window.loadAdminReports = loadAdminReports;
@@ -2964,6 +3127,69 @@ window.openArticle = openArticle;
 window.closeArticleViewer = closeArticleViewer;
 window.closeSidebar = closeSidebar;
 window.openSidebar = openSidebar;
+
+
+// ============================================================
+// REAL-TIME DATA SYNC - تحديث البيانات تلقائياً
+// ============================================================
+
+// مدة التحديث التلقائي: 30 ثانية
+const POLL_INTERVAL_MS = 30000;
+let _pollTimer = null;
+let _lastPollTime = 0;
+
+// الدالة التي تُحدِّث الصفحة المفتوحة حالياً
+function refreshCurrentPage() {
+  const now = Date.now();
+  // منع التحديث إذا تم بالفعل خلال آخر 5 ثواني (debounce)
+  if (now - _lastPollTime < 5000) return;
+  _lastPollTime = now;
+
+  if (!currentUser) return;
+
+  // تحديث الإشعارات دائماً
+  loadNotifications();
+  loadPartners();
+
+  // تحديث الصفحة المفتوحة حالياً
+  if (currentPage === 'about')    loadAbout();
+  if (currentPage === 'opps')     loadOpps();
+  if (currentPage === 'certs')    loadCerts();
+  if (currentPage === 'info')     loadInfo();
+  if (currentPage === 'articles') loadArticles();
+  if (currentPage === 'apps')     loadApps();
+  if (currentPage === 'contact')  loadMyReplies();
+  if (currentPage === 'settings') updateProfileUI();
+}
+
+// تشغيل polling كل 30 ثانية
+function startPolling() {
+  if (_pollTimer) clearInterval(_pollTimer);
+  _pollTimer = setInterval(refreshCurrentPage, POLL_INTERVAL_MS);
+}
+
+function stopPolling() {
+  if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+}
+
+// عند رجوع اليوزر للتطبيق (من تاب آخر أو من الهاتف)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    _lastPollTime = 0; // reset debounce للتحديث الفوري
+    refreshCurrentPage();
+    startPolling();
+  }
+  // لا نوقف الـ polling عند إخفاء التطبيق على الموبايل
+});
+
+// عند focus على النافذة (Desktop)
+window.addEventListener('focus', () => {
+  _lastPollTime = 0;
+  refreshCurrentPage();
+});
+
+// إعادة ضبط المؤقت عند تغيير الصفحة يتم من داخل navigate الأصلية
+// (لا نعيد تعريف navigate هنا لتفادي infinite loop)
 
 // ============================================================
 // DISABLE RIGHT CLICK + SCREENSHOTS PROTECTION
