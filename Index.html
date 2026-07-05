@@ -373,9 +373,9 @@
   .partner-ticker::after { left:0; background:linear-gradient(to right, var(--gray-50), transparent); }
   .ticker-track { display: flex; gap: 32px; animation: tickerMove 20s linear infinite; white-space: nowrap; }
   @keyframes tickerMove { from{transform:translateX(0);} to{transform:translateX(-50%);} }
-  .ticker-item { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-  .ticker-logo { height: 32px; width: auto; max-width: 90px; object-fit: contain; display: block; filter: grayscale(30%); opacity: 0.85; transition: opacity 0.2s, filter 0.2s; }
-  .ticker-logo:hover { opacity: 1; filter: grayscale(0%); }
+  .ticker-item { display: flex; align-items: center; gap: 10px; flex-shrink: 0; background: #fff; border-radius: 8px; padding: 6px 14px; border: 1px solid var(--gray-200); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .ticker-logo { height: 32px; width: auto; max-width: 90px; object-fit: contain; display: block; filter: none; opacity: 1; }
+  .ticker-logo:hover { opacity: 0.85; }
   .ticker-divider { width: 1px; height: 24px; background: var(--gray-200); flex-shrink: 0; }
 
   /* ========== LOADING ========== */
@@ -1430,9 +1430,16 @@ function decodeData(str) { try { return decodeURIComponent(escape(atob(str))); }
 function generateUID() { return Date.now().toString(36) + Math.random().toString(36).substr(2,8); }
 
 async function apiGet(sheet, params='') {
+  // Sheetson يقبل فقط: limit, skip, where, search - لا params إضافية
   const url = params ? `${BASE_URL}/${sheet}?${params}` : `${BASE_URL}/${sheet}`;
   let r;
-  try { r = await fetch(url, { headers: HEADERS }); }
+  try {
+    r = await fetch(url, {
+      method: 'GET',
+      headers: HEADERS,
+      cache: 'no-store'
+    });
+  }
   catch(netErr) { console.error('apiGet network error', netErr); return { results: [], total: 0 }; }
   if (!r.ok) {
     const txt = await r.text().catch(()=>'');
@@ -1448,8 +1455,11 @@ async function apiGet(sheet, params='') {
 
 async function apiPost(sheet, data) {
   const url = `${BASE_URL}/${sheet}`;
-  const r = await fetch(url, { method: 'POST', headers: HEADERS, body: JSON.stringify(data) });
-  const json = await r.json();
+  let r;
+  try { r = await fetch(url, { method: 'POST', headers: HEADERS, body: JSON.stringify(data) }); }
+  catch(netErr) { throw new Error('network error: ' + netErr.message); }
+  let json = {};
+  try { json = await r.json(); } catch(e) { if (!r.ok) throw new Error(`HTTP ${r.status}`); return {}; }
   if (!r.ok || json.error) {
     console.error('apiPost error', r.status, json);
     throw new Error(json.error || `HTTP ${r.status}`);
@@ -1480,9 +1490,16 @@ async function apiDelete(sheet, rowIndex) {
 
 async function uploadToImgBB(file) {
   const fd = new FormData(); fd.append('image', file);
-  const r = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method:'POST', body:fd });
+  // لا نُرسل Content-Type مع FormData - المتصفح يضيفه تلقائياً مع boundary
+  const r = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
+    method: 'POST',
+    body: fd
+    // لا headers هنا
+  });
+  if (!r.ok) { console.error('ImgBB error:', r.status); return ''; }
   const d = await r.json();
-  return d.data?.url || '';
+  if (!d.success) { console.error('ImgBB failed:', d.error); return ''; }
+  return d.data?.url || d.data?.display_url || '';
 }
 
 // ============================================================
@@ -1540,18 +1557,25 @@ async function handleLogin() {
   const btn = document.querySelector('#loginForm .btn-primary');
   btn.textContent = 'جاري التحقق...'; btn.disabled = true;
   try {
-    const data = await apiGet(SHEETS.users, 'limit=1000');
+    // جلب كل المستخدمين - Sheetson لا يدعم where على email مباشرة
+    const data = await apiGet(SHEETS.users, 'limit=500');
     const rows = data.results || [];
+    if (rows.length === 0) {
+      showToast('لا يوجد اتصال بقاعدة البيانات', 'error');
+      btn.textContent = 'دخول'; btn.disabled = false; return;
+    }
+    const idL = id.toLowerCase();
     const user = rows.find(u => {
-      const match = (u.email === id || u.username === id || u.phone === id);
-      if (!match) return false;
-      // try both encoded and plain
-      try {
-        return decodeData(u.password) === pass || u.password === pass;
-      } catch(e) { return u.password === pass; }
+      const emailMatch    = (u.email    || '').toLowerCase() === idL;
+      const usernameMatch = (u.username || '').toLowerCase() === idL;
+      const phoneMatch    = (u.phone    || '') === id;
+      if (!emailMatch && !usernameMatch && !phoneMatch) return false;
+      // تحقق من كلمة المرور - مشفرة أو عادية
+      try { return decodeData(u.password) === pass; } catch(e) {}
+      return (u.password || '') === pass || (u.password || '') === encodeData(pass);
     });
-    if (!user) { showToast('البريد أو كلمة المرور غير صحيحة', 'error'); return; }
-    if (user.isActive === 'false') { showToast('الحساب موقوف', 'error'); return; }
+    if (!user) { showToast('البريد أو كلمة المرور غير صحيحة', 'error'); btn.textContent = 'دخول'; btn.disabled = false; return; }
+    if (user.isActive === 'false') { showToast('الحساب موقوف، تواصل مع الإدارة', 'error'); btn.textContent = 'دخول'; btn.disabled = false; return; }
     // Force admin role if ADMIN_EMAIL
     if ((user.email||'').toLowerCase() === ADMIN_EMAIL.toLowerCase() && user.role !== 'admin') {
       try { await apiPatch(SHEETS.users, user.rowIndex, { role: 'admin' }); } catch(e) {}
@@ -1561,7 +1585,9 @@ async function handleLogin() {
     localStorage.setItem('ka_session', JSON.stringify(user));
     document.getElementById('auth-screen').classList.add('hidden');
     startApp();
-    showToast('أهلاً ' + (user.name||'') , 'success');
+    const ph = sessionStorage.getItem('ka_pending_hash');
+    if (ph) { sessionStorage.removeItem('ka_pending_hash'); handleDeepLink(ph); }
+    showToast('أهلاً ' + (user.name || ''), 'success');
   } catch(e) {
     console.error('Login error:', e);
     showToast('خطأ في الاتصال: ' + e.message, 'error');
@@ -1599,10 +1625,9 @@ async function handleRegister() {
     showToast('جاري التحقق من البيانات...');
     let rows = [];
     try {
-      const data = await apiGet(SHEETS.users, 'limit=1000');
+      const data = await apiGet(SHEETS.users, 'limit=500');
       rows = data.results || [];
     } catch(e) {
-      // If sheet is empty or not created yet, continue
       console.warn('Users sheet empty or error, proceeding:', e.message);
     }
 
@@ -1665,7 +1690,7 @@ async function handleForgot() {
     if (!id) { showToast('أدخل البيانات', 'error'); return; }
     btn.textContent = 'جاري البحث...'; btn.disabled = true;
     try {
-      const data = await apiGet(SHEETS.users, 'limit=1000');
+      const data = await apiGet(SHEETS.users, 'limit=500');
       const rows = data.results || [];
       const idLC = id.toLowerCase();
       const user = rows.find(u =>
@@ -1733,6 +1758,8 @@ function startApp() {
   setTimeout(showFloatingAd, 5000);
   // بدء التحديث التلقائي كل 30 ثانية
   startPolling();
+  // تحديث فوري بعد ثانية واحدة من فتح التطبيق (force=true يتجاوز debounce)
+  setTimeout(() => { _lastPollTime = 0; refreshCurrentPage(true); }, 1000);
 }
 
 function checkDeepLink() {
@@ -1798,10 +1825,11 @@ function navigate(page) {
   if (page === 'settings') { loadPartners(); updateProfileUI(); }
   if (page === 'articles') loadArticles();
   if (page === 'apps')     loadApps();
-  if (page === 'reports')  { document.getElementById('reportCodeInput').value=''; resetReportView(); }
-  // إعادة ضبط مؤقت الـ polling ليبدأ من جديد عند تغيير الصفحة
-  if (typeof _pollTimer !== 'undefined' && _pollTimer) {
-    clearInterval(_pollTimer);
+  if (page === 'reports')  { const rci = document.getElementById('reportCodeInput'); if(rci) rci.value=''; resetReportView(); }
+  // إعادة ضبط polling + force refresh فوري عند تغيير الصفحة
+  _lastPollTime = 0;
+  if (typeof _pollTimer !== 'undefined') {
+    if (_pollTimer) clearInterval(_pollTimer);
     _pollTimer = setInterval(refreshCurrentPage, POLL_INTERVAL_MS);
   }
 }
@@ -1885,8 +1913,8 @@ async function loadOpps() {
   const c = document.getElementById('oppsContainer');
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
-    const data = await apiGet(SHEETS.opportunities, 'limit=50');
-    const rows = (data.results||[]).filter(r=>r.isActive!=='false');
+    const data = await apiGet(SHEETS.opportunities, 'limit=200');
+    const rows = (data.results||[]).filter(r => r.isActive !== 'false' && r.title);
     if (!rows.length) { c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><p>لا توجد فرص متاحة</p></div>'; return; }
     c.innerHTML = rows.map((r,i) => {
       const uid = r.uid || r.rowIndex;
@@ -1906,7 +1934,7 @@ async function loadOpps() {
           </div>
         </div>`;
     }).join('');
-  } catch(e) { c.innerHTML = '<div class="empty-state"><p>خطأ في التحميل</p></div>'; }
+  } catch(e) { console.error('loadOpps error:', e); c.innerHTML = `<div class="empty-state"><p>خطأ: ${e.message}</p></div>`; }
 }
 
 // ============================================================
@@ -1916,7 +1944,7 @@ async function loadCerts() {
   const grid = document.getElementById('certsGrid');
   grid.innerHTML = '<div class="loading-spinner" style="grid-column:1/-1;"><div class="spinner"></div></div>';
   try {
-    const data = await apiGet(SHEETS.certificates, 'limit=100');
+    const data = await apiGet(SHEETS.certificates, `limit=500`);
     const rows = (data.results||[]).filter(r=>r.isActive!=='false');
     if (!rows.length) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>لا توجد شهادات</p></div>'; return; }
     grid.innerHTML = rows.map((r,i) => {
@@ -1965,7 +1993,7 @@ async function fetchReport() {
   if (!code) { showToast('أدخل كود التقرير', 'error'); return; }
   showToast('جاري البحث...');
   try {
-    const data = await apiGet(SHEETS.reports, 'limit=200');
+    const data = await apiGet(SHEETS.reports, `limit=500`);
     const rows = data.results || [];
     const report = rows.find(r => r.code === code || r.code === code.toUpperCase());
     if (!report) { showToast('كود غير صحيح أو التقرير غير موجود', 'error'); return; }
@@ -2075,18 +2103,65 @@ function closePdfViewer() {
   document.getElementById('pdfFrame').src = '';
   currentPdfUrl = '';
 }
-function downloadCurrentPdf() { if (currentPdfUrl) downloadFile(currentPdfUrl, 'report.pdf'); }
+function downloadCurrentPdf() {
+  if (!currentPdfUrl) return;
+  // لو data URL (base64 PDF) نحوله مباشرة
+  if (currentPdfUrl.startsWith('data:')) {
+    const a = document.createElement('a');
+    a.href = currentPdfUrl;
+    a.download = 'report.pdf';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  } else {
+    downloadFile(currentPdfUrl, 'report.pdf');
+  }
+}
 
 async function downloadFile(url, name) {
+  // تحميل الملف مباشرة للهاتف عبر Blob
   try {
-    const a = document.createElement('a'); a.href = url; a.download = name; a.target='_blank';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  } catch(e) { window.open(url, '_blank'); }
+    showToast('جاري التحميل...');
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) throw new Error('fetch failed');
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = objectUrl;
+    a.download = name || 'download';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 3000);
+    showToast('تم التحميل بنجاح', 'success');
+  } catch(e) {
+    // fallback: فتح في تاب جديد إذا فشل fetch
+    try {
+      const a = document.createElement('a');
+      a.href = url; a.download = name || 'download';
+      a.target = '_blank'; a.rel = 'noopener';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+    } catch(e2) { window.open(url, '_blank'); }
+  }
 }
 
 async function downloadAllReport(imgs, pdfUrl) {
-  for (let i = 0; i < imgs.length; i++) { await downloadFile(imgs[i], `report-img-${i+1}.jpg`); await sleep(300); }
-  if (pdfUrl) { await sleep(300); downloadFile(pdfUrl, 'report.pdf'); }
+  showToast(`جاري تحميل ${imgs.length} صورة${pdfUrl ? ' وملف PDF' : ''}...`);
+  for (let i = 0; i < imgs.length; i++) {
+    await downloadFile(imgs[i], `report-img-${i+1}.jpg`);
+    await sleep(500);
+  }
+  if (pdfUrl) {
+    await sleep(500);
+    if (pdfUrl.startsWith('data:')) {
+      const a = document.createElement('a');
+      a.href = pdfUrl; a.download = 'report.pdf';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    } else {
+      await downloadFile(pdfUrl, 'report.pdf');
+    }
+  }
+  showToast('تم تحميل كل الملفات', 'success');
 }
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -2097,7 +2172,7 @@ async function loadInfo() {
   const c = document.getElementById('infoContainer');
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
-    const data = await apiGet(SHEETS.info, 'limit=100');
+    const data = await apiGet(SHEETS.info, `limit=500`);
     const rows = (data.results||[]).filter(r=>r.isActive!=='false').reverse();
     if (!rows.length) { c.innerHTML = '<div class="empty-state"><p>لا توجد منشورات</p></div>'; return; }
     c.innerHTML = rows.map((r,pi) => {
@@ -2202,7 +2277,7 @@ async function loadMyReplies() {
   const c = document.getElementById('repliesContainer');
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
-    const data = await apiGet(SHEETS.contacts, 'limit=200');
+    const data = await apiGet(SHEETS.contacts, 'limit=300');
     const rows = (data.results||[]).filter(r => r.email === currentUser?.email || r.user_id === currentUser?.uid);
     if (!rows.length) { c.innerHTML = '<div class="empty-state"><p>لا توجد رسائل</p></div>'; return; }
     c.innerHTML = rows.reverse().map(r => `
@@ -2281,7 +2356,7 @@ function closeNotifications() {
 // ============================================================
 async function loadPartners() {
   try {
-    const data = await apiGet(SHEETS.partners, 'limit=100');
+    const data = await apiGet(SHEETS.partners, `limit=500`);
     const rows = data.results || [];
     const track = document.getElementById('tickerTrack');
     const ticker = document.getElementById('partnerTicker');
@@ -2476,6 +2551,7 @@ async function saveAbout() {
     showToast('تم الحفظ بنجاح', 'success');
     loadAbout();
     loadAdminAbout();
+    _lastPollTime = 0;
   } catch(e) {
     showToast('فشل الحفظ: ' + e.message, 'error');
   } finally { btn.textContent = 'حفظ البيانات'; btn.disabled = false; }
@@ -2514,7 +2590,8 @@ async function saveOpp() {
     document.getElementById('oppVideoName').textContent = '';
     oppVideos['current'] = null;
     loadAdminOpps();
-    if (currentPage === 'opps') loadOpps();
+    _lastPollTime = 0;
+    loadOpps();
   } catch(e) { showToast('فشل الحفظ: ' + e.message, 'error'); }
   finally { btn.textContent = 'حفظ الفرصة'; btn.disabled = false; }
 }
@@ -2522,7 +2599,7 @@ async function saveOpp() {
 async function loadAdminOpps() {
   const c = document.getElementById('adminOppsList');
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
-  const data = await apiGet(SHEETS.opportunities, 'limit=100');
+  const data = await apiGet(SHEETS.opportunities, 'limit=200');
   const rows = data.results || [];
   c.innerHTML = rows.length ? rows.map(r => `
     <div class="admin-list-item">
@@ -2558,7 +2635,8 @@ async function saveCert() {
     ['certImgUrl','certCredId','certTitle','certDesc','certCompany','certField','certIssue','certExpiry'].forEach(id => document.getElementById(id).value='');
     document.getElementById('certImgPreview').classList.remove('show');
     loadAdminCerts();
-    if (currentPage === 'certs') loadCerts();
+    _lastPollTime = 0;
+    loadCerts();
   } catch(e) { showToast('فشل الحفظ: ' + e.message, 'error'); }
   finally { btn.textContent = 'حفظ الشهادة'; btn.disabled = false; }
 }
@@ -2566,7 +2644,7 @@ async function saveCert() {
 async function loadAdminCerts() {
   const c = document.getElementById('adminCertsList');
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
-  const data = await apiGet(SHEETS.certificates, 'limit=100');
+  const data = await apiGet(SHEETS.certificates, 'limit=200');
   const rows = data.results || [];
   c.innerHTML = rows.length ? rows.map(r => `
     <div class="admin-list-item">
@@ -2678,7 +2756,7 @@ async function saveReport() {
 async function loadAdminReports() {
   const c = document.getElementById('adminReportsList');
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
-  const data = await apiGet(SHEETS.reports, 'limit=100');
+  const data = await apiGet(SHEETS.reports, 'limit=200');
   const rows = data.results || [];
   c.innerHTML = rows.length ? rows.map(r => `
     <div class="admin-list-item">
@@ -2723,7 +2801,8 @@ async function saveInfoPost() {
     document.getElementById('infoImgUrls').value = '';
     document.getElementById('infoImgsStatus').textContent = '';
     loadAdminInfo();
-    if (currentPage === 'info') loadInfo();
+    _lastPollTime = 0;
+    loadInfo();
   } catch(e) { showToast('فشل النشر: ' + e.message, 'error'); }
   finally { btn.textContent = 'نشر المعلومة'; btn.disabled = false; }
 }
@@ -2735,7 +2814,8 @@ async function sendReply(rowIndex, textareaId) {
     await apiPatch(SHEETS.contacts, rowIndex, { reply, replied: 'true' });
     showToast('تم إرسال الرد', 'success');
     loadAdminContacts();
-    if (currentPage === 'contact') loadMyReplies();
+    _lastPollTime = 0;
+    loadMyReplies();
   } catch(e) { showToast('فشل إرسال الرد: ' + e.message, 'error'); }
 }
 
@@ -2749,6 +2829,7 @@ async function sendNotification() {
     document.getElementById('notifText').value = '';
     showToast('تم إرسال الإشعار', 'success');
     loadAdminNotifs();
+    _lastPollTime = 0;
     loadNotifications();
   } catch(e) { showToast('فشل الإرسال: ' + e.message, 'error'); }
   finally { btn.textContent = 'إرسال للجميع'; btn.disabled = false; }
@@ -2775,6 +2856,7 @@ async function deleteRow(sheet, rowIndex, listId, reloadFn) {
       const loaders = { opps: loadOpps, certs: loadCerts, info: loadInfo, articles: loadArticles, apps: loadApps };
       if (loaders[targetPage]) loaders[targetPage]();
     }
+    _lastPollTime = 0;
     if (sheet === SHEETS.partners) loadPartners();
     if (sheet === SHEETS.notifications) loadNotifications();
   } catch(e) { showToast('فشل الحذف: ' + e.message, 'error'); }
@@ -2783,7 +2865,7 @@ async function deleteRow(sheet, rowIndex, listId, reloadFn) {
 async function loadAdminInfo() {
   const c = document.getElementById('adminInfoList');
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
-  const data = await apiGet(SHEETS.info, 'limit=100');
+  const data = await apiGet(SHEETS.info, 'limit=200');
   const rows = data.results || [];
   c.innerHTML = rows.length ? rows.reverse().map(r => `
     <div class="admin-list-item">
@@ -2823,7 +2905,7 @@ async function approveCoursera(idx) {
 async function loadAdminContacts() {
   const c = document.getElementById('adminContactsList');
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
-  const data = await apiGet(SHEETS.contacts, 'limit=200');
+  const data = await apiGet(SHEETS.contacts, 'limit=300');
   const rows = data.results || [];
   c.innerHTML = rows.length ? rows.reverse().map(r => `
     <div class="contact-msg-item">
@@ -2843,7 +2925,7 @@ async function loadAdminUsers() {
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   let rows = [];
   try {
-    const data = await apiGet(SHEETS.users, 'limit=1000');
+    const data = await apiGet(SHEETS.users, 'limit=500');
     rows = data.results || [];
   } catch(e) { c.innerHTML = `<p style="color:red;font-size:13px;">خطأ: ${e.message}</p>`; return; }
   c.innerHTML = rows.length ? rows.map(r => `
@@ -2901,6 +2983,7 @@ async function savePartner() {
     document.getElementById('partnerLogoPreview').classList.remove('show');
     showToast('تم إضافة الشريك', 'success');
     loadAdminPartners();
+    _lastPollTime = 0;
     loadPartners();
   } catch(e) { showToast('فشل الإضافة: ' + e.message, 'error'); }
   finally { btn.textContent = 'إضافة شريك'; btn.disabled = false; }
@@ -2929,7 +3012,8 @@ async function saveArticle() {
     ['artImgUrl','artTitle','artCategory','artExcerpt','artContent'].forEach(id => document.getElementById(id).value='');
     document.getElementById('artImgPreview').classList.remove('show');
     loadAdminArticles();
-    if (currentPage === 'articles') loadArticles();
+    _lastPollTime = 0;
+    loadArticles();
   } catch(e) { showToast('فشل النشر: ' + e.message, 'error'); }
   finally { btn.textContent = 'نشر المقال'; btn.disabled = false; }
 }
@@ -2938,7 +3022,7 @@ async function loadAdminArticles() {
   const c = document.getElementById('adminArticlesList');
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
-    const data = await apiGet(SHEETS.articles, 'limit=100');
+    const data = await apiGet(SHEETS.articles, 'limit=200');
     const rows = data.results || [];
     c.innerHTML = rows.length ? rows.map(r => `
       <div class="admin-list-item">
@@ -2976,7 +3060,8 @@ async function saveApp() {
     ['appIconUrl','appName','appDesc','appTags','appVersion','appDlUrl','appStoreUrl'].forEach(id => document.getElementById(id).value='');
     document.getElementById('appIconPreview').classList.remove('show');
     loadAdminApps();
-    if (currentPage === 'apps') loadApps();
+    _lastPollTime = 0;
+    loadApps();
   } catch(e) { showToast('فشل الإضافة: ' + e.message, 'error'); }
   finally { btn.textContent = 'إضافة التطبيق'; btn.disabled = false; }
 }
@@ -2985,7 +3070,7 @@ async function loadAdminApps() {
   const c = document.getElementById('adminAppsList');
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
-    const data = await apiGet(SHEETS.apps, 'limit=100');
+    const data = await apiGet(SHEETS.apps, 'limit=200');
     const rows = data.results || [];
     c.innerHTML = rows.length ? rows.map(r => `
       <div class="admin-list-item">
@@ -3005,7 +3090,7 @@ async function loadArticles() {
   const c = document.getElementById('articlesContainer');
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
-    const data = await apiGet(SHEETS.articles, 'limit=100');
+    const data = await apiGet(SHEETS.articles, `limit=500`);
     const rows = (data.results||[]).filter(r=>r.isActive!=='false').reverse();
     if (!rows.length) { c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>لا توجد مقالات حتى الآن</p></div>'; return; }
     c.innerHTML = rows.map((r,i) => {
@@ -3067,7 +3152,7 @@ async function loadApps() {
   const c = document.getElementById('appsContainer');
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
-    const data = await apiGet(SHEETS.apps, 'limit=100');
+    const data = await apiGet(SHEETS.apps, `limit=500`);
     const rows = (data.results||[]).filter(r=>r.isActive!=='false');
     if (!rows.length) { c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="9" height="9" rx="2"/><rect x="13" y="2" width="9" height="9" rx="2"/><rect x="2" y="13" width="9" height="9" rx="2"/><rect x="13" y="13" width="9" height="9" rx="2"/></svg><p>لا توجد تطبيقات متاحة حتى الآن</p></div>'; return; }
     c.innerHTML = rows.map(r => {
@@ -3134,24 +3219,24 @@ window.openSidebar = openSidebar;
 // ============================================================
 
 // مدة التحديث التلقائي: 30 ثانية
-const POLL_INTERVAL_MS = 30000;
+const POLL_INTERVAL_MS = 20000; // كل 20 ثانية
 let _pollTimer = null;
 let _lastPollTime = 0;
 
 // الدالة التي تُحدِّث الصفحة المفتوحة حالياً
-function refreshCurrentPage() {
+function refreshCurrentPage(force) {
   const now = Date.now();
-  // منع التحديث إذا تم بالفعل خلال آخر 5 ثواني (debounce)
-  if (now - _lastPollTime < 5000) return;
+  // debounce - منع طلبات متكررة جداً (إلا إذا force=true)
+  if (!force && now - _lastPollTime < 8000) return;
   _lastPollTime = now;
 
   if (!currentUser) return;
 
-  // تحديث الإشعارات دائماً
+  // تحديث الإشعارات والشركاء دائماً
   loadNotifications();
   loadPartners();
 
-  // تحديث الصفحة المفتوحة حالياً
+  // تحديث الصفحة المفتوحة حالياً بدون cache
   if (currentPage === 'about')    loadAbout();
   if (currentPage === 'opps')     loadOpps();
   if (currentPage === 'certs')    loadCerts();
@@ -3175,8 +3260,8 @@ function stopPolling() {
 // عند رجوع اليوزر للتطبيق (من تاب آخر أو من الهاتف)
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
-    _lastPollTime = 0; // reset debounce للتحديث الفوري
-    refreshCurrentPage();
+    _lastPollTime = 0;
+    refreshCurrentPage(true); // force=true لضمان تحديث فوري
     startPolling();
   }
   // لا نوقف الـ polling عند إخفاء التطبيق على الموبايل
@@ -3185,7 +3270,7 @@ document.addEventListener('visibilitychange', () => {
 // عند focus على النافذة (Desktop)
 window.addEventListener('focus', () => {
   _lastPollTime = 0;
-  refreshCurrentPage();
+  refreshCurrentPage(true); // force=true لضمان تحديث فوري
 });
 
 // إعادة ضبط المؤقت عند تغيير الصفحة يتم من داخل navigate الأصلية
@@ -3194,7 +3279,13 @@ window.addEventListener('focus', () => {
 // ============================================================
 // DISABLE RIGHT CLICK + SCREENSHOTS PROTECTION
 // ============================================================
-document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('contextmenu', e => {
+  // منع حفظ الصور أيضاً
+  if (e.target.tagName === 'IMG') e.preventDefault();
+  else e.preventDefault();
+});
+// منع السحب والإفلات للصور
+document.addEventListener('dragstart', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey||e.metaKey) && ['s','u','p','c','a'].includes(e.key.toLowerCase())) e.preventDefault();
   if (e.key === 'F12') e.preventDefault();
