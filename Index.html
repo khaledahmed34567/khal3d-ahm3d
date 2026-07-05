@@ -153,15 +153,6 @@ h1.page-title{font-size:25px;color:var(--maroon-dark);margin:2px 0 18px;font-wei
 .op-card p{font-size:15.5px;color:#444;line-height:1.7;margin:6px 0;}
 .op-card video{width:100%;border-radius:10px;margin-top:8px;}
 
-/* ===== FAQ ===== */
-.faq-item{background:var(--white);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow-sm);}
-.faq-q{width:100%;text-align:right;background:none;border:none;padding:15px 16px;font-size:16px;font-weight:600;
-  color:var(--text);display:flex;justify-content:space-between;align-items:center;gap:10px;}
-.faq-arrow{color:var(--maroon);font-size:20px;transition:transform .2s;transform:rotate(-90deg);}
-.faq-q.open .faq-arrow{transform:rotate(90deg);}
-.faq-a{max-height:0;overflow:hidden;transition:max-height .25s ease, padding .25s ease;padding:0 16px;font-size:14.5px;color:#555;line-height:1.8;}
-.faq-a.open{max-height:400px;padding:0 16px 16px;}
-
 /* ===== Certificates ===== */
 .cert-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .cert-item{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--gray-bg);}
@@ -318,19 +309,6 @@ function downloadDirect(url, filename){
 }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function esc(s){ return (s??'').toString().replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function safeJsonParse(raw, fallback){
-  if(raw===undefined || raw===null || raw==='') return fallback;
-  let text = String(raw).trim();
-  // جوجل شيت أحيانًا يستبدل علامات التنصيص العادية بعلامات ذكية (" ") تكسر الـ JSON — نعيدها لعلامات عادية
-  text = text.replace(/[\u201C\u201D]/g,'"').replace(/[\u2018\u2019]/g,"'");
-  try{ return JSON.parse(text); }catch(e){ return fallback; }
-}
-function parseImageList(raw){
-  if(raw===undefined || raw===null || raw==='') return [];
-  const asJson = safeJsonParse(raw, null);
-  if(Array.isArray(asJson)) return asJson.map(s=>String(s).trim()).filter(Boolean);
-  return String(raw).split(/[,\n]/).map(s=>s.trim()).filter(Boolean);
-}
 
 /* =========================================================
    AUTH STATE
@@ -357,11 +335,6 @@ const ROUTES = [
   {path:'opportunities', label:'فرص'},
   {path:'coursera', label:'Coursera'},
   {path:'certificates', label:'شهاداتي'},
-  {path:'articles', label:'مقالات'},
-  {path:'portfolio', label:'أعمالي'},
-  {path:'tools', label:'أدوات ومصادر'},
-  {path:'testimonials', label:'تزكيات وآراء'},
-  {path:'faq', label:'أسئلة شائعة'},
   {path:'cyber-reports', label:'تقريرات سيبرانية'},
   {path:'cyber-info', label:'معلومة سيبرانية'},
   {path:'contact', label:'تواصل معي'},
@@ -420,7 +393,7 @@ function logout(){
   location.hash = '#/login';
 }
 
-const PROTECTED = ['about','opportunities','coursera','certificates','articles','portfolio','tools','testimonials','faq','cyber-reports','cyber-info','contact','settings','admin'];
+const PROTECTED = ['about','opportunities','coursera','certificates','cyber-reports','cyber-info','contact','settings','admin'];
 
 async function router(){
   const raw = location.hash.replace('#/','') || '';
@@ -447,11 +420,6 @@ async function router(){
     else if(page==='opportunities') await renderOpportunities(itemId);
     else if(page==='coursera') await renderCoursera();
     else if(page==='certificates') await renderCertificates(itemId);
-    else if(page==='articles') await renderArticles(itemId);
-    else if(page==='portfolio') await renderPortfolio(itemId);
-    else if(page==='tools') await renderTools();
-    else if(page==='testimonials') await renderTestimonials();
-    else if(page==='faq') await renderFaq();
     else if(page==='cyber-reports') await renderCyberReports(itemId);
     else if(page==='cyber-info') await renderCyberInfo(itemId);
     else if(page==='contact') await renderContact();
@@ -820,9 +788,9 @@ async function renderCertificates(itemId){
 }
 function renderJsonDescription(raw){
   if(!raw) return '';
-  const d = safeJsonParse(raw, null);
-  if(d===null) return `<p><b>الوصف:</b> ${esc(raw)}</p>`;
-  if(typeof d !== 'object') return `<p><b>الوصف:</b> ${esc(String(d))}</p>`;
+  let d;
+  try{ d = JSON.parse(raw); }catch(e){ return `<p><b>الوصف:</b> ${esc(raw)}</p>`; }
+  if(typeof d !== 'object' || d===null) return `<p><b>الوصف:</b> ${esc(String(d))}</p>`;
   let html = '';
   if(d.summary) html += `<p><b>الوصف:</b> ${esc(d.summary)}</p>`;
   if(Array.isArray(d.points)) html += '<ul>'+d.points.map(p=>`<li>${esc(p)}</li>`).join('')+'</ul>';
@@ -857,169 +825,8 @@ function openCertDetail(c){
 }
 
 /* =========================================================
-   ARTICLES (مقالات)
+   CYBER REPORTS (secret code gated)
 ========================================================= */
-async function renderArticles(itemId){
-  const rows = await sheetGetAll('Articles');
-  const sorted = rows.slice().sort((a,b)=> new Date(b.publishedAt||0) - new Date(a.publishedAt||0));
-  const view = document.getElementById('mainView');
-  if(itemId){
-    const a = sorted.find(r=>String(r.id)===String(itemId));
-    if(!a){ view.innerHTML = `<h1 class="page-title">مقالات</h1><div class="error-box">هذا المقال غير موجود أو تم حذفه</div><a class="btn sm outline" href="#/articles">رجوع لكل المقالات</a>`; return; }
-    view.innerHTML = `<h1 class="page-title">مقالات</h1>
-      <div class="card">
-        ${a.image?`<img src="${esc(a.image)}" style="width:100%;height:auto;border-radius:12px;margin-bottom:12px;">`:''}
-        <h3 style="color:var(--maroon-dark);">${esc(a.title)}</h3>
-        <p class="muted">${esc(a.author||CONFIG.OWNER_NAME)} ${a.publishedAt?'— '+new Date(a.publishedAt).toLocaleDateString('ar-EG'):''}</p>
-        <p style="line-height:1.9;white-space:pre-line;">${esc(a.content||'')}</p>
-        <div class="row" style="margin-top:10px;">
-          <button class="btn sm outline" onclick="copyShareLink('articles','${esc(a.id)}')">نسخ رابط المقال</button>
-          <button class="btn sm outline" id="printArtBtn">طباعة المقال</button>
-        </div>
-      </div>
-      <a class="btn sm outline" href="#/articles">رجوع لكل المقالات</a>`;
-    document.getElementById('printArtBtn').onclick = ()=> printReport(a.title||'مقال', `<h2>${esc(a.title)}</h2><p style="white-space:pre-line;">${esc(a.content||'')}</p>`);
-    return;
-  }
-  view.innerHTML = `<h1 class="page-title">مقالات</h1>
-    <div class="field"><input id="artSearch" placeholder="ابحث في المقالات..."></div>
-    <div id="artList">${renderArtList(sorted)}</div>`;
-  document.getElementById('artSearch').addEventListener('input', e=>{
-    const q = e.target.value.trim().toLowerCase();
-    document.getElementById('artList').innerHTML = renderArtList(sorted.filter(a=>(a.title||'').toLowerCase().includes(q) || (a.summary||'').toLowerCase().includes(q)));
-  });
-}
-function renderArtList(rows){
-  return rows.length ? rows.map(a=>`
-    <a href="#/articles/${esc(a.id)}" class="card op-card" style="display:block;">
-      ${a.image?`<img src="${esc(a.image)}">`:''}
-      <h3>${esc(a.title)}</h3>
-      <p>${esc(a.summary||(a.content||'').slice(0,120))}</p>
-      <p class="muted">${a.publishedAt?new Date(a.publishedAt).toLocaleDateString('ar-EG'):''}</p>
-    </a>`).join('') : '<p class="muted center">لا توجد مقالات بعد</p>';
-}
-
-/* =========================================================
-   PORTFOLIO (أعمالي/مشاريعي)
-========================================================= */
-async function renderPortfolio(itemId){
-  const rows = await sheetGetAll('Portfolio');
-  const view = document.getElementById('mainView');
-  if(itemId){
-    const p = rows.find(r=>String(r.id)===String(itemId));
-    if(!p){ view.innerHTML = `<h1 class="page-title">أعمالي</h1><div class="error-box">هذا العمل غير موجود</div><a class="btn sm outline" href="#/portfolio">رجوع لكل الأعمال</a>`; return; }
-    view.innerHTML = `<h1 class="page-title">أعمالي</h1>
-      <div class="card">
-        ${p.image?`<img src="${esc(p.image)}" style="width:100%;height:auto;border-radius:12px;margin-bottom:12px;">`:''}
-        <h3 style="color:var(--maroon-dark);">${esc(p.title)}</h3>
-        <p>${esc(p.description||'')}</p>
-        ${p.tags?`<p class="muted">${esc(p.tags)}</p>`:''}
-        ${p.projectUrl?`<a class="btn sm" href="${esc(p.projectUrl)}" target="_blank" rel="noopener">عرض المشروع</a>`:''}
-        <button class="btn sm outline" onclick="copyShareLink('portfolio','${esc(p.id)}')" style="margin-top:8px;">نسخ رابط المشروع</button>
-      </div>
-      <a class="btn sm outline" href="#/portfolio">رجوع لكل الأعمال</a>`;
-    return;
-  }
-  view.innerHTML = `<h1 class="page-title">أعمالي</h1>
-    <div class="field"><input id="pfSearch" placeholder="ابحث في الأعمال..."></div>
-    <div id="pfList">${renderPfList(rows)}</div>`;
-  document.getElementById('pfSearch').addEventListener('input', e=>{
-    const q = e.target.value.trim().toLowerCase();
-    document.getElementById('pfList').innerHTML = renderPfList(rows.filter(p=>(p.title||'').toLowerCase().includes(q) || (p.tags||'').toLowerCase().includes(q)));
-  });
-}
-function renderPfList(rows){
-  return rows.length ? rows.map(p=>`
-    <a href="#/portfolio/${esc(p.id)}" class="card op-card" style="display:block;">
-      ${p.image?`<img src="${esc(p.image)}">`:''}
-      <h3>${esc(p.title)}</h3>
-      <p>${esc(p.description||'')}</p>
-      ${p.tags?`<p class="muted">${esc(p.tags)}</p>`:''}
-    </a>`).join('') : '<p class="muted center">لا توجد أعمال مضافة بعد</p>';
-}
-
-/* =========================================================
-   TOOLS & RESOURCES (أدوات ومصادر سيبرانية)
-========================================================= */
-async function renderTools(){
-  const rows = await sheetGetAll('Tools');
-  const view = document.getElementById('mainView');
-  view.innerHTML = `<h1 class="page-title">أدوات ومصادر سيبرانية</h1>
-    <div class="field"><input id="toolSearch" placeholder="ابحث في الأدوات..."></div>
-    <div id="toolList">${renderToolList(rows)}</div>`;
-  document.getElementById('toolSearch').addEventListener('input', e=>{
-    const q = e.target.value.trim().toLowerCase();
-    document.getElementById('toolList').innerHTML = renderToolList(rows.filter(t=>(t.name||'').toLowerCase().includes(q) || (t.category||'').toLowerCase().includes(q)));
-  });
-}
-function renderToolList(rows){
-  return rows.length ? rows.map(t=>`
-    <div class="card" style="display:flex;gap:12px;align-items:flex-start;">
-      ${t.image?`<img src="${esc(t.image)}" style="width:52px;height:52px;border-radius:12px;object-fit:contain;background:var(--gray-bg);flex:0 0 auto;">`:''}
-      <div style="flex:1;">
-        <h3 style="margin:0 0 4px;color:var(--maroon-dark);font-size:17px;">${esc(t.name)}</h3>
-        ${t.category?`<p class="muted" style="margin:0 0 6px;">${esc(t.category)}</p>`:''}
-        <p style="margin:0 0 10px;">${esc(t.description||'')}</p>
-        ${t.url?`<a class="btn sm" href="${esc(t.url)}" target="_blank" rel="noopener">فتح الأداة</a>`:''}
-      </div>
-    </div>`).join('') : '<p class="muted center">لا توجد أدوات مضافة بعد</p>';
-}
-
-/* =========================================================
-   TESTIMONIALS (تزكيات وآراء)
-========================================================= */
-async function renderTestimonials(){
-  const rows = await sheetGetAll('Testimonials');
-  const view = document.getElementById('mainView');
-  view.innerHTML = `<h1 class="page-title">تزكيات وآراء</h1>` + (rows.length ? rows.map(t=>{
-    const rating = Math.max(0, Math.min(5, parseInt(t.rating)||0));
-    return `
-    <div class="card" style="display:flex;gap:12px;">
-      ${t.image?`<img src="${esc(t.image)}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;flex:0 0 auto;">`:''}
-      <div style="flex:1;">
-        <h3 style="margin:0 0 2px;font-size:16px;color:var(--maroon-dark);">${esc(t.name)}</h3>
-        ${t.role?`<p class="muted" style="margin:0 0 6px;">${esc(t.role)}</p>`:''}
-        ${rating?`<p style="margin:0 0 6px;color:var(--maroon-light);">${'★'.repeat(rating)}${'☆'.repeat(5-rating)}</p>`:''}
-        <p style="margin:0;line-height:1.8;">${esc(t.message||'')}</p>
-      </div>
-    </div>`;
-  }).join('') : '<p class="muted center">لا توجد تزكيات بعد</p>');
-}
-
-/* =========================================================
-   FAQ (أسئلة شائعة)
-========================================================= */
-async function renderFaq(){
-  const rows = await sheetGetAll('FAQ');
-  const view = document.getElementById('mainView');
-  view.innerHTML = `<h1 class="page-title">أسئلة شائعة</h1>
-    <div class="field"><input id="faqSearch" placeholder="ابحث في الأسئلة..."></div>
-    <div id="faqList">${renderFaqList(rows)}</div>`;
-  wireFaqToggles();
-  document.getElementById('faqSearch').addEventListener('input', e=>{
-    const q = e.target.value.trim().toLowerCase();
-    document.getElementById('faqList').innerHTML = renderFaqList(rows.filter(f=>(f.question||'').toLowerCase().includes(q) || (f.answer||'').toLowerCase().includes(q)));
-    wireFaqToggles();
-  });
-}
-function renderFaqList(rows){
-  return rows.length ? rows.map((f,i)=>`
-    <div class="faq-item">
-      <button class="faq-q" data-i="${i}">${esc(f.question)}<span class="faq-arrow">›</span></button>
-      <div class="faq-a" id="faqA-${i}">${esc(f.answer)}</div>
-    </div>`).join('') : '<p class="muted center">لا توجد أسئلة مضافة بعد</p>';
-}
-function wireFaqToggles(){
-  document.querySelectorAll('.faq-q').forEach(btn=>{
-    btn.onclick = ()=>{
-      const a = document.getElementById('faqA-'+btn.dataset.i);
-      const open = a.classList.toggle('open');
-      btn.classList.toggle('open', open);
-    };
-  });
-}
-
-/* =========================================================
 async function renderCyberReports(itemId){
   document.getElementById('mainView').innerHTML = `
     <h1 class="page-title">تقريرات سيبرانية</h1>
@@ -1046,16 +853,15 @@ async function renderCyberReports(itemId){
       const rep = rows.find(r => String(r.secretCode)===code && (!itemId || String(r.id)===String(itemId)));
       msg.innerHTML='';
       if(!rep){ msg.innerHTML = '<div class="error-box">الكود غير صحيح، أو لا يطابق هذا الرابط</div>'; return; }
-      const desc = safeJsonParse(rep.descriptionJson, null);
-      const images = parseImageList(rep.images);
-      const descHtml = desc
-        ? `${desc.summary?`<p>${esc(desc.summary)}</p>`:''}${Array.isArray(desc.points)? '<ul>'+desc.points.map(p=>`<li>${esc(p)}</li>`).join('')+'</ul>':''}`
-        : (rep.descriptionJson ? `<p>${esc(rep.descriptionJson)}</p>` : '');
+      let desc = {};
+      try{ desc = JSON.parse(rep.descriptionJson||'{}'); }catch(e){}
+      const images = (rep.images||'').split(',').map(s=>s.trim()).filter(Boolean);
       result.innerHTML = `
         <div class="card">
           <h3 style="color:var(--maroon-dark);">${esc(rep.title)}</h3>
-          ${descHtml || '<p class="muted">لا يوجد نص وصفي لهذا التقرير</p>'}
-          ${images.length? `<div class="report-imgs">${images.map(i=>`<img src="${esc(i)}" onerror="this.style.display='none'">`).join('')}</div>
+          ${desc.summary?`<p>${esc(desc.summary)}</p>`:''}
+          ${Array.isArray(desc.points)? '<ul>'+desc.points.map(p=>`<li>${esc(p)}</li>`).join('')+'</ul>':''}
+          ${images.length? `<div class="report-imgs">${images.map(i=>`<img src="${esc(i)}">`).join('')}</div>
             <button class="btn sm outline" id="dlImgsBtn" style="margin-top:8px;">تحميل الصور</button>`:''}
           ${rep.pdfUrl? `<iframe class="pdf-frame" src="${esc(rep.pdfUrl)}"></iframe>
             <button class="btn sm outline" id="dlPdfBtn" style="margin-top:8px;">تحميل PDF</button>`:''}
@@ -1068,7 +874,9 @@ async function renderCyberReports(itemId){
       if(rep.pdfUrl) document.getElementById('dlPdfBtn').onclick = ()=> downloadDirect(rep.pdfUrl, (rep.title||'report')+'.pdf');
       document.getElementById('shareRepBtn').onclick = ()=> copyShareLink('cyber-reports', rep.id);
       document.getElementById('printRepBtn').onclick = ()=>{
-        const bodyHtml = `<h2>${esc(rep.title)}</h2>${descHtml}`;
+        const bodyHtml = `<h2>${esc(rep.title)}</h2>
+          ${desc.summary?`<p>${esc(desc.summary)}</p>`:''}
+          ${Array.isArray(desc.points)? '<ul>'+desc.points.map(p=>`<li>${esc(p)}</li>`).join('')+'</ul>':''}`;
         printReport(rep.title||'تقرير سيبراني', bodyHtml);
       };
     }catch(err){ msg.innerHTML = '<div class="error-box">تعذّر البحث الآن</div>'; }
@@ -1092,7 +900,7 @@ async function renderCyberInfo(itemId){
   const wrap = document.getElementById('feedWrap');
   wrap.innerHTML = rows.map((p,pi)=>{
     let imgs = [];
-    imgs = parseImageList(p.imagesJson);
+    try{ imgs = JSON.parse(p.imagesJson||'[]'); }catch(e){}
     return `
     <div class="feed-post" data-p="${pi}">
       <div class="feed-carousel">
@@ -1108,7 +916,7 @@ async function renderCyberInfo(itemId){
   }).join('') || '<p class="muted center">لا توجد منشورات بعد</p>';
 
   rows.forEach((p,pi)=>{
-    let imgs=[]; imgs = parseImageList(p.imagesJson);
+    let imgs=[]; try{ imgs = JSON.parse(p.imagesJson||'[]'); }catch(e){}
     const track = document.getElementById('track-'+pi);
     if(!track) return;
     const postEl = track.closest('.feed-post');
@@ -1174,7 +982,7 @@ async function renderSettings(){
 /* =========================================================
    ADMIN PANEL
 ========================================================= */
-const ADMIN_SHEETS = ['Users','About','Opportunities','CourseraRequests','Certificates','Articles','Portfolio','Tools','Testimonials','FAQ','CyberReports','CyberInfo','Partners','Contacts','Notifications','Ads'];
+const ADMIN_SHEETS = ['Users','About','Opportunities','CourseraRequests','Certificates','CyberReports','CyberInfo','Partners','Contacts','Notifications','Ads'];
 async function renderAdmin(){
   const view = document.getElementById('mainView');
   view.innerHTML = `
