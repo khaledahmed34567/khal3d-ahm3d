@@ -1820,12 +1820,12 @@ function navigate(page) {
   // Load data on navigate
   if (page === 'opps')     loadOpps();
   if (page === 'certs')    loadCerts();
-  if (page === 'info')     loadInfo();
+  if (page === 'info')     { postSlideIndexes = {}; loadInfo(); }
   if (page === 'contact')  { loadMyReplies(); }
   if (page === 'settings') { loadPartners(); updateProfileUI(); }
   if (page === 'articles') loadArticles();
   if (page === 'apps')     loadApps();
-  if (page === 'reports')  { const rci = document.getElementById('reportCodeInput'); if(rci) rci.value=''; resetReportView(); }
+  if (page === 'reports')  { resetReportView(); }
   // إعادة ضبط polling + force refresh فوري عند تغيير الصفحة
   _lastPollTime = 0;
   if (typeof _pollTimer !== 'undefined') {
@@ -1848,6 +1848,13 @@ function closeSidebar() {
 // ============================================================
 async function loadAbout() {
   try {
+    // مسح أي بيانات قديمة فوراً
+    document.getElementById('aboutName').textContent = '';
+    document.getElementById('aboutRole').textContent = '';
+    document.getElementById('aboutBio').textContent = '';
+    document.getElementById('aboutStats').innerHTML = '';
+    document.getElementById('skillsContainer').innerHTML = '';
+    document.getElementById('socialLinks').innerHTML = '';
     const data = await apiGet(SHEETS.about, 'limit=1');
     const row = (data.results||[])[0];
     if (!row) return;
@@ -1873,7 +1880,6 @@ async function loadAbout() {
       socialEl.innerHTML = links.map(l => `<div class="social-link" onclick="openLink('${l.url}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>${l.name}</div>`).join('');
     } catch(e) { socialEl.innerHTML = ''; }
     // حفظ row لاستخدامه لاحقاً في loadAdminAbout
-    window._aboutRow = row;
   } catch(e) { console.log('About load error', e); }
 }
 
@@ -1883,7 +1889,6 @@ async function loadAdminAbout() {
     const data = await apiGet(SHEETS.about, 'limit=1');
     const row = (data.results||[])[0];
     if (!row) return;
-    window._aboutRow = row;
     const nameEl = document.getElementById('adminAboutName');
     const roleEl = document.getElementById('adminAboutRole');
     const bioEl  = document.getElementById('adminAboutBio');
@@ -1911,6 +1916,7 @@ function openLink(url) { window.open(url, '_blank'); }
 // ============================================================
 async function loadOpps() {
   const c = document.getElementById('oppsContainer');
+  c.innerHTML = ''; // مسح فوري
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
     const data = await apiGet(SHEETS.opportunities, 'limit=200');
@@ -1989,16 +1995,21 @@ function certHoldEnd(i) {
 // CYBER REPORTS PAGE
 // ============================================================
 async function fetchReport() {
-  const code = document.getElementById('reportCodeInput').value.trim();
+  const code = document.getElementById('reportCodeInput').value.trim().toUpperCase();
   if (!code) { showToast('أدخل كود التقرير', 'error'); return; }
+  // امسح أي تقرير قديم فوراً قبل الجلب
+  const view = document.getElementById('reportView');
+  view.style.display = 'none';
+  view.innerHTML = '';
   showToast('جاري البحث...');
   try {
-    const data = await apiGet(SHEETS.reports, `limit=500`);
+    // جلب جديد من قاعدة البيانات بدون cache
+    const data = await apiGet(SHEETS.reports, 'limit=500');
     const rows = data.results || [];
-    const report = rows.find(r => r.code === code || r.code === code.toUpperCase());
+    const report = rows.find(r => (r.code || '').toUpperCase() === code);
     if (!report) { showToast('كود غير صحيح أو التقرير غير موجود', 'error'); return; }
     renderReport(report);
-  } catch(e) { showToast('خطأ في الاتصال', 'error'); }
+  } catch(e) { showToast('خطأ في الاتصال: ' + e.message, 'error'); }
 }
 
 function renderReport(r) {
@@ -2070,7 +2081,7 @@ function renderReport(r) {
         </div>
       </div>
       ${desc ? `<div class="report-desc">${desc}</div>` : ''}
-      ${imgs.length ? `<div class="report-media-grid">${imgs.map((img,i) => `<div class="report-media-item"><img src="${img}" alt="img" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;border-radius:8px;"><button class="btn-dl" style="position:absolute;bottom:6px;left:6px;" onclick="downloadFile('${img}','report-img-${i+1}.jpg')">تحميل</button></div>`).join('')}</div>` : ''}
+      ${imgs.length ? `<div class="report-media-grid">${imgs.map((img,i) => `<div class="report-media-item"><img src="${img}" alt="img" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;border-radius:8px;" crossorigin="anonymous"><button class="btn-dl" style="position:absolute;bottom:6px;left:6px;" onclick="downloadFile('${img}','report-img-${i+1}.jpg')"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' width='14' height='14'><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><polyline points='7 10 12 15 17 10'/><line x1='12' y1='15' x2='12' y2='3'/></svg></button></div>`).join('')}</div>` : ''}
       ${r.pdf ? `<div class="report-pdf-item" onclick="openPdf('${r.pdf}','${r.title||'تقرير'}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="report-pdf-name">${r.title||'التقرير'}.pdf</span><button class="btn-dl" onclick="event.stopPropagation();downloadFile('${r.pdf}','${r.title||'report'}.pdf')">تحميل</button></div>` : ''}
       ${imgs.length || r.pdf ? `<button class="report-dl-all" onclick="downloadAllReport(${JSON.stringify(imgs).replace(/"/g,'&quot;')},'${r.pdf||''}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>تحميل الكل</button>` : ''}
       <div style="margin:12px 0 0;">
@@ -2088,8 +2099,9 @@ function resetReportView() {
   const rv  = document.getElementById('reportView');
   const rci = document.getElementById('reportCodeInput');
   if (rav) rav.style.display = 'block';
-  if (rv)  rv.style.display  = 'none';
+  if (rv)  { rv.style.display = 'none'; rv.innerHTML = ''; }
   if (rci) rci.value = '';
+  currentPdfUrl = ''; // مسح رابط PDF القديم
 }
 
 function openPdf(url, title) {
@@ -2104,44 +2116,43 @@ function closePdfViewer() {
   currentPdfUrl = '';
 }
 function downloadCurrentPdf() {
-  if (!currentPdfUrl) return;
-  // لو data URL (base64 PDF) نحوله مباشرة
-  if (currentPdfUrl.startsWith('data:')) {
-    const a = document.createElement('a');
-    a.href = currentPdfUrl;
-    a.download = 'report.pdf';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  } else {
-    downloadFile(currentPdfUrl, 'report.pdf');
-  }
+  if (!currentPdfUrl) { showToast('لا يوجد PDF', 'error'); return; }
+  downloadFile(currentPdfUrl, 'report.pdf');
 }
 
 async function downloadFile(url, name) {
-  // تحميل الملف مباشرة للهاتف عبر Blob
+  if (!url) return;
+  // لو data URL (base64) نحمّله مباشرة بدون fetch
+  if (url.startsWith('data:')) {
+    const a = document.createElement('a');
+    a.href = url; a.download = name || 'file';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    showToast('تم التحميل', 'success');
+    return;
+  }
+  // نحاول fetch أولاً (يعمل لو CORS مسموح)
   try {
     showToast('جاري التحميل...');
-    const response = await fetch(url, { cache: 'no-store' });
-    if (!response.ok) throw new Error('fetch failed');
+    const response = await fetch(url, { mode: 'cors', cache: 'no-store' });
+    if (!response.ok) throw new Error('cors_blocked');
     const blob = await response.blob();
     const objectUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = objectUrl;
-    a.download = name || 'download';
+    a.href = objectUrl; a.download = name || 'file';
     a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
+    document.body.appendChild(a); a.click();
     document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 3000);
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 5000);
     showToast('تم التحميل بنجاح', 'success');
   } catch(e) {
-    // fallback: فتح في تاب جديد إذا فشل fetch
-    try {
-      const a = document.createElement('a');
-      a.href = url; a.download = name || 'download';
-      a.target = '_blank'; a.rel = 'noopener';
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a);
-    } catch(e2) { window.open(url, '_blank'); }
+    // fallback: فتح مباشر في المتصفح (يعمل دائماً)
+    showToast('يفتح في المتصفح لحفظه...');
+    const a = document.createElement('a');
+    a.href = url; a.download = name || 'file';
+    a.target = '_blank'; a.rel = 'noopener noreferrer';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
   }
 }
 
@@ -2326,8 +2337,9 @@ async function loadNotifications() {
     const data = await apiGet(SHEETS.notifications, 'limit=100');
     const rows = (data.results||[]).reverse();
     const list = document.getElementById('notifList');
+    if (list) list.innerHTML = ''; // مسح قديم
     if (!rows.length) { list.innerHTML = '<div class="empty-state"><p>لا توجد إشعارات</p></div>'; return; }
-    const seen = JSON.parse(localStorage.getItem('ka_seen_notifs')||'[]');
+    const seen = [];
     const unseen = rows.filter(r => !seen.includes(r.rowIndex?.toString()));
     const btn = document.getElementById('notifBtn');
     if (unseen.length) { btn.setAttribute('data-count', unseen.length); }
@@ -2598,6 +2610,7 @@ async function saveOpp() {
 
 async function loadAdminOpps() {
   const c = document.getElementById('adminOppsList');
+  c.innerHTML = '';
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   const data = await apiGet(SHEETS.opportunities, 'limit=200');
   const rows = data.results || [];
@@ -2643,6 +2656,7 @@ async function saveCert() {
 
 async function loadAdminCerts() {
   const c = document.getElementById('adminCertsList');
+  c.innerHTML = '';
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   const data = await apiGet(SHEETS.certificates, 'limit=200');
   const rows = data.results || [];
@@ -2755,6 +2769,7 @@ async function saveReport() {
 
 async function loadAdminReports() {
   const c = document.getElementById('adminReportsList');
+  c.innerHTML = '';
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   const data = await apiGet(SHEETS.reports, 'limit=200');
   const rows = data.results || [];
@@ -2864,6 +2879,7 @@ async function deleteRow(sheet, rowIndex, listId, reloadFn) {
 
 async function loadAdminInfo() {
   const c = document.getElementById('adminInfoList');
+  c.innerHTML = '';
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   const data = await apiGet(SHEETS.info, 'limit=200');
   const rows = data.results || [];
@@ -2878,6 +2894,7 @@ async function loadAdminInfo() {
 
 async function loadAdminCoursera() {
   const c = document.getElementById('adminCourseraList');
+  c.innerHTML = '';
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   const data = await apiGet(SHEETS.coursera, 'limit=200');
   const rows = data.results || [];
@@ -2904,6 +2921,7 @@ async function approveCoursera(idx) {
 
 async function loadAdminContacts() {
   const c = document.getElementById('adminContactsList');
+  c.innerHTML = '';
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   const data = await apiGet(SHEETS.contacts, 'limit=300');
   const rows = data.results || [];
@@ -2922,6 +2940,7 @@ async function loadAdminContacts() {
 }
 async function loadAdminUsers() {
   const c = document.getElementById('adminUsersList');
+  c.innerHTML = '';
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   let rows = [];
   try {
@@ -2948,6 +2967,7 @@ async function setAdmin(idx) {
 
 async function loadAdminNotifs() {
   const c = document.getElementById('adminNotifsList');
+  c.innerHTML = '';
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   const data = await apiGet(SHEETS.notifications, 'limit=100');
   const rows = data.results || [];
@@ -2960,6 +2980,7 @@ async function loadAdminNotifs() {
 
 async function loadAdminPartners() {
   const c = document.getElementById('adminPartnersList');
+  c.innerHTML = '';
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   const data = await apiGet(SHEETS.partners, 'limit=100');
   const rows = data.results || [];
@@ -3020,6 +3041,7 @@ async function saveArticle() {
 
 async function loadAdminArticles() {
   const c = document.getElementById('adminArticlesList');
+  c.innerHTML = '';
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
     const data = await apiGet(SHEETS.articles, 'limit=200');
@@ -3068,6 +3090,7 @@ async function saveApp() {
 
 async function loadAdminApps() {
   const c = document.getElementById('adminAppsList');
+  c.innerHTML = '';
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
     const data = await apiGet(SHEETS.apps, 'limit=200');
@@ -3088,9 +3111,10 @@ async function loadAdminApps() {
 // ============================================================
 async function loadArticles() {
   const c = document.getElementById('articlesContainer');
+  c.innerHTML = ''; // مسح فوري
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
-    const data = await apiGet(SHEETS.articles, `limit=500`);
+    const data = await apiGet(SHEETS.articles, 'limit=500');
     const rows = (data.results||[]).filter(r=>r.isActive!=='false').reverse();
     if (!rows.length) { c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>لا توجد مقالات حتى الآن</p></div>'; return; }
     c.innerHTML = rows.map((r,i) => {
@@ -3117,11 +3141,9 @@ async function loadArticles() {
   } catch(e) { c.innerHTML = '<div class="empty-state"><p>خطأ في تحميل المقالات</p></div>'; }
 }
 
-let _articlesCache = [];
 function openArticle(idx, rowsJson) {
   let rows;
   try { rows = typeof rowsJson === 'string' ? JSON.parse(rowsJson.replace(/&quot;/g,'"').replace(/&apos;/g,"'")) : rowsJson; } catch(e) { return; }
-  _articlesCache = rows;
   const r = rows[idx];
   if (!r) return;
   const shareUrl = `${location.href.split('#')[0]}#page-article-${r.uid||r.rowIndex}`;
@@ -3143,6 +3165,8 @@ function openArticle(idx, rowsJson) {
 
 function closeArticleViewer() {
   document.getElementById('articleViewer').classList.remove('open');
+  document.getElementById('articleViewerBody').innerHTML = ''; // مسح المحتوى القديم
+  document.getElementById('articleViewerTitle').textContent = '';
 }
 
 // ============================================================
@@ -3150,9 +3174,10 @@ function closeArticleViewer() {
 // ============================================================
 async function loadApps() {
   const c = document.getElementById('appsContainer');
+  c.innerHTML = ''; // مسح فوري
   c.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
-    const data = await apiGet(SHEETS.apps, `limit=500`);
+    const data = await apiGet(SHEETS.apps, 'limit=500');
     const rows = (data.results||[]).filter(r=>r.isActive!=='false');
     if (!rows.length) { c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="9" height="9" rx="2"/><rect x="13" y="2" width="9" height="9" rx="2"/><rect x="2" y="13" width="9" height="9" rx="2"/><rect x="13" y="13" width="9" height="9" rx="2"/></svg><p>لا توجد تطبيقات متاحة حتى الآن</p></div>'; return; }
     c.innerHTML = rows.map(r => {
@@ -3226,8 +3251,8 @@ let _lastPollTime = 0;
 // الدالة التي تُحدِّث الصفحة المفتوحة حالياً
 function refreshCurrentPage(force) {
   const now = Date.now();
-  // debounce - منع طلبات متكررة جداً (إلا إذا force=true)
-  if (!force && now - _lastPollTime < 8000) return;
+  // debounce 6 ثواني منع spam (force=true يتجاوزه)
+  if (!force && now - _lastPollTime < 6000) return;
   _lastPollTime = now;
 
   if (!currentUser) return;
