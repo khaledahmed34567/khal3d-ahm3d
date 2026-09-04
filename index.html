@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>سرمد — لوحة الإدارة</title>
+<link rel="icon" href="https://i.ibb.co/F16g2s7/Picsart-26-08-21-02-55-45-367.jpg" />
+<style>
+  @font-face{ font-family:'SarmadHead'; src:url('https://files.catbox.moe/fwgw08.otf') format('opentype'); font-display:swap; }
+  @font-face{ font-family:'SarmadBody'; src:url('https://files.catbox.moe/jernkn.otf') format('opentype'); font-display:swap; }
+  @font-face{ font-family:'SarmadMeta'; src:url('https://files.catbox.moe/gsv6s7.otf') format('opentype'); font-display:swap; }
+
+  :root{
+    --white:#ffffff; --surface:#f6f7f9; --surface-2:#eef0f3;
+    --ink:#0e0f11; --ink-soft:#5a5e66; --ink-faint:#9297a1; --line:#e5e7eb;
+    --accent:#3a5cff; --accent-ink:#1c2b8c; --accent-soft:#eef1ff;
+    --guard:#00b39a; --guard-soft:#e6f9f6; --warn:#d94f45; --warn-soft:#fdeceb;
+    --radius-m:16px; --radius-l:22px;
+    --shadow-1:0 1px 2px rgba(14,15,17,.04),0 2px 10px rgba(14,15,17,.04);
+    --shadow-2:0 8px 30px rgba(14,15,17,.12);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+  body{
+    background:radial-gradient(900px 500px at 85% -10%, rgba(58,92,255,.06), transparent 60%), var(--white);
+    color:var(--ink); font-family:'SarmadBody',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3,h4{ font-family:'SarmadHead','SarmadBody',sans-serif; font-weight:600; margin:0; }
+  .meta{ font-family:'SarmadMeta',sans-serif; color:var(--ink-faint); }
+  p{ margin:0; line-height:1.7; } a{ color:inherit; }
+  ::-webkit-scrollbar{ width:9px; height:9px; }
+  ::-webkit-scrollbar-thumb{ background:linear-gradient(180deg,var(--accent),var(--guard)); border-radius:99px; }
+
+  #pinGate{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .pin-box{ width:100%; max-width:360px; text-align:center; }
+  .pin-dots{ display:flex; gap:12px; justify-content:center; margin:22px 0; }
+  .pin-dot{ width:16px; height:16px; border-radius:50%; border:2px solid var(--line); }
+  .pin-dot.filled{ background:var(--ink); border-color:var(--ink); }
+  .pin-pad{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .pin-key{ padding:18px 0; border-radius:16px; background:var(--surface); border:none; font-size:20px; font-weight:600; cursor:pointer; }
+  .pin-key:active{ transform:scale(.95); background:var(--surface-2); }
+
+  #app{ display:none; min-height:100vh; padding-bottom:40px; }
+  header.topbar{ position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:rgba(255,255,255,.72); backdrop-filter:blur(20px) saturate(180%); border-bottom:1px solid var(--line); }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand img{ width:30px; height:30px; border-radius:8px; object-fit:cover; }
+  main{ max-width:920px; margin:0 auto; padding:18px; }
+
+  .tabs{ display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:18px; }
+  .tabs::-webkit-scrollbar{ display:none; }
+  .tab-btn{ flex-shrink:0; padding:10px 16px; border-radius:12px; border:1px solid var(--line); background:var(--white); cursor:pointer; font-weight:600; font-size:13.5px; color:var(--ink-soft); }
+  .tab-btn.active{ background:var(--ink); color:#fff; border-color:var(--ink); }
+
+  .card{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius-m); box-shadow:var(--shadow-1); }
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 16px; border-radius:12px; border:none; cursor:pointer; font-weight:600; font-size:14px; }
+  .btn-primary{ background:var(--ink); color:#fff; } .btn-primary:hover{ opacity:.9; }
+  .btn-accent{ background:var(--accent); color:#fff; }
+  .btn-ghost{ background:var(--surface-2); color:var(--ink); }
+  .btn-outline{ background:transparent; border:1.5px solid var(--line); color:var(--ink); }
+  .btn-danger{ background:var(--warn-soft); color:var(--warn); }
+  .btn-sm{ padding:8px 12px; font-size:12.5px; border-radius:9px; }
+  .btn-block{ width:100%; }
+  .btn[disabled]{ opacity:.5; pointer-events:none; }
+
+  input,select,textarea{ width:100%; padding:12px 13px; border-radius:11px; border:1.5px solid var(--line); background:#fff; font-family:'SarmadBody',sans-serif; font-size:14.5px; color:var(--ink); outline:none; }
+  input:focus,select:focus,textarea:focus{ border-color:var(--accent); }
+  label{ font-size:12.5px; color:var(--ink-soft); display:block; margin-bottom:5px; }
+  .field{ margin-bottom:14px; }
+  .row{ display:flex; align-items:center; } .between{ justify-content:space-between; } .gap-8{gap:8px;} .gap-10{gap:10px;} .gap-12{gap:12px;}
+  .col{ display:flex; flex-direction:column; }
+  .muted{ color:var(--ink-soft); } .faint{ color:var(--ink-faint); font-size:12.5px; }
+
+  .list-item{ display:flex; align-items:center; gap:12px; padding:13px; border-radius:14px; border:1px solid var(--line); margin-bottom:9px; background:#fff; }
+  .list-item img{ width:52px; height:52px; border-radius:10px; object-fit:cover; background:var(--surface-2); flex-shrink:0; }
+  .list-item .txt{ flex:1; min-width:0; } .list-item h4{ font-size:14px; margin-bottom:2px; } .list-item p{ font-size:12px; }
+  .badge{ display:inline-flex; padding:3px 9px; border-radius:99px; font-size:11px; font-weight:700; }
+  .badge-blue{ background:var(--accent-soft); color:var(--accent-ink); }
+  .badge-green{ background:var(--guard-soft); color:var(--guard); }
+  .badge-gray{ background:var(--surface-2); color:var(--ink-faint); }
+
+  .modal-back{ position:fixed; inset:0; background:rgba(10,10,12,.45); backdrop-filter:blur(3px); z-index:100; display:flex; align-items:flex-end; justify-content:center; }
+  .modal-sheet{ width:100%; max-width:640px; max-height:90vh; overflow-y:auto; background:#fff; border-radius:22px 22px 0 0; padding:22px; }
+  @media(min-width:720px){ .modal-back{ align-items:center; } .modal-sheet{ border-radius:22px; } }
+  .modal-handle{ width:38px; height:4px; background:var(--line); border-radius:99px; margin:0 auto 16px; }
+
+  .img-input-row{ display:flex; gap:8px; align-items:flex-start; }
+  .img-input-row input{ flex:1; }
+  .img-preview{ width:44px; height:44px; border-radius:10px; object-fit:cover; background:var(--surface-2); flex-shrink:0; }
+
+  .empty{ text-align:center; padding:40px 20px; color:var(--ink-faint); }
+  .spinner{ width:22px; height:22px; border-radius:50%; border:3px solid var(--surface-2); border-top-color:var(--accent); animation:spin .7s linear infinite; margin:0 auto; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .toast-wrap{ position:fixed; top:16px; inset-inline:0; z-index:300; display:flex; flex-direction:column; align-items:center; gap:8px; pointer-events:none; }
+  .toast{ background:rgba(20,20,22,.92); color:#fff; padding:10px 16px; border-radius:99px; font-size:13px; max-width:88%; text-align:center; }
+
+  .user-row{ cursor:pointer; }
+  .progress-mini{ height:5px; background:var(--surface-2); border-radius:99px; overflow:hidden; margin-top:6px; }
+  .progress-mini > i{ display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--guard)); }
+
+  .post-card{ padding:14px; border:1px solid var(--line); border-radius:16px; margin-bottom:12px; }
+  .post-reply{ background:var(--accent-soft); border-radius:12px; padding:10px 12px; margin-top:10px; font-size:13.5px; }
+  .avatar{ width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--guard)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; flex-shrink:0; }
+</style>
+</head>
+<body>
+
+<div id="pinGate">
+  <div class="pin-box">
+    <img src="https://i.ibb.co/Z6RvKsNd/Picsart-26-08-21-02-56-13-099.png" style="width:56px;height:56px;border-radius:16px;object-fit:cover;margin:0 auto 14px" />
+    <h2>لوحة إدارة سرمد</h2>
+    <p class="faint" style="margin-top:6px">أدخل رمز الدخول</p>
+    <div class="pin-dots" id="pinDots"></div>
+    <div class="pin-pad" id="pinPad"></div>
+  </div>
+</div>
+
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><img src="https://i.ibb.co/Z6RvKsNd/Picsart-26-08-21-02-56-13-099.png" alt="" /><h3 style="font-size:16px">لوحة إدارة سرمد</h3></div>
+    <button class="btn btn-ghost btn-sm" onclick="Admin.lock()">قفل</button>
+  </header>
+  <main>
+    <div class="tabs" id="tabsBar"></div>
+    <div id="tabContent"></div>
+  </main>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script type="module">
+/* ============================================================
+   سرمد — Admin Panel (standalone)
+   PIN: 9033 (client-side gate only — see note at bottom of file)
+   ============================================================ */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import {
+  getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc,
+  query, orderBy, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDwo9ylUI7cq7DodekA0vM7iMw-6COp3BI",
+  authDomain: "saemad-8a204.firebaseapp.com",
+  projectId: "saemad-8a204",
+  storageBucket: "saemad-8a204.firebasestorage.app",
+  messagingSenderId: "676932025599",
+  appId: "1:676932025599:web:0076ca1cabc132883a60ca",
+  measurementId: "G-JXTFZ6LGMQ"
+};
+const IMGBB_KEY = "36b0e2658ed6fad2ca48081442f1539b";
+const ADMIN_PIN = "9033";
+const LOGO_URL = "https://i.ibb.co/Z6RvKsNd/Picsart-26-08-21-02-56-13-099.png";
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s = "") => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtDate = (ts) => { try { const d = ts?.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }); } catch { return "—"; } };
+function toast(msg, ms = 2600) {
+  const wrap = document.getElementById("toastWrap");
+  const t = document.createElement("div");
+  t.className = "toast"; t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(() => t.remove(), ms);
+}
+
+/* ================= PIN GATE ================= */
+let pinBuf = "";
+function renderPinPad() {
+  const dots = $("#pinDots");
+  dots.innerHTML = Array.from({ length: 4 }).map((_, i) => `<div class="pin-dot ${i < pinBuf.length ? "filled" : ""}"></div>`).join("");
+  const pad = $("#pinPad");
+  if (!pad.dataset.built) {
+    const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫"];
+    pad.innerHTML = keys.map((k) => k === "" ? `<span></span>` : `<button class="pin-key" data-k="${k}">${k}</button>`).join("");
+    pad.dataset.built = "1";
+    pad.addEventListener("click", (e) => {
+      const btn = e.target.closest(".pin-key"); if (!btn) return;
+      const k = btn.dataset.k;
+      if (k === "⌫") pinBuf = pinBuf.slice(0, -1);
+      else if (pinBuf.length < 4) pinBuf += k;
+      renderPinPad();
+      if (pinBuf.length === 4) checkPin();
+    });
+  }
+}
+function checkPin() {
+  if (pinBuf === ADMIN_PIN) {
+    sessionStorage.setItem("sarmadAdminUnlocked", "1");
+    unlockApp();
+  } else {
+    toast("رمز غير صحيح");
+    setTimeout(() => { pinBuf = ""; renderPinPad(); }, 350);
+  }
+}
+function unlockApp() {
+  $("#pinGate").style.display = "none";
+  $("#app").style.display = "block";
+  initAdmin();
+}
+window.Admin = window.Admin || {};
+window.Admin.lock = () => { sessionStorage.removeItem("sarmadAdminUnlocked"); location.reload(); };
+
+renderPinPad();
+if (sessionStorage.getItem("sarmadAdminUnlocked") === "1") unlockApp();
+
+/* ================= IMGBB UPLOAD HELPER ================= */
+async function uploadFileToImgbb(file) {
+  const base64 = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(",")[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+  const form = new FormData();
+  form.append("key", IMGBB_KEY);
+  form.append("image", base64);
+  const res = await fetch("https://api.imgbb.com/1/upload", { method: "POST", body: form });
+  const data = await res.json();
+  if (!data.success) throw new Error("فشل رفع الصورة");
+  return data.data.url;
+}
+
+/* ================= STATE ================= */
+const State = { paths: [], courses: [], lectures: [], tasks: [], users: [], forumPosts: [], loaded: false };
+let activeTab = "paths";
+const TABS = [
+  ["paths", "المسارات"], ["courses", "الكورسات"], ["lectures", "المحاضرات"],
+  ["tasks", "المهام"], ["users", "المستخدمون"], ["forum", "المنتدى"],
+];
+
+async function initAdmin() {
+  $("#tabsBar").innerHTML = TABS.map(([k, l]) => `<button class="tab-btn ${activeTab === k ? "active" : ""}" data-tab="${k}">${l}</button>`).join("");
+  $("#tabsBar").addEventListener("click", (e) => {
+    const b = e.target.closest(".tab-btn"); if (!b) return;
+    activeTab = b.dataset.tab;
+    $$(".tab-btn").forEach((x) => x.classList.toggle("active", x.dataset.tab === activeTab));
+    renderTab();
+  });
+  await loadAllContent();
+  renderTab();
+}
+function $$(s, r = document) { return Array.from(r.querySelectorAll(s)); }
+
+async function loadAllContent() {
+  $("#tabContent").innerHTML = `<div style="padding:60px 0"><div class="spinner"></div></div>`;
+  const cols = ["paths", "courses", "lectures", "tasks"];
+  const results = await Promise.all(cols.map((c) =>
+    getDocs(query(collection(db, c), orderBy("order", "asc"))).catch(() => getDocs(collection(db, c)))
+  ));
+  cols.forEach((c, i) => { State[c] = results[i].docs.map((d) => ({ id: d.id, ...d.data() })); });
+  const usersSnap = await getDocs(collection(db, "users"));
+  State.users = usersSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const forumSnap = await getDocs(collection(db, "forumPosts")).catch(() => ({ docs: [] }));
+  State.forumPosts = forumSnap.docs.map((d) => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+  State.loaded = true;
+}
+
+function renderTab() {
+  const box = $("#tabContent");
+  if (["paths", "courses", "lectures", "tasks"].includes(activeTab)) return renderContentTab(box);
+  if (activeTab === "users") return renderUsersTab(box);
+  if (activeTab === "forum") return renderForumTab(box);
+}
+
+/* ================= CONTENT CRUD TAB (paths/courses/lectures/tasks) ================= */
+function renderContentTab(box) {
+  const items = State[activeTab] || [];
+  box.innerHTML = `
+    <button class="btn btn-primary btn-block" id="addBtn" style="margin-bottom:16px">+ إضافة ${TABS.find((t) => t[0] === activeTab)[1]}</button>
+    <div id="listWrap">${items.length ? items.map((it) => contentRowHtml(it)).join("") : `<div class="empty">لا توجد عناصر بعد</div>`}</div>`;
+  $("#addBtn").onclick = () => openContentForm(null);
+  $$(".edit-btn").forEach((b) => (b.onclick = () => openContentForm(b.dataset.id)));
+  $$(".del-btn").forEach((b) => (b.onclick = () => deleteContentItem(b.dataset.id)));
+}
+function contentRowHtml(it) {
+  let sub = "";
+  if (activeTab === "courses") sub = Number(it.price) > 0 ? `${it.price} $` : "مجاني";
+  if (activeTab === "tasks") sub = it.type;
+  if (activeTab === "lectures") sub = it.duration || "";
+  return `
+  <div class="list-item">
+    <img src="${esc(it.image || LOGO_URL)}" />
+    <div class="txt"><h4>${esc(it.title || "بدون عنوان")}</h4><p class="faint">${esc(sub)}</p></div>
+    <button class="btn btn-outline btn-sm edit-btn" data-id="${it.id}">تعديل</button>
+    <button class="btn btn-danger btn-sm del-btn" data-id="${it.id}">حذف</button>
+  </div>`;
+}
+async function deleteContentItem(id) {
+  if (!confirm("حذف هذا العنصر نهائيًا؟")) return;
+  await deleteDoc(doc(db, activeTab, id));
+  toast("تم الحذف");
+  await loadAllContent();
+  renderTab();
+}
+
+function imageFieldHtml(fieldId, currentUrl = "") {
+  return `
+  <div class="img-input-row">
+    <img class="img-preview" id="${fieldId}_prev" src="${esc(currentUrl || LOGO_URL)}" />
+    <input id="${fieldId}" dir="ltr" placeholder="رابط الصورة" value="${esc(currentUrl)}" oninput="document.getElementById('${fieldId}_prev').src=this.value||'${LOGO_URL}'" />
+    <label class="btn btn-ghost btn-sm" style="cursor:pointer;flex-shrink:0">
+      رفع
+      <input type="file" accept="image/*" style="display:none" data-target="${fieldId}" class="img-upload-input" />
+    </label>
+  </div>`;
+}
+function wireImageUploads(root) {
+  $$(".img-upload-input", root).forEach((inp) => {
+    inp.addEventListener("change", async () => {
+      const file = inp.files[0]; if (!file) return;
+      toast("جارِ رفع الصورة...");
+      try {
+        const url = await uploadFileToImgbb(file);
+        const target = document.getElementById(inp.dataset.target);
+        target.value = url;
+        document.getElementById(inp.dataset.target + "_prev").src = url;
+        toast("تم رفع الصورة");
+      } catch (e) { toast(e.message || "فشل رفع الصورة"); }
+    });
+  });
+}
+
+function contentFormFields(kind, item) {
+  const v = (k, d = "") => esc(item?.[k] ?? d);
+  if (kind === "paths") return `
+    <div class="field"><label>العنوان</label><input id="f_title" value="${v("title")}"></div>
+    <div class="field"><label>الوصف</label><textarea id="f_desc">${v("desc")}</textarea></div>
+    <div class="field"><label>الصورة</label>${imageFieldHtml("f_image", item?.image)}</div>
+    <div class="field"><label>الترتيب</label><input id="f_order" type="number" value="${v("order", 0)}"></div>`;
+  if (kind === "courses") return `
+    <div class="field"><label>المسار</label><select id="f_pathId">${State.paths.map((p) => `<option value="${p.id}" ${item?.pathId === p.id ? "selected" : ""}>${esc(p.title)}</option>`).join("")}</select></div>
+    <div class="field"><label>العنوان</label><input id="f_title" value="${v("title")}"></div>
+    <div class="field"><label>الوصف</label><textarea id="f_desc">${v("desc")}</textarea></div>
+    <div class="field"><label>المحاضر</label><input id="f_instructor" value="${v("instructor")}"></div>
+    <div class="field"><label>الصورة</label>${imageFieldHtml("f_image", item?.image)}</div>
+    <div class="field"><label>السعر بالدولار (0 = مجاني)</label><input id="f_price" type="number" value="${v("price", 0)}"></div>
+    <div class="field"><label>تاريخ البداية</label><input id="f_startDate" value="${v("startDate")}"></div>
+    <div class="field"><label>الترتيب</label><input id="f_order" type="number" value="${v("order", 0)}"></div>`;
+  if (kind === "lectures") return `
+    <div class="field"><label>الكورس</label><select id="f_courseId">${State.courses.map((c) => `<option value="${c.id}" ${item?.courseId === c.id ? "selected" : ""}>${esc(c.title)}</option>`).join("")}</select></div>
+    <div class="field"><label>العنوان</label><input id="f_title" value="${v("title")}"></div>
+    <div class="field"><label>الوصف</label><textarea id="f_desc">${v("desc")}</textarea></div>
+    <div class="field"><label>الصورة</label>${imageFieldHtml("f_image", item?.image)}</div>
+    <div class="field"><label>المدة</label><input id="f_duration" value="${v("duration")}"></div>
+    <div class="field"><label>الترتيب</label><input id="f_order" type="number" value="${v("order", 0)}"></div>`;
+  if (kind === "tasks") {
+    const type = item?.type || "json";
+    return `
+    <div class="field"><label>المحاضرة</label><select id="f_lectureId">${State.lectures.map((l) => `<option value="${l.id}" ${item?.lectureId === l.id ? "selected" : ""}>${esc(l.title)}</option>`).join("")}</select></div>
+    <div class="field"><label>العنوان</label><input id="f_title" value="${v("title")}"></div>
+    <div class="field"><label>النوع</label><select id="f_type">${["json", "pdf", "video", "mcq", "code"].map((t) => `<option value="${t}" ${type === t ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+    <div class="field"><label>المدة (نص حر)</label><input id="f_duration" value="${v("duration")}"></div>
+    <div class="field"><label>الترتيب</label><input id="f_order" type="number" value="${v("order", 0)}"></div>
+    <div id="typeFields"></div>`;
+  }
+  return "";
+}
+function typeSpecificFieldsHtml(type, content = {}) {
+  if (type === "json") return `
+    <div class="field"><label>صورة اختيارية داخل المحتوى</label>${imageFieldHtml("tf_image", content.image)}</div>
+    <div class="field"><label>المحتوى JSON: {"blocks":[{"text":"","color":"#000","animate":true}],"links":[{"label":"","url":""}]}</label><textarea id="tf_text" style="min-height:140px" dir="ltr">${esc(content.text || JSON.stringify({ blocks: [{ text: "" }], links: [] }, null, 2))}</textarea></div>`;
+  if (type === "pdf") return `<div class="field"><label>رابط ملف الـ PDF (مثال: https://files.catbox.moe/xxxx.pdf)</label><input id="tf_url" dir="ltr" value="${esc(content.url || "")}"></div>`;
+  if (type === "video") return `<div class="field"><label>رابط الفيديو (mp4 أو يوتيوب)</label><input id="tf_url" dir="ltr" value="${esc(content.url || "")}"></div>`;
+  if (type === "mcq") return `
+    <div class="field"><label>الوقت بالثواني (0 = بدون وقت)</label><input id="tf_time" type="number" value="${content.timeLimitSec || 0}"></div>
+    <div class="field"><label>الأسئلة JSON: [{"q":"","options":["",""],"correct":0}]</label><textarea id="tf_questions" style="min-height:160px" dir="ltr">${esc(JSON.stringify(content.questions || [{ q: "", options: ["", ""], correct: 0 }], null, 2))}</textarea></div>`;
+  if (type === "code") return `
+    <div class="field"><label>لغة البرمجة</label><input id="tf_lang" dir="ltr" value="${esc(content.language || "python")}"></div>
+    <div class="field"><label>تعليمات التمرين</label><textarea id="tf_instructions">${esc(content.instructions || "")}</textarea></div>
+    <div class="field"><label>الكود المبدئي</label><textarea id="tf_starter" style="min-height:120px" dir="ltr">${esc(content.starter || "")}</textarea></div>`;
+  return "";
+}
+
+function openContentForm(id) {
+  const item = id ? State[activeTab].find((x) => x.id === id) : null;
+  const modal = document.createElement("div");
+  modal.className = "modal-back";
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  modal.innerHTML = `<div class="modal-sheet"><div class="modal-handle"></div>
+    <h3 style="margin-bottom:16px">${id ? "تعديل" : "إضافة"} — ${TABS.find((t) => t[0] === activeTab)[1]}</h3>
+    <div id="formFields">${contentFormFields(activeTab, item)}</div>
+    <button class="btn btn-primary btn-block" id="saveBtn" style="margin-top:6px">حفظ</button>
+  </div>`;
+  document.body.appendChild(modal);
+  wireImageUploads(modal);
+  if (activeTab === "tasks") {
+    const typeSel = $("#f_type", modal);
+    const fillType = () => { $("#typeFields", modal).innerHTML = typeSpecificFieldsHtml(typeSel.value, item?.content || {}); wireImageUploads(modal); };
+    typeSel.addEventListener("change", fillType);
+    fillType();
+  }
+  $("#saveBtn", modal).onclick = () => saveContentItem(id, modal);
+}
+
+async function saveContentItem(id, modal) {
+  const g = (sel) => $(sel, modal)?.value;
+  let data = {};
+  if (activeTab === "paths") data = { title: g("#f_title"), desc: g("#f_desc"), image: g("#f_image"), order: Number(g("#f_order") || 0) };
+  if (activeTab === "courses") data = { pathId: g("#f_pathId"), title: g("#f_title"), desc: g("#f_desc"), instructor: g("#f_instructor"), image: g("#f_image"), price: Number(g("#f_price") || 0), startDate: g("#f_startDate"), order: Number(g("#f_order") || 0) };
+  if (activeTab === "lectures") data = { courseId: g("#f_courseId"), title: g("#f_title"), desc: g("#f_desc"), image: g("#f_image"), duration: g("#f_duration"), order: Number(g("#f_order") || 0) };
+  if (activeTab === "tasks") {
+    const type = g("#f_type");
+    let content = {};
+    try {
+      if (type === "json") content = { text: g("#tf_text"), image: g("#tf_image") };
+      if (type === "pdf" || type === "video") content = { url: g("#tf_url") };
+      if (type === "mcq") content = { timeLimitSec: Number(g("#tf_time") || 0), questions: JSON.parse(g("#tf_questions") || "[]") };
+      if (type === "code") content = { language: g("#tf_lang"), instructions: g("#tf_instructions"), starter: g("#tf_starter") };
+    } catch { return toast("صيغة JSON غير صحيحة في الأسئلة/المحتوى"); }
+    data = { lectureId: g("#f_lectureId"), title: g("#f_title"), type, duration: g("#f_duration"), order: Number(g("#f_order") || 0), content };
+  }
+  try {
+    if (id) await updateDoc(doc(db, activeTab, id), data);
+    else await addDoc(collection(db, activeTab), data);
+    modal.remove();
+    toast("تم الحفظ");
+    await loadAllContent();
+    renderTab();
+  } catch (e) { toast("تعذر الحفظ: " + e.message); }
+}
+
+/* ================= USERS TAB ================= */
+function renderUsersTab(box) {
+  const users = State.users;
+  box.innerHTML = `
+    <div class="field"><input id="userSearch" placeholder="بحث بالاسم أو اسم المستخدم أو الهاتف..." /></div>
+    <div id="usersList">${users.length ? users.map(userRowHtml).join("") : `<div class="empty">لا يوجد مستخدمون بعد</div>`}</div>`;
+  $$(".user-row").forEach((r) => (r.onclick = () => openUserDetail(r.dataset.id)));
+  $("#userSearch").addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    const filtered = users.filter((u) => `${u.firstName || ""} ${u.lastName || ""} ${u.username || ""} ${u.phone || ""}`.toLowerCase().includes(q));
+    $("#usersList").innerHTML = filtered.length ? filtered.map(userRowHtml).join("") : `<div class="empty">لا نتائج</div>`;
+    $$(".user-row").forEach((r) => (r.onclick = () => openUserDetail(r.dataset.id)));
+  });
+}
+function userRowHtml(u) {
+  return `
+  <div class="list-item user-row" data-id="${u.id}">
+    <div class="avatar">${esc((u.firstName || "؟").charAt(0))}</div>
+    <div class="txt">
+      <h4>${esc(u.firstName || "")} ${esc(u.middleName || "")} ${esc(u.lastName || "")}</h4>
+      <p class="faint">@${esc(u.username || "—")} · ${esc(u.phone || "—")}${u.isAdmin ? " · <b>أدمن</b>" : ""}</p>
+    </div>
+    <span class="faint">${fmtDate(u.createdAt)}</span>
+  </div>`;
+}
+async function openUserDetail(uid) {
+  const u = State.users.find((x) => x.id === uid);
+  const modal = document.createElement("div");
+  modal.className = "modal-back";
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  modal.innerHTML = `<div class="modal-sheet"><div class="modal-handle"></div>
+    <div style="text-align:center;margin-bottom:16px">
+      <div class="avatar" style="width:52px;height:52px;font-size:18px;margin:0 auto 8px">${esc((u.firstName || "؟").charAt(0))}</div>
+      <h3>${esc(u.firstName || "")} ${esc(u.middleName || "")} ${esc(u.lastName || "")}</h3>
+      <p class="faint">@${esc(u.username || "—")}</p>
+    </div>
+    <div class="card" style="padding:4px;margin-bottom:16px">
+      ${detailRow("البريد الإلكتروني", u.email)}
+      ${detailRow("رقم الهاتف", u.phone)}
+      ${detailRow("طريقة التسجيل", u.provider === "google" ? "جوجل" : "بريد إلكتروني")}
+      ${detailRow("تاريخ التسجيل", fmtDate(u.createdAt))}
+    </div>
+    <h4 style="margin-bottom:10px">الاشتراكات والتقدم</h4>
+    <div id="userProgressWrap"><div class="spinner"></div></div>
+  </div>`;
+  document.body.appendChild(modal);
+  const [progSnap, subSnap] = await Promise.all([
+    getDocs(collection(db, "users", uid, "progress")),
+    getDocs(collection(db, "users", uid, "subscriptions")),
+  ]);
+  const progress = {}; progSnap.docs.forEach((d) => (progress[d.id] = d.data()));
+  const subs = {}; subSnap.docs.forEach((d) => (subs[d.id] = d.data()));
+  const wrap = $("#userProgressWrap", modal);
+  if (!State.courses.length) { wrap.innerHTML = `<div class="empty">لا توجد كورسات بعد</div>`; return; }
+  wrap.innerHTML = State.courses.map((c) => {
+    const paid = Number(c.price) > 0;
+    const subscribed = !paid || subs[c.id]?.active;
+    if (!subscribed) return "";
+    const lects = State.lectures.filter((l) => l.courseId === c.id);
+    let ct = 0, cd = 0;
+    lects.forEach((l) => {
+      const tks = State.tasks.filter((t) => t.lectureId === l.id);
+      const done = progress[l.id]?.completedTasks || [];
+      ct += tks.length; cd += tks.filter((t) => done.includes(t.id)).length;
+    });
+    const pct = ct ? Math.round((cd / ct) * 100) : 0;
+    return `<div style="margin-bottom:12px">
+      <div class="row between"><span style="font-size:13.5px;font-weight:600">${esc(c.title)}</span><span class="faint">${cd}/${ct} — ${pct}%</span></div>
+      <div class="progress-mini"><i style="width:${pct}%"></i></div>
+    </div>`;
+  }).join("") || `<div class="empty">لم يشترك في أي كورس مدفوع بعد</div>`;
+}
+function detailRow(label, val) {
+  return `<div class="row between" style="padding:10px 12px"><span class="muted" style="font-size:13px">${label}</span><span style="font-size:13px;font-weight:600" dir="ltr">${esc(val || "—")}</span></div>`;
+}
+
+/* ================= FORUM TAB (view + reply) ================= */
+function renderForumTab(box) {
+  const posts = State.forumPosts;
+  box.innerHTML = posts.length ? posts.map(forumPostAdminHtml).join("") : `<div class="empty">لا توجد مشاركات بعد</div>`;
+  $$(".reply-send", box).forEach((btn) => (btn.onclick = () => sendForumReply(btn.dataset.id)));
+  $$(".post-del", box).forEach((btn) => (btn.onclick = () => deleteForumPost(btn.dataset.id)));
+}
+function forumPostAdminHtml(p) {
+  return `
+  <div class="post-card">
+    <div class="row between" style="margin-bottom:8px">
+      <div class="row gap-8"><div class="avatar">${esc((p.name || "؟").charAt(0))}</div><div><p style="font-weight:600;font-size:13.5px">${esc(p.name || "طالب")}</p><p class="faint">${fmtDate(p.createdAt)}</p></div></div>
+      <button class="btn btn-danger btn-sm post-del" data-id="${p.id}">حذف</button>
+    </div>
+    <p style="margin-bottom:${p.imageUrl ? "10px" : "0"}">${esc(p.text || "")}</p>
+    ${p.imageUrl ? `<img src="${esc(p.imageUrl)}" style="border-radius:12px;max-height:220px;object-fit:cover;width:100%;margin-bottom:10px" />` : ""}
+    ${p.adminReply ? `<div class="post-reply"><b>رد الإدارة:</b> ${esc(p.adminReply)}</div>` : ""}
+    <div class="row gap-8" style="margin-top:10px">
+      <input id="reply_${p.id}" placeholder="اكتب ردًا..." value="${esc(p.adminReply || "")}" />
+      <button class="btn btn-accent btn-sm reply-send" data-id="${p.id}">إرسال</button>
+    </div>
+  </div>`;
+}
+async function sendForumReply(postId) {
+  const text = $(`#reply_${postId}`).value.trim();
+  if (!text) return toast("اكتب ردًا أولاً");
+  try {
+    await updateDoc(doc(db, "forumPosts", postId), { adminReply: text, adminReplyAt: serverTimestamp() });
+    toast("تم إرسال الرد");
+    await loadAllContent();
+    renderTab();
+  } catch (e) { toast("تعذر الإرسال: " + e.message); }
+}
+async function deleteForumPost(postId) {
+  if (!confirm("حذف هذه المشاركة نهائيًا؟")) return;
+  await deleteDoc(doc(db, "forumPosts", postId));
+  toast("تم الحذف");
+  await loadAllContent();
+  renderTab();
+}
+
+/* NOTE: this PIN screen is a client-side convenience gate only, not real
+   access control — anyone with Firestore write access via the browser
+   console could still write data directly. For real protection, add
+   Firestore Security Rules that check a custom "admin" auth claim/role,
+   independent of this file. */
+
+</script>
+</body>
+</html>
