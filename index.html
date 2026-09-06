@@ -466,7 +466,10 @@ img{ -webkit-user-drag:none; user-drag:none; }
       <div class="field">
         <label><input type="checkbox" id="co-paid" style="width:auto; display:inline-block;"> كورس مدفوع</label>
       </div>
-      <div class="field"><label>السعر ($)</label><input type="number" id="co-price" value="0"></div>
+      <div class="field"><label>السعر بالجنيه المصري (يُعرض للطالب)</label><input type="number" id="co-price-egp" value="0"></div>
+      <div class="field"><label>السعر بالدولار (لتحصيل الدفع الفعلي عبر PayPal)</label><input type="number" id="co-price" value="0">
+        <div class="hint">باي بال لا يدعم استلام مدفوعات بالجنيه المصري مباشرة، لذلك التحصيل الفعلي بالدولار مع عرض السعر بالجنيه للطالب</div>
+      </div>
       <button class="btn btn-primary btn-block" type="submit">إضافة</button>
     </form>
     <div id="list-courses"></div>
@@ -512,7 +515,11 @@ img{ -webkit-user-drag:none; user-drag:none; }
         </select>
       </div>
       <div class="field"><label>الترتيب</label><input type="number" id="ta-order" value="1"></div>
-      <div class="field"><label>مدة الاختبار/المهمة (ثانية، اختياري)</label><input type="number" id="ta-time" placeholder="0 = بدون حد"></div>
+      <div class="field"><label>عنوان المهمة</label><input type="text" id="ta-title" placeholder="مثال: مقدمة عن المتغيرات"></div>
+      <div class="field"><label>وصف المهمة (الهدف منها)</label><textarea id="ta-desc" rows="2" placeholder="هدف قصير يوضّح للطالب الغرض من المهمة"></textarea></div>
+      <div class="field"><label>مدة الاختبار/المهمة (ثانية، اختياري)</label><input type="number" id="ta-time" placeholder="0 = بدون حد">
+        <div class="hint">لو حددت مدة، زر "إتمام المهمة" لن يُفعّل عند الطالب إلا بعد انتهاء هذا الوقت</div>
+      </div>
 
       <div id="ta-fields-json" class="task-type-fields">
         <div class="field"><label>عنوان المحتوى</label><input type="text" id="tj-title"></div>
@@ -906,7 +913,7 @@ async function loadCourses(){
     const c = d.data();
     lectureSelect.innerHTML += `<option value="${d.id}">${esc(c.title)}</option>`;
     list.innerHTML += `<div class="list-item glass">
-      <div><div class="name">${esc(c.title)}</div><div class="sub">مسار: ${esc(tracks[c.trackId]||"—")} · ${c.isPaid ? "مدفوع - "+esc(c.price)+"$" : "مجاني"}</div></div>
+      <div><div class="name">${esc(c.title)}</div><div class="sub">مسار: ${esc(tracks[c.trackId]||"—")} · ${c.isPaid ? `مدفوع - ${esc(c.priceEGP||0)} جنيه (${esc(c.price||0)}$)` : "مجاني"}</div></div>
       <button class="danger-btn" data-id="${d.id}" data-col="courses">حذف</button>
     </div>`;
   });
@@ -924,6 +931,7 @@ document.getElementById("form-course").addEventListener("submit", async (e) => {
     startDate: document.getElementById("co-start").value.trim(),
     isPaid: document.getElementById("co-paid").checked,
     price: Number(document.getElementById("co-price").value)||0,
+    priceEGP: Number(document.getElementById("co-price-egp").value)||0,
     createdAt: serverTimestamp()
   });
   logAction("إضافة كورس", title);
@@ -978,28 +986,75 @@ function renderMcqBuilder(){
   const wrap = document.getElementById("mcq-builder");
   wrap.innerHTML = "";
   mcqQuestions.forEach((q, qi) => {
+    q.qtype = q.qtype || "single";
     const box = document.createElement("div");
     box.className = "qbox";
+    let bodyHtml = "";
+    if (q.qtype === "essay"){
+      bodyHtml = `<p class="hint">سؤال مقالي — الطالب يكتب إجابة حرة، ولا يُحتسب تلقائيًا ضمن الدرجة (يظهر للمراجعة)</p>`;
+    } else {
+      const isMulti = q.qtype === "multi";
+      bodyHtml = (q.options||[]).map((opt,oi) => `
+        <div class="field" style="display:flex; gap:8px; align-items:center;">
+          <input type="${isMulti ? "checkbox" : "radio"}" name="correct-${qi}" ${isMulti ? (((q.correctIndexes||[]).includes(oi)) ? "checked":"") : (q.correctIndex===oi?"checked":"")} class="mq-correct" data-qi="${qi}" data-oi="${oi}" style="width:auto;">
+          <input type="text" class="mq-opt" data-qi="${qi}" data-oi="${oi}" value="${esc(opt)}" placeholder="خيار ${oi+1}" style="flex:1;">
+          <button type="button" class="danger-btn" data-remove-opt="${qi}:${oi}" title="حذف الخيار">✕</button>
+        </div>`).join("") +
+        `<button type="button" class="btn btn-secondary" style="font-size:12px; padding:8px 12px; margin-bottom:8px;" data-add-opt="${qi}">+ إضافة خيار</button>`;
+    }
     box.innerHTML = `
       <div class="field"><label>نص السؤال ${qi+1}</label><input type="text" class="mq-q" data-qi="${qi}" value="${esc(q.q)}"></div>
-      ${q.options.map((opt,oi) => `
-        <div class="field" style="display:flex; gap:8px; align-items:center;">
-          <input type="radio" name="correct-${qi}" ${q.correctIndex===oi?"checked":""} class="mq-correct" data-qi="${qi}" data-oi="${oi}" style="width:auto;">
-          <input type="text" class="mq-opt" data-qi="${qi}" data-oi="${oi}" value="${esc(opt)}" placeholder="خيار ${oi+1}" style="flex:1;">
-        </div>`).join("")}
+      <div class="field">
+        <label>نوع السؤال</label>
+        <select class="mq-type" data-qi="${qi}">
+          <option value="single" ${q.qtype==="single"?"selected":""}>اختيار واحد صحيح</option>
+          <option value="multi" ${q.qtype==="multi"?"selected":""}>اختيار أكثر من إجابة</option>
+          <option value="essay" ${q.qtype==="essay"?"selected":""}>سؤال مقالي (إجابة حرة)</option>
+        </select>
+      </div>
+      ${bodyHtml}
       <button type="button" class="danger-btn" data-remove-q="${qi}">حذف السؤال</button>
     `;
     wrap.appendChild(box);
   });
   wrap.querySelectorAll(".mq-q").forEach(el => el.oninput = () => mcqQuestions[el.dataset.qi].q = el.value);
+  wrap.querySelectorAll(".mq-type").forEach(el => el.onchange = () => {
+    const q = mcqQuestions[el.dataset.qi];
+    q.qtype = el.value;
+    if (q.qtype !== "essay" && !q.options) q.options = ["","",""];
+    if (q.qtype === "multi" && !q.correctIndexes) q.correctIndexes = [];
+    renderMcqBuilder();
+  });
   wrap.querySelectorAll(".mq-opt").forEach(el => el.oninput = () => mcqQuestions[el.dataset.qi].options[el.dataset.oi] = el.value);
-  wrap.querySelectorAll(".mq-correct").forEach(el => el.onchange = () => mcqQuestions[el.dataset.qi].correctIndex = Number(el.dataset.oi));
+  wrap.querySelectorAll(".mq-correct").forEach(el => el.onchange = () => {
+    const q = mcqQuestions[el.dataset.qi];
+    const oi = Number(el.dataset.oi);
+    if (q.qtype === "multi"){
+      q.correctIndexes = q.correctIndexes || [];
+      const pos = q.correctIndexes.indexOf(oi);
+      if (el.checked && pos === -1) q.correctIndexes.push(oi);
+      if (!el.checked && pos !== -1) q.correctIndexes.splice(pos,1);
+    } else {
+      q.correctIndex = oi;
+    }
+  });
+  wrap.querySelectorAll("[data-add-opt]").forEach(el => el.onclick = () => {
+    mcqQuestions[el.dataset.addOpt].options.push("");
+    renderMcqBuilder();
+  });
+  wrap.querySelectorAll("[data-remove-opt]").forEach(el => el.onclick = () => {
+    const [qi, oi] = el.dataset.removeOpt.split(":").map(Number);
+    mcqQuestions[qi].options.splice(oi,1);
+    if (mcqQuestions[qi].correctIndex === oi) mcqQuestions[qi].correctIndex = 0;
+    if (mcqQuestions[qi].correctIndexes) mcqQuestions[qi].correctIndexes = mcqQuestions[qi].correctIndexes.filter(x=>x!==oi).map(x=>x>oi?x-1:x);
+    renderMcqBuilder();
+  });
   wrap.querySelectorAll("[data-remove-q]").forEach(el => el.onclick = () => {
     mcqQuestions.splice(Number(el.dataset.removeQ),1); renderMcqBuilder();
   });
 }
 document.getElementById("btn-add-q").addEventListener("click", () => {
-  mcqQuestions.push({ q:"", options:["","",""], correctIndex:0 });
+  mcqQuestions.push({ q:"", qtype:"single", options:["","",""], correctIndex:0 });
   renderMcqBuilder();
 });
 
@@ -1012,11 +1067,71 @@ async function loadTasks(){
   snap.forEach(d => {
     const t = d.data();
     list.innerHTML += `<div class="list-item glass">
-      <div><div class="name">${esc(typeLabels[t.type]||t.type)}</div><div class="sub">محاضرة: ${esc(lectures[t.lectureId]||"—")} · ترتيب ${t.order||0}</div></div>
-      <button class="danger-btn" data-id="${d.id}" data-col="tasks">حذف</button>
+      <div><div class="name">${esc(t.title || typeLabels[t.type] || t.type)}</div><div class="sub">محاضرة: ${esc(lectures[t.lectureId]||"—")} · ${esc(typeLabels[t.type]||t.type)} · ترتيب ${t.order||0}</div></div>
+      <div style="display:flex; gap:8px;">
+        <button class="danger-btn" style="color:var(--ink-soft);" data-edit-task="${d.id}">تعديل</button>
+        <button class="danger-btn" data-id="${d.id}" data-col="tasks">حذف</button>
+      </div>
     </div>`;
   });
   bindDeletes(list, loadTasks);
+  list.querySelectorAll("[data-edit-task]").forEach(btn => {
+    btn.onclick = () => loadTaskIntoForm(btn.dataset.editTask);
+  });
+}
+
+let EDITING_TASK_ID = null;
+async function loadTaskIntoForm(taskId){
+  const snap = await getDoc(doc(db,"tasks",taskId));
+  if (!snap.exists()) return;
+  const t = snap.data();
+  EDITING_TASK_ID = taskId;
+
+  document.getElementById("ta-lecture").value = t.lectureId || "";
+  document.getElementById("ta-type").value = t.type || "json";
+  document.getElementById("ta-type").dispatchEvent(new Event("change"));
+  document.getElementById("ta-order").value = t.order || 1;
+  document.getElementById("ta-title").value = t.title || "";
+  document.getElementById("ta-desc").value = t.description || "";
+  document.getElementById("ta-time").value = t.timeLimitSeconds || "";
+
+  if (t.type === "json"){
+    let c = {}; try{ c = JSON.parse(t.contentJson || "{}"); }catch(e){}
+    document.getElementById("tj-title").value = c.title || "";
+    document.getElementById("tj-color").value = c.color || "#E23B3B";
+    const textBlock = (c.blocks||[]).find(b => b.type === "text");
+    const imageBlock = (c.blocks||[]).find(b => b.type === "image");
+    const linkBlock = (c.blocks||[]).find(b => b.type === "link");
+    document.getElementById("tj-text").value = textBlock?.value || "";
+    document.getElementById("tj-image").value = imageBlock?.src || "";
+    document.getElementById("tj-link").value = linkBlock?.href || "";
+  } else if (t.type === "pdf"){
+    document.getElementById("tp-url").value = t.url || "";
+  } else if (t.type === "video"){
+    document.getElementById("tv-url").value = t.url || "";
+    document.getElementById("tv-est").value = t.estimatedSeconds || 120;
+  } else if (t.type === "mcq"){
+    try{ mcqQuestions = JSON.parse(t.questionsJson || "[]"); }catch(e){ mcqQuestions = []; }
+    renderMcqBuilder();
+  } else if (t.type === "code"){
+    document.getElementById("tc-lang").value = t.language || "javascript";
+    document.getElementById("tc-instructions").value = t.instructions || "";
+    document.getElementById("tc-starter").value = t.starterCode || "";
+  }
+
+  document.querySelector('#form-task button[type=submit]').textContent = "حفظ التعديلات";
+  if (!document.getElementById("btn-cancel-task-edit")){
+    const cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.id = "btn-cancel-task-edit";
+    cancelBtn.className = "btn btn-ghost btn-block";
+    cancelBtn.style.marginTop = "8px";
+    cancelBtn.textContent = "إلغاء التعديل";
+    cancelBtn.onclick = cancelTaskEdit;
+    document.querySelector('#form-task button[type=submit]').insertAdjacentElement("afterend", cancelBtn);
+  }
+  document.getElementById("form-task").scrollIntoView({ behavior:"smooth", block:"start" });
+  toast("جاري تعديل المهمة — عدّل الحقول ثم احفظ");
 }
 
 document.getElementById("form-task").addEventListener("submit", async (e) => {
@@ -1026,8 +1141,9 @@ document.getElementById("form-task").addEventListener("submit", async (e) => {
     lectureId: document.getElementById("ta-lecture").value,
     type,
     order: Number(document.getElementById("ta-order").value)||1,
+    title: document.getElementById("ta-title").value.trim(),
+    description: document.getElementById("ta-desc").value.trim(),
     timeLimitSeconds: Number(document.getElementById("ta-time").value)||0,
-    createdAt: serverTimestamp()
   };
   let extra = {};
   if (type === "json"){
@@ -1052,13 +1168,30 @@ document.getElementById("form-task").addEventListener("submit", async (e) => {
     extra.instructions = document.getElementById("tc-instructions").value.trim();
     extra.starterCode = document.getElementById("tc-starter").value;
   }
-  await addDoc(collection(db,"tasks"), { ...base, ...extra });
-  logAction("إضافة مهمة", type);
-  e.target.reset();
-  mcqQuestions = []; renderMcqBuilder();
-  toast("تمت إضافة المهمة");
+
+  if (EDITING_TASK_ID){
+    await updateDoc(doc(db,"tasks",EDITING_TASK_ID), { ...base, ...extra, updatedAt: serverTimestamp() });
+    logAction("تعديل مهمة", type);
+    toast("تم حفظ التعديلات");
+    cancelTaskEdit();
+  } else {
+    await addDoc(collection(db,"tasks"), { ...base, ...extra, createdAt: serverTimestamp() });
+    logAction("إضافة مهمة", type);
+    toast("تمت إضافة المهمة");
+    e.target.reset();
+    mcqQuestions = []; renderMcqBuilder();
+  }
   loadTasks();
 });
+
+function cancelTaskEdit(){
+  EDITING_TASK_ID = null;
+  document.getElementById("form-task").reset();
+  mcqQuestions = []; renderMcqBuilder();
+  document.querySelector('#form-task button[type=submit]').textContent = "إضافة المهمة";
+  const cancelBtn = document.getElementById("btn-cancel-task-edit");
+  if (cancelBtn) cancelBtn.remove();
+}
 
 // ================= المنتدى (إدارة + الرد) =================
 async function loadForum(){
@@ -1117,9 +1250,10 @@ async function loadForum(){
 async function renderReplies(postId){
   const wrap = document.getElementById(`replies-${postId}`);
   if (!wrap) return;
-  const snap = await getDocs(query(collection(db,"forumReplies"), where("postId","==",postId), orderBy("createdAt","asc")));
+  const snap = await getDocs(query(collection(db,"forumReplies"), where("postId","==",postId)));
   wrap.innerHTML = "";
-  snap.forEach(d => {
+  const sorted = snap.docs.slice().sort((a,b) => (a.data().createdAt?.seconds||0) - (b.data().createdAt?.seconds||0));
+  sorted.forEach(d => {
     const r = d.data();
     wrap.innerHTML += `<div class="reply-item"><div class="who">فريق سَرْمَد</div>${esc(r.text)}</div>`;
   });
