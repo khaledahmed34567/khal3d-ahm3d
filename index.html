@@ -1022,7 +1022,7 @@ function renderMcqBuilder(){
         <div class="field" style="display:flex; gap:8px; align-items:center;">
           <input type="${isMulti ? "checkbox" : "radio"}" name="correct-${qi}" ${isMulti ? (((q.correctIndexes||[]).includes(oi)) ? "checked":"") : (q.correctIndex===oi?"checked":"")} class="mq-correct" data-qi="${qi}" data-oi="${oi}" style="width:auto;">
           <input type="text" class="mq-opt" data-qi="${qi}" data-oi="${oi}" value="${esc(opt)}" placeholder="خيار ${oi+1}" style="flex:1;">
-          <button type="button" class="danger-btn" data-remove-opt="${qi}:${oi}" title="حذف الخيار">✕</button>
+          <button type="button" class="danger-btn" data-remove-opt="${qi}:${oi}" title="حذف الخيار"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
         </div>`).join("") +
         `<button type="button" class="btn btn-secondary" style="font-size:12px; padding:8px 12px; margin-bottom:8px;" data-add-opt="${qi}">+ إضافة خيار</button>`;
     }
