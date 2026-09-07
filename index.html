@@ -581,7 +581,11 @@ img{ -webkit-user-drag:none; user-drag:none; }
     <form class="glass form-card" id="form-cert">
       <h3>إصدار شهادة إتمام</h3>
       <div class="field"><label>الكورس</label><select id="cert-course" required></select></div>
-      <div class="field"><label>اسم مستخدم الطالب</label><input type="text" id="cert-username" required placeholder="مثال: khaled_dev"></div>
+      <div class="field"><label>الطالب</label>
+        <input type="text" id="cert-username" required placeholder="ابحث بالاسم أو اسم المستخدم" list="cert-students-list" autocomplete="off">
+        <datalist id="cert-students-list"></datalist>
+        <div class="hint">اكتب أول حرف وستظهر لك قائمة بالطلاب المسجّلين للاختيار منها</div>
+      </div>
       <div class="field">
         <label>صورة الشهادة</label>
         <input type="url" id="cert-image" placeholder="الصق رابطًا أو ارفع صورة" required>
@@ -883,6 +887,7 @@ function initAdmin(){
   loadStats();
   loadLog();
   loadCertCourseOptions();
+  loadCertStudentsList();
   loadCerts();
 }
 
@@ -1309,6 +1314,18 @@ async function loadCertCourseOptions(){
   sel.innerHTML = "";
   Object.entries(courses).forEach(([id,title]) => {
     sel.innerHTML += `<option value="${id}">${esc(title)}</option>`;
+  });
+}
+
+async function loadCertStudentsList(){
+  const snap = await getDocs(collection(db,"users"));
+  const list = document.getElementById("cert-students-list");
+  list.innerHTML = "";
+  snap.forEach(d => {
+    const u = d.data();
+    if (!u.username) return;
+    const fullName = `${u.firstName||""} ${u.lastName||""}`.trim();
+    list.innerHTML += `<option value="${esc(u.username)}" label="${esc(fullName)} (@${esc(u.username)})"></option>`;
   });
 }
 
