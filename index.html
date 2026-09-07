@@ -419,6 +419,7 @@ img{ -webkit-user-drag:none; user-drag:none; }
     <button data-panel="p-reports">البلاغات</button>
     <button data-panel="p-users">المستخدمون</button>
     <button data-panel="p-certs">الشهادات</button>
+    <button data-panel="p-retries">طلبات الإعادة</button>
     <button data-panel="p-stats">الإحصائيات</button>
     <button data-panel="p-log">السجل</button>
   </div>
@@ -548,6 +549,7 @@ img{ -webkit-user-drag:none; user-drag:none; }
         <div class="field"><label>المدة التقديرية بالثانية (لفيديوهات يوتيوب)</label><input type="number" id="tv-est" value="120"></div>
       </div>
       <div id="ta-fields-mcq" class="task-type-fields" style="display:none;">
+        <div class="field"><label>نسبة النجاح المطلوبة %</label><input type="number" id="ta-mcq-pass" value="70" min="0" max="100"></div>
         <div id="mcq-builder"></div>
         <button type="button" class="btn btn-secondary" id="btn-add-q">+ إضافة سؤال</button>
       </div>
@@ -599,6 +601,12 @@ img{ -webkit-user-drag:none; user-drag:none; }
       <button class="btn btn-primary btn-block" type="submit">إصدار الشهادة</button>
     </form>
     <div id="list-certs"><div class="spinner"></div></div>
+  </div>
+
+  <!-- طلبات إعادة الاختبار -->
+  <div class="admin-panel" id="p-retries">
+    <h3 style="margin-bottom:10px;">طلبات إعادة الاختبار</h3>
+    <div id="list-retries"><div class="spinner"></div></div>
   </div>
 
   <!-- البلاغات -->
@@ -889,6 +897,7 @@ function initAdmin(){
   loadCertCourseOptions();
   loadCertStudentsList();
   loadCerts();
+  loadRetryRequests();
 }
 
 // ================= ربط الأسماء بين الجداول =================
@@ -1141,6 +1150,7 @@ async function loadTaskIntoForm(taskId){
     document.getElementById("tv-est").value = t.estimatedSeconds || 120;
   } else if (t.type === "mcq"){
     try{ mcqQuestions = JSON.parse(t.questionsJson || "[]"); }catch(e){ mcqQuestions = []; }
+    document.getElementById("ta-mcq-pass").value = t.passingPercent || 70;
     renderMcqBuilder();
   } else if (t.type === "code"){
     document.getElementById("tc-lang").value = t.language || "javascript";
@@ -1192,6 +1202,7 @@ document.getElementById("form-task").addEventListener("submit", async (e) => {
     extra.estimatedSeconds = Number(document.getElementById("tv-est").value)||120;
   } else if (type === "mcq"){
     extra.questionsJson = JSON.stringify(mcqQuestions);
+    extra.passingPercent = Number(document.getElementById("ta-mcq-pass").value)||70;
   } else if (type === "code"){
     extra.language = document.getElementById("tc-lang").value;
     extra.instructions = document.getElementById("tc-instructions").value.trim();
@@ -1389,6 +1400,47 @@ async function loadCerts(){
     btn.onclick = () => {
       navigator.clipboard?.writeText(btn.dataset.copyCert).then(() => toast("تم نسخ رابط التحقق"))
         .catch(() => toast(btn.dataset.copyCert));
+    };
+  });
+}
+
+// ================= طلبات إعادة الاختبار =================
+async function loadRetryRequests(){
+  const wrap = document.getElementById("list-retries");
+  const snap = await getDocs(query(collection(db,"quizRetryRequests"), where("status","==","pending")));
+  if (snap.empty){ wrap.innerHTML = `<p class="meta">لا توجد طلبات إعادة معلّقة</p>`; return; }
+  wrap.innerHTML = "";
+  snap.forEach(d => {
+    const r = d.data();
+    const row = document.createElement("div");
+    row.className = "list-item glass";
+    row.innerHTML = `
+      <div><div class="name">${esc(r.studentName||r.username||"طالب")}</div><div class="sub">${esc(r.lectureTitle||"")} · النتيجة: ${r.score}%</div></div>
+      <div style="display:flex; gap:8px;">
+        <button class="danger-btn" style="color:#1c9c4a;" data-approve="${d.id}">قبول</button>
+        <button class="danger-btn" data-reject="${d.id}">رفض</button>
+      </div>`;
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll("[data-approve]").forEach(btn => {
+    btn.onclick = async () => {
+      const reqId = btn.dataset.approve;
+      const reqSnap = await getDoc(doc(db,"quizRetryRequests",reqId));
+      if (reqSnap.exists()){
+        const r = reqSnap.data();
+        await updateDoc(doc(db,"progress", `${r.uid}_${r.taskId}`), { needsRetryApproval: false, approvedAt: serverTimestamp() });
+        await updateDoc(doc(db,"quizRetryRequests",reqId), { status: "approved" });
+        logAction("قبول طلب إعادة اختبار", r.studentName || r.username || reqId);
+        toast("تم قبول الطلب، يقدر الطالب يعيد الاختبار الآن");
+      }
+      loadRetryRequests();
+    };
+  });
+  wrap.querySelectorAll("[data-reject]").forEach(btn => {
+    btn.onclick = async () => {
+      await updateDoc(doc(db,"quizRetryRequests",btn.dataset.reject), { status: "rejected" });
+      toast("تم رفض الطلب");
+      loadRetryRequests();
     };
   });
 }
