@@ -1,0 +1,119 @@
+/* =========================================================================
+   سرمد — لوحة الأدمن (admin.css)
+   ملف مستقل تمامًا (يُنشر على دومين مختلف عن التطبيق الرئيسي)، لكنه يحافظ
+   على نفس الهوية البصرية.
+   ========================================================================= */
+
+@font-face { font-family: "SarmadHeading"; src: url("https://files.catbox.moe/fwgw08.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "SarmadBody"; src: url("https://files.catbox.moe/jernkn.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "SarmadSub"; src: url("https://files.catbox.moe/gsv6s7.otf") format("opentype"); font-display: swap; }
+
+:root {
+  --bg: #ffffff;
+  --bg-soft: #f6f7f9;
+  --ink: #16181c;
+  --ink-dim: #6d7278;
+  --ink-faint: #a3a8ae;
+  --line: rgba(16, 18, 20, 0.08);
+  --accent: #2455e8;
+  --accent-soft: rgba(36, 85, 232, 0.09);
+  --accent-soft-strong: rgba(36, 85, 232, 0.16);
+  --danger: #e0393e;
+  --danger-soft: rgba(224, 57, 62, 0.1);
+  --success: #1b9e6b;
+  --success-soft: rgba(27, 158, 107, 0.1);
+  --radius-m: 16px;
+  --radius-s: 11px;
+  --shadow-soft: 0 10px 30px -14px rgba(16, 18, 20, 0.18);
+}
+
+* { box-sizing: border-box; }
+svg { stroke-linecap: round; stroke-linejoin: round; }
+
+html, body {
+  margin: 0; padding: 0; background: var(--bg-soft); color: var(--ink);
+  direction: rtl; font-family: "SarmadBody", -apple-system, "Segoe UI", sans-serif;
+}
+h1, h2, h3, h4 { font-family: "SarmadHeading", sans-serif; font-weight: 600; margin: 0; }
+.sub { font-family: "SarmadSub", sans-serif; color: var(--ink-dim); font-size: 12.5px; }
+button { font-family: inherit; }
+
+#pinScreen {
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+}
+#pinScreen img { height: 70px; margin-bottom: 24px; }
+.pin-box { display: flex; gap: 10px; margin-bottom: 16px; }
+.pin-box input {
+  width: 44px; height: 54px; text-align: center; font-size: 22px;
+  border-radius: var(--radius-s); border: 1px solid var(--line); outline: none;
+}
+.pin-box input:focus { border-color: var(--accent); }
+
+#adminApp { display: none; max-width: 980px; margin: 0 auto; padding: 20px 16px 60px; }
+.admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.admin-header img { height: 34px; }
+
+.tabs { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 20px; padding-bottom: 4px; }
+.tab-btn {
+  border: none; background: var(--bg-soft); color: var(--ink-dim); padding: 10px 16px;
+  border-radius: 20px; cursor: pointer; white-space: nowrap; font-size: 13.5px; font-family: "SarmadHeading", sans-serif;
+}
+.tab-btn.active { background: var(--accent); color: #fff; }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+.card {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius-m);
+  box-shadow: var(--shadow-soft); padding: 18px; margin-bottom: 16px;
+}
+.card h3 { margin-bottom: 14px; font-size: 16px; }
+
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 12.5px; color: var(--ink-dim); margin-bottom: 6px; }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 11px 12px; border-radius: var(--radius-s);
+  border: 1px solid var(--line); background: var(--bg-soft); font-size: 14px; color: var(--ink); outline: none;
+  font-family: "SarmadBody", sans-serif;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: #fff; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 11px 18px; border-radius: var(--radius-s); border: none; font-size: 13.5px; font-weight: 600;
+  cursor: pointer;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-secondary { background: var(--accent-soft); color: var(--accent); }
+.btn-ghost { background: rgba(16,18,20,0.05); color: var(--ink); }
+.btn-danger { background: var(--danger-soft); color: var(--danger); }
+.btn-sm { padding: 7px 12px; font-size: 12.5px; }
+
+.list-row {
+  display: flex; align-items: center; gap: 10px; justify-content: space-between;
+  padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-s); margin-bottom: 8px;
+}
+.list-row .meta { font-size: 12px; color: var(--ink-dim); }
+.list-row .actions { display: flex; gap: 6px; }
+
+.block-item, .question-item, .option-item {
+  border: 1px solid var(--line); border-radius: var(--radius-s); padding: 12px; margin-bottom: 10px; position: relative;
+}
+.remove-x {
+  position: absolute; top: 8px; left: 8px; width: 24px; height: 24px; border-radius: 50%;
+  border: none; background: var(--danger-soft); color: var(--danger); cursor: pointer; font-size: 13px;
+}
+
+.toast-host { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 200; }
+.toast { background: rgba(20,20,22,0.92); color: #fff; padding: 11px 18px; border-radius: 30px; font-size: 13px; margin-top: 8px; }
+
+.badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-family: "SarmadSub", sans-serif; }
+.badge.on { background: var(--success-soft); color: var(--success); }
+.badge.off { background: var(--danger-soft); color: var(--danger); }
+
+.security-note {
+  background: var(--danger-soft); color: var(--danger); padding: 12px 14px; border-radius: var(--radius-s);
+  font-size: 12.5px; margin-bottom: 18px; line-height: 1.7;
+}
