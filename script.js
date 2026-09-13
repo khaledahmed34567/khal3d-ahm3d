@@ -9,7 +9,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/fireba
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 import {
   getFirestore, doc, setDoc, getDoc, getDocs, deleteDoc, collection,
-  collectionGroup, query, orderBy, serverTimestamp
+  collectionGroup, query, orderBy, where, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -65,6 +65,15 @@ async function runSafely(actionFn, successMsg) {
     console.error(e);
     toast("حدث خطأ: " + (e.code || e.message || "غير معروف"));
     return false;
+  }
+}
+// يحذف مستندًا، ثم يتأكد فعليًا إنه اتشال من فايربيز. لو لسه موجود (غالبًا Firestore
+// Security Rules رافضة عملية الحذف بصمت)، يبلّغ برسالة واضحة بدل ما يدّعي نجاح وهمي
+async function deleteAndVerify(ref) {
+  await deleteDoc(ref);
+  const check = await getDoc(ref);
+  if (check.exists()) {
+    throw new Error("الحذف مرفوض من قاعدة البيانات — راجع Firestore Security Rules (قاعدة allow delete)");
   }
 }
 
@@ -137,6 +146,7 @@ function refreshAll() {
   loadLecturesAdmin();
   loadTasksAdmin();
   loadDiscountsAdmin();
+  loadRetryRequestsAdmin();
   populateTrackSelect();
   populateCourseSelect();
   populateLectureSelect();
@@ -204,7 +214,7 @@ document.getElementById("btnAddTrack").addEventListener("click", async () => {
 });
 async function deleteTrack(id) {
   if (!(await confirmModal("حذف المسار؟ (لن يحذف الكورسات التابعة له تلقائيًا)"))) return;
-  await runSafely(() => deleteDoc(doc(db, "tracks", id)), "تم الحذف");
+  await runSafely(() => deleteAndVerify(doc(db, "tracks", id)), "تم الحذف");
   loadTracksAdmin(); populateTrackSelect();
 }
 async function populateTrackSelect() {
@@ -325,7 +335,7 @@ async function toggleCourseEnded(trackId, courseId) {
 }
 async function deleteCourse(trackId, courseId) {
   if (!(await confirmModal("حذف الكورس؟"))) return;
-  await runSafely(() => deleteDoc(doc(db, "tracks", trackId, "courses", courseId)), "تم الحذف");
+  await runSafely(() => deleteAndVerify(doc(db, "tracks", trackId, "courses", courseId)), "تم الحذف");
   loadCoursesAdmin(); populateCourseSelect();
 }
 async function populateCourseSelect() {
@@ -404,7 +414,7 @@ document.getElementById("btnAddLecture").addEventListener("click", async () => {
 });
 async function deleteLecture(courseId, lectureId) {
   if (!(await confirmModal("حذف المحاضرة؟"))) return;
-  await runSafely(() => deleteDoc(doc(db, "courses", courseId, "lectures", lectureId)), "تم الحذف");
+  await runSafely(() => deleteAndVerify(doc(db, "courses", courseId, "lectures", lectureId)), "تم الحذف");
   loadLecturesAdmin(); populateLectureSelect();
 }
 async function populateLectureSelect() {
@@ -671,7 +681,7 @@ async function startEditTask(lectureId, taskId) {
 }
 async function deleteTask(lectureId, taskId) {
   if (!(await confirmModal("حذف المهمة؟"))) return;
-  await runSafely(() => deleteDoc(doc(db, "lectures", lectureId, "tasks", taskId)), "تم الحذف");
+  await runSafely(() => deleteAndVerify(doc(db, "lectures", lectureId, "tasks", taskId)), "تم الحذف");
   loadTasksAdmin();
 }
 
@@ -757,6 +767,47 @@ document.getElementById("btnAddDiscount").addEventListener("click", async () => 
 });
 async function deleteDiscount(code) {
   if (!(await confirmModal("حذف كود الخصم؟"))) return;
-  await runSafely(() => deleteDoc(doc(db, "discountCodes", code)), "تم الحذف");
+  await runSafely(() => deleteAndVerify(doc(db, "discountCodes", code)), "تم الحذف");
   loadDiscountsAdmin();
+}
+
+/* ========================================================================
+   طلبات إعادة الاختبار (retryRequests) — الطالب يفتح طلب لما يستنفد
+   محاولات اختبار معيّن، والأدمن هنا يوافق يفتحله محاولة إضافية.
+   ======================================================================== */
+async function loadRetryRequestsAdmin() {
+  const box = document.getElementById("retriesListAdmin");
+  box.innerHTML = `<div class="sub">جارٍ التحميل...</div>`;
+  const snap = await getDocs(query(collection(db, "retryRequests"), where("status", "==", "pending")));
+  box.innerHTML = "";
+  if (snap.empty) box.innerHTML = `<div class="sub">لا توجد طلبات إعادة حاليًا.</div>`;
+  snap.forEach((d) => {
+    const r = d.data();
+    box.insertAdjacentHTML("beforeend", `
+      <div class="list-row">
+        <div><b>${escapeHtml(r.studentName || r.uid)}</b><div class="meta">${escapeHtml(r.taskTitle || r.taskId)}</div></div>
+        <div class="actions">
+          <button class="btn btn-secondary btn-sm" data-approve-retry="${d.id}" data-uid="${r.uid}" data-task="${r.taskId}">فتح محاولة</button>
+          <button class="btn btn-danger btn-sm" data-deny-retry="${d.id}">رفض</button>
+        </div>
+      </div>`);
+  });
+}
+document.getElementById("retriesListAdmin").addEventListener("click", (e) => {
+  const approveBtn = e.target.closest("[data-approve-retry]");
+  const denyBtn = e.target.closest("[data-deny-retry]");
+  if (approveBtn) return approveRetryRequest(approveBtn.dataset.approveRetry, approveBtn.dataset.uid, approveBtn.dataset.task);
+  if (denyBtn) return denyRetryRequest(denyBtn.dataset.denyRetry);
+});
+async function approveRetryRequest(reqId, uid, taskId) {
+  const ok = await runSafely(async () => {
+    await setDoc(doc(db, "progress", uid, "tasks", taskId), { locked: false, retryApproved: true }, { merge: true });
+    await setDoc(doc(db, "retryRequests", reqId), { status: "approved" }, { merge: true });
+  }, "تم فتح محاولة إضافية للطالب");
+  if (ok) loadRetryRequestsAdmin();
+}
+async function denyRetryRequest(reqId) {
+  if (!(await confirmModal("رفض الطلب؟"))) return;
+  await runSafely(() => setDoc(doc(db, "retryRequests", reqId), { status: "denied" }, { merge: true }), "تم الرفض");
+  loadRetryRequestsAdmin();
 }
