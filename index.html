@@ -80,7 +80,10 @@
         <div class="field"><label>السعر (0 = مجاني)</label><input id="coursePrice" type="number" value="0" /></div>
         <div class="field"><label>الترتيب</label><input id="courseOrder" type="number" value="1" /></div>
       </div>
-      <div class="field"><label>المهارات (إنجليزي، مفصولة بفواصل — تظهر في الشهادة)</label><input id="courseSkills" placeholder="JavaScript, Network Security, ..." /></div>
+      <div class="field"><label>المهارات (تظهر على الشهادة بألوان مميزة)</label>
+        <div id="courseSkillsList"></div>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnAddSkill" style="margin-top:6px;">إضافة مهارة</button>
+      </div>
       <div class="checkbox-row"><input type="checkbox" id="courseEnded" /><label for="courseEnded">الكورس منتهٍ (تفعيل هذا الخيار يسمح بإصدار شهادات الإتمام)</label></div>
       <button class="btn btn-primary" id="btnAddCourse">حفظ الكورس</button>
     </div>

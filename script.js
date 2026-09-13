@@ -9,7 +9,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/fireba
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 import {
   getFirestore, doc, setDoc, getDoc, getDocs, deleteDoc, collection,
-  collectionGroup, query, orderBy, where, serverTimestamp
+  collectionGroup, query, orderBy, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -28,7 +28,7 @@ signInAnonymously(auth).catch(() => {});
 const IMGBB_KEY = "36b0e2658ed6fad2ca48081442f1539b";
 const ADMIN_PIN = "903327";
 
-function toast(msg, ms = 2600) {
+function toast(msg, ms = 2800) {
   const host = document.getElementById("toastHost");
   const t = document.createElement("div");
   t.className = "toast";
@@ -36,7 +36,38 @@ function toast(msg, ms = 2600) {
   host.appendChild(t);
   setTimeout(() => t.remove(), ms);
 }
-function escapeHtml(s) { return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function escapeHtml(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+// نافذة تأكيد مخصصة بدل confirm()/alert() الأصليين في المتصفح — بعض المتصفحات
+// المدمجة (WebView) تمنعهم فيسكت الزر يبان وكأنه مش شغال
+function confirmModal(message) {
+  return new Promise((resolve) => {
+    const host = document.createElement("div");
+    host.style.cssText = "position:fixed;inset:0;background:rgba(10,10,12,0.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;";
+    host.innerHTML = `<div style="background:#fff;border-radius:18px;padding:20px;max-width:320px;width:100%;">
+      <p style="margin-bottom:16px;font-size:14px;">${escapeHtml(message)}</p>
+      <div style="display:flex;gap:10px;">
+        <button id="cmYes" class="btn btn-danger" style="flex:1;">تأكيد</button>
+        <button id="cmNo" class="btn btn-ghost" style="flex:1;">إلغاء</button>
+      </div></div>`;
+    document.body.appendChild(host);
+    host.querySelector("#cmYes").addEventListener("click", () => { host.remove(); resolve(true); });
+    host.querySelector("#cmNo").addEventListener("click", () => { host.remove(); resolve(false); });
+  });
+}
+// تنفيذ أي عملية فايربيز مع رسالة خطأ واضحة بدل ما الزر "ميعملش حاجة" بصمت
+async function runSafely(actionFn, successMsg) {
+  try {
+    await actionFn();
+    if (successMsg) toast(successMsg);
+    return true;
+  } catch (e) {
+    console.error(e);
+    toast("حدث خطأ: " + (e.code || e.message || "غير معروف"));
+    return false;
+  }
+}
+
 async function uploadToImgbb(file) {
   const fd = new FormData();
   fd.append("image", file);
@@ -115,40 +146,65 @@ function refreshAll() {
 /* ========================================================================
    المسارات (Tracks)
    ======================================================================== */
+let editingTrackId = null;
 async function loadTracksAdmin() {
   const box = document.getElementById("tracksListAdmin");
   box.innerHTML = `<div class="sub">جارٍ التحميل...</div>`;
   const snap = await getDocs(query(collection(db, "tracks"), orderBy("order", "asc")));
   box.innerHTML = "";
+  if (snap.empty) box.innerHTML = `<div class="sub">لا توجد مسارات بعد.</div>`;
   snap.forEach((d) => {
     const t = d.data();
     box.insertAdjacentHTML("beforeend", `
-      <div class="list-row">
+      <div class="list-row" data-row-track="${d.id}">
         <div><b>${escapeHtml(t.title)}</b><div class="meta">ترتيب: ${t.order ?? "-"} · id: ${d.id}</div></div>
-        <div class="actions"><button class="btn btn-danger btn-sm" data-del-track="${d.id}">حذف</button></div>
+        <div class="actions">
+          <button class="btn btn-secondary btn-sm" data-edit-track="${d.id}">تعديل</button>
+          <button class="btn btn-danger btn-sm" data-del-track="${d.id}">حذف</button>
+        </div>
       </div>`);
   });
-  box.querySelectorAll("[data-del-track]").forEach((b) => b.addEventListener("click", () => deleteTrack(b.dataset.delTrack)));
+}
+// تفويض الأحداث على العنصر الثابت بدل ربط كل زر لحاله — أكثر ثباتًا مع أي تحديث للقائمة
+document.getElementById("tracksListAdmin").addEventListener("click", async (e) => {
+  const editBtn = e.target.closest("[data-edit-track]");
+  const delBtn = e.target.closest("[data-del-track]");
+  if (editBtn) return startEditTrack(editBtn.dataset.editTrack);
+  if (delBtn) return deleteTrack(delBtn.dataset.delTrack);
+});
+async function startEditTrack(id) {
+  const snap = await getDoc(doc(db, "tracks", id));
+  if (!snap.exists()) return toast("المسار غير موجود.");
+  const t = snap.data();
+  document.getElementById("trackTitle").value = t.title || "";
+  document.getElementById("trackDesc").value = t.description || "";
+  document.getElementById("trackImage").value = t.image || "";
+  document.getElementById("trackOrder").value = t.order || 1;
+  editingTrackId = id;
+  document.getElementById("btnAddTrack").textContent = "تحديث المسار";
+  document.getElementById("panel-tracks").scrollIntoView({ behavior: "smooth" });
 }
 document.getElementById("btnAddTrack").addEventListener("click", async () => {
   const title = document.getElementById("trackTitle").value.trim();
   if (!title) return toast("اكتب عنوان المسار.");
   const image = await resolveImage("trackImage", "trackImageFile");
-  const ref = doc(collection(db, "tracks"));
-  await setDoc(ref, {
-    id: ref.id, title,
-    description: document.getElementById("trackDesc").value.trim(),
-    image, order: Number(document.getElementById("trackOrder").value || 1),
-    createdAt: serverTimestamp(),
-  });
-  toast("تم حفظ المسار");
+  await runSafely(async () => {
+    const ref = editingTrackId ? doc(db, "tracks", editingTrackId) : doc(collection(db, "tracks"));
+    await setDoc(ref, {
+      id: ref.id, title,
+      description: document.getElementById("trackDesc").value.trim(),
+      image, order: Number(document.getElementById("trackOrder").value || 1),
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  }, editingTrackId ? "تم تحديث المسار" : "تم حفظ المسار");
+  editingTrackId = null;
+  document.getElementById("btnAddTrack").textContent = "حفظ المسار";
   document.getElementById("trackTitle").value = ""; document.getElementById("trackDesc").value = ""; document.getElementById("trackImage").value = "";
   loadTracksAdmin(); populateTrackSelect();
 });
 async function deleteTrack(id) {
-  if (!confirm("حذف المسار؟ (لن يحذف الكورسات التابعة له تلقائيًا)")) return;
-  await deleteDoc(doc(db, "tracks", id));
-  toast("تم الحذف");
+  if (!(await confirmModal("حذف المسار؟ (لن يحذف الكورسات التابعة له تلقائيًا)"))) return;
+  await runSafely(() => deleteDoc(doc(db, "tracks", id)), "تم الحذف");
   loadTracksAdmin(); populateTrackSelect();
 }
 async function populateTrackSelect() {
@@ -161,11 +217,13 @@ async function populateTrackSelect() {
 /* ========================================================================
    الكورسات (Courses) — subcollection: tracks/{trackId}/courses/{courseId}
    ======================================================================== */
+let editingCourse = null; // { trackId, courseId } أو null
 async function loadCoursesAdmin() {
   const box = document.getElementById("coursesListAdmin");
   box.innerHTML = `<div class="sub">جارٍ التحميل...</div>`;
   const snap = await getDocs(collectionGroup(db, "courses"));
   box.innerHTML = "";
+  if (snap.empty) box.innerHTML = `<div class="sub">لا توجد كورسات بعد.</div>`;
   snap.forEach((d) => {
     const c = d.data();
     box.insertAdjacentHTML("beforeend", `
@@ -174,44 +232,100 @@ async function loadCoursesAdmin() {
           <div class="meta">${c.price ? c.price + "$" : "مجاني"} · id: ${d.id}</div></div>
         <div class="actions">
           <button class="btn btn-secondary btn-sm" data-toggle-end="${d.id}" data-track="${c.trackId}">${c.courseEnded ? "تعليم كمستمر" : "تعليم كمنتهٍ"}</button>
+          <button class="btn btn-secondary btn-sm" data-edit-course="${d.id}" data-track="${c.trackId}">تعديل</button>
           <button class="btn btn-danger btn-sm" data-del-course="${d.id}" data-track="${c.trackId}">حذف</button>
         </div>
       </div>`);
   });
-  box.querySelectorAll("[data-toggle-end]").forEach((b) => b.addEventListener("click", () => toggleCourseEnded(b.dataset.track, b.dataset.toggleEnd)));
-  box.querySelectorAll("[data-del-course]").forEach((b) => b.addEventListener("click", () => deleteCourse(b.dataset.track, b.dataset.delCourse)));
+}
+document.getElementById("coursesListAdmin").addEventListener("click", (e) => {
+  const toggleBtn = e.target.closest("[data-toggle-end]");
+  const editBtn = e.target.closest("[data-edit-course]");
+  const delBtn = e.target.closest("[data-del-course]");
+  if (toggleBtn) return toggleCourseEnded(toggleBtn.dataset.track, toggleBtn.dataset.toggleEnd);
+  if (editBtn) return startEditCourse(editBtn.dataset.track, editBtn.dataset.editCourse);
+  if (delBtn) return deleteCourse(delBtn.dataset.track, delBtn.dataset.delCourse);
+});
+/* ---- قائمة المهارات الديناميكية (بدل حقل نص مفصول بفواصل) ---- */
+function addSkillRow(text) {
+  const box = document.getElementById("courseSkillsList");
+  const row = document.createElement("div");
+  row.style.cssText = "display:flex;align-items:center;gap:8px;margin-bottom:8px;";
+  row.innerHTML = `
+    <input class="skill-text" placeholder="مثال: JavaScript" value="${text ? String(text).replace(/"/g, "&quot;") : ""}" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--line);" />
+    <button type="button" class="remove-x" data-remove-skill style="position:static;">×</button>`;
+  box.appendChild(row);
+}
+function populateSkillsList(skills) {
+  document.getElementById("courseSkillsList").innerHTML = "";
+  const arr = Array.isArray(skills) ? skills : (skills ? String(skills).split(",").map((s) => s.trim()).filter(Boolean) : []);
+  (arr.length ? arr : [""]).forEach((s) => addSkillRow(s));
+}
+function collectSkillsList() {
+  return Array.from(document.querySelectorAll("#courseSkillsList .skill-text")).map((i) => i.value.trim()).filter(Boolean);
+}
+document.getElementById("btnAddSkill").addEventListener("click", () => addSkillRow());
+document.getElementById("courseSkillsList").addEventListener("click", (e) => {
+  if (e.target.closest("[data-remove-skill]")) e.target.closest("div").remove();
+});
+populateSkillsList([]);
+
+async function startEditCourse(trackId, courseId) {
+  const snap = await getDoc(doc(db, "tracks", trackId, "courses", courseId));
+  if (!snap.exists()) return toast("الكورس غير موجود.");
+  const c = snap.data();
+  document.getElementById("courseTrackSelect").value = trackId;
+  document.getElementById("courseTitle").value = c.title || "";
+  document.getElementById("courseTitleEn").value = c.titleEn || "";
+  document.getElementById("courseDesc").value = c.description || "";
+  document.getElementById("courseInstructor").value = c.instructor || "";
+  document.getElementById("courseImage").value = c.image || "";
+  document.getElementById("coursePrice").value = c.price || 0;
+  document.getElementById("courseOrder").value = c.order || 1;
+  populateSkillsList(c.skills);
+  document.getElementById("courseEnded").checked = !!c.courseEnded;
+  editingCourse = { trackId, courseId };
+  document.getElementById("btnAddCourse").textContent = "تحديث الكورس";
+  document.getElementById("panel-courses").scrollIntoView({ behavior: "smooth" });
 }
 document.getElementById("btnAddCourse").addEventListener("click", async () => {
-  const trackId = document.getElementById("courseTrackSelect").value;
+  const trackId = editingCourse ? editingCourse.trackId : document.getElementById("courseTrackSelect").value;
   const title = document.getElementById("courseTitle").value.trim();
   if (!trackId) return toast("أضف مسارًا أولًا.");
   if (!title) return toast("اكتب عنوان الكورس.");
   const image = await resolveImage("courseImage", "courseImageFile");
-  const ref = doc(collection(db, "tracks", trackId, "courses"));
-  await setDoc(ref, {
-    id: ref.id, trackId, title,
-    titleEn: document.getElementById("courseTitleEn").value.trim(),
-    description: document.getElementById("courseDesc").value.trim(),
-    instructor: document.getElementById("courseInstructor").value.trim(),
-    image, price: Number(document.getElementById("coursePrice").value || 0),
-    order: Number(document.getElementById("courseOrder").value || 1),
-    skills: document.getElementById("courseSkills").value.trim(),
-    courseEnded: document.getElementById("courseEnded").checked,
-    createdAt: serverTimestamp(),
-  });
-  toast("تم حفظ الكورس");
-  loadCoursesAdmin(); populateCourseSelect();
+  const ok = await runSafely(async () => {
+    const ref = editingCourse ? doc(db, "tracks", trackId, "courses", editingCourse.courseId) : doc(collection(db, "tracks", trackId, "courses"));
+    await setDoc(ref, {
+      id: ref.id, trackId, title,
+      titleEn: document.getElementById("courseTitleEn").value.trim(),
+      description: document.getElementById("courseDesc").value.trim(),
+      instructor: document.getElementById("courseInstructor").value.trim(),
+      image, price: Number(document.getElementById("coursePrice").value || 0),
+      order: Number(document.getElementById("courseOrder").value || 1),
+      skills: collectSkillsList(),
+      courseEnded: document.getElementById("courseEnded").checked,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  }, editingCourse ? "تم تحديث الكورس" : "تم حفظ الكورس");
+  if (ok) {
+    editingCourse = null;
+    document.getElementById("btnAddCourse").textContent = "حفظ الكورس";
+    populateSkillsList([]);
+    loadCoursesAdmin(); populateCourseSelect();
+  }
 });
 async function toggleCourseEnded(trackId, courseId) {
-  const ref = doc(db, "tracks", trackId, "courses", courseId);
-  const snap = await getDoc(ref);
-  await setDoc(ref, { courseEnded: !(snap.data() || {}).courseEnded }, { merge: true });
+  await runSafely(async () => {
+    const ref = doc(db, "tracks", trackId, "courses", courseId);
+    const snap = await getDoc(ref);
+    await setDoc(ref, { courseEnded: !(snap.data() || {}).courseEnded }, { merge: true });
+  });
   loadCoursesAdmin();
 }
 async function deleteCourse(trackId, courseId) {
-  if (!confirm("حذف الكورس؟")) return;
-  await deleteDoc(doc(db, "tracks", trackId, "courses", courseId));
-  toast("تم الحذف");
+  if (!(await confirmModal("حذف الكورس؟"))) return;
+  await runSafely(() => deleteDoc(doc(db, "tracks", trackId, "courses", courseId)), "تم الحذف");
   loadCoursesAdmin(); populateCourseSelect();
 }
 async function populateCourseSelect() {
@@ -223,42 +337,74 @@ async function populateCourseSelect() {
 /* ========================================================================
    المحاضرات (Lectures) — top-level: courses/{courseId}/lectures/{lectureId}
    ======================================================================== */
+let editingLecture = null; // { courseId, lectureId } أو null
 async function loadLecturesAdmin() {
   const box = document.getElementById("lecturesListAdmin");
   box.innerHTML = `<div class="sub">جارٍ التحميل...</div>`;
   const snap = await getDocs(collectionGroup(db, "lectures"));
   box.innerHTML = "";
+  if (snap.empty) box.innerHTML = `<div class="sub">لا توجد محاضرات بعد.</div>`;
   snap.forEach((d) => {
     const l = d.data();
     box.insertAdjacentHTML("beforeend", `
       <div class="list-row">
         <div><b>${escapeHtml(l.title)}</b><div class="meta">المدة: ${escapeHtml(l.duration || "-")} · id: ${d.id}</div></div>
-        <div class="actions"><button class="btn btn-danger btn-sm" data-del-lecture="${d.id}" data-course="${l.courseId}">حذف</button></div>
+        <div class="actions">
+          <button class="btn btn-secondary btn-sm" data-edit-lecture="${d.id}" data-course="${l.courseId}">تعديل</button>
+          <button class="btn btn-danger btn-sm" data-del-lecture="${d.id}" data-course="${l.courseId}">حذف</button>
+        </div>
       </div>`);
   });
-  box.querySelectorAll("[data-del-lecture]").forEach((b) => b.addEventListener("click", () => deleteLecture(b.dataset.course, b.dataset.delLecture)));
+}
+document.getElementById("lecturesListAdmin").addEventListener("click", (e) => {
+  const editBtn = e.target.closest("[data-edit-lecture]");
+  const delBtn = e.target.closest("[data-del-lecture]");
+  if (editBtn) return startEditLecture(editBtn.dataset.course, editBtn.dataset.editLecture);
+  if (delBtn) return deleteLecture(delBtn.dataset.course, delBtn.dataset.delLecture);
+});
+async function startEditLecture(courseId, lectureId) {
+  const snap = await getDoc(doc(db, "courses", courseId, "lectures", lectureId));
+  if (!snap.exists()) return toast("المحاضرة غير موجودة.");
+  const l = snap.data();
+  const trackId = l.trackId || "";
+  const sel = document.getElementById("lectureCourseSelect");
+  sel.value = `${trackId}|${courseId}`;
+  document.getElementById("lectureTitle").value = l.title || "";
+  document.getElementById("lectureDesc").value = l.description || "";
+  document.getElementById("lectureImage").value = l.image || "";
+  document.getElementById("lectureDuration").value = l.duration || "";
+  document.getElementById("lectureOrder").value = l.order || 1;
+  editingLecture = { courseId, lectureId };
+  document.getElementById("btnAddLecture").textContent = "تحديث المحاضرة";
+  document.getElementById("panel-lectures").scrollIntoView({ behavior: "smooth" });
 }
 document.getElementById("btnAddLecture").addEventListener("click", async () => {
-  const [trackId, courseId] = (document.getElementById("lectureCourseSelect").value || "").split("|");
+  let trackId, courseId;
+  if (editingLecture) { courseId = editingLecture.courseId; trackId = (document.getElementById("lectureCourseSelect").value || "").split("|")[0]; }
+  else [trackId, courseId] = (document.getElementById("lectureCourseSelect").value || "").split("|");
   const title = document.getElementById("lectureTitle").value.trim();
   if (!courseId) return toast("أضف كورسًا أولًا.");
   if (!title) return toast("اكتب عنوان المحاضرة.");
   const image = await resolveImage("lectureImage", "lectureImageFile");
-  const ref = doc(collection(db, "courses", courseId, "lectures"));
-  await setDoc(ref, {
-    id: ref.id, courseId, trackId, title,
-    description: document.getElementById("lectureDesc").value.trim(),
-    image, duration: document.getElementById("lectureDuration").value.trim(),
-    order: Number(document.getElementById("lectureOrder").value || 1),
-    createdAt: serverTimestamp(),
-  });
-  toast("تم حفظ المحاضرة");
-  loadLecturesAdmin(); populateLectureSelect(); populateSurveyTargetSelect();
+  const ok = await runSafely(async () => {
+    const ref = editingLecture ? doc(db, "courses", courseId, "lectures", editingLecture.lectureId) : doc(collection(db, "courses", courseId, "lectures"));
+    await setDoc(ref, {
+      id: ref.id, courseId, trackId, title,
+      description: document.getElementById("lectureDesc").value.trim(),
+      image, duration: document.getElementById("lectureDuration").value.trim(),
+      order: Number(document.getElementById("lectureOrder").value || 1),
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  }, editingLecture ? "تم تحديث المحاضرة" : "تم حفظ المحاضرة");
+  if (ok) {
+    editingLecture = null;
+    document.getElementById("btnAddLecture").textContent = "حفظ المحاضرة";
+    loadLecturesAdmin(); populateLectureSelect(); populateSurveyTargetSelect();
+  }
 });
 async function deleteLecture(courseId, lectureId) {
-  if (!confirm("حذف المحاضرة؟")) return;
-  await deleteDoc(doc(db, "courses", courseId, "lectures", lectureId));
-  toast("تم الحذف");
+  if (!(await confirmModal("حذف المحاضرة؟"))) return;
+  await runSafely(() => deleteDoc(doc(db, "courses", courseId, "lectures", lectureId)), "تم الحذف");
   loadLecturesAdmin(); populateLectureSelect();
 }
 async function populateLectureSelect() {
@@ -270,29 +416,28 @@ async function populateLectureSelect() {
 /* ========================================================================
    المهام (Tasks) — top-level: lectures/{lectureId}/tasks/{taskId}
    ======================================================================== */
-document.getElementById("taskType").addEventListener("change", renderTaskTypeFields);
+let editingTask = null; // { lectureId, taskId } أو null
+document.getElementById("taskType").addEventListener("change", () => renderTaskTypeFields());
 renderTaskTypeFields();
 
-function renderTaskTypeFields() {
+function renderTaskTypeFields(prefill) {
   const type = document.getElementById("taskType").value;
   const box = document.getElementById("taskTypeFields");
   if (type === "json") {
     box.innerHTML = `<div id="jsonBlocks"></div><button type="button" class="btn btn-secondary btn-sm" id="btnAddBlock">إضافة بند</button>`;
-    document.getElementById("btnAddBlock").addEventListener("click", addJsonBlockRow);
-    addJsonBlockRow();
+    (prefill?.blocks?.length ? prefill.blocks : [null]).forEach((b) => addJsonBlockRow(b));
   } else if (type === "pdf") {
-    box.innerHTML = `<div class="field"><label>رابط ملف PDF</label><input id="pdfUrl" placeholder="https://...pdf" /></div>`;
+    box.innerHTML = `<div class="field"><label>رابط ملف PDF</label><input id="pdfUrl" placeholder="https://...pdf" value="${escapeHtml(prefill?.url || "")}" /></div>`;
   } else if (type === "video") {
     box.innerHTML = `
-      <div class="field"><label>رابط الفيديو (mp4 أو يوتيوب)</label><input id="videoUrl" /></div>
-      <div class="checkbox-row"><input type="checkbox" id="videoIsYoutube" /><label for="videoIsYoutube">رابط يوتيوب</label></div>`;
+      <div class="field"><label>رابط الفيديو (mp4 أو يوتيوب)</label><input id="videoUrl" value="${escapeHtml(prefill?.url || "")}" /></div>
+      <div class="checkbox-row"><input type="checkbox" id="videoIsYoutube" ${prefill?.isYoutube ? "checked" : ""} /><label for="videoIsYoutube">رابط يوتيوب</label></div>`;
   } else if (type === "mcq") {
     box.innerHTML = `
-      <div class="field"><label>مدة الاختبار (بالثواني)</label><input id="mcqTimeLimit" type="number" value="300" /></div>
+      <div class="field"><label>مدة الاختبار (بالثواني)</label><input id="mcqTimeLimit" type="number" value="${prefill?.timeLimitSeconds || 300}" /></div>
       <div id="mcqQuestions"></div>
       <button type="button" class="btn btn-secondary btn-sm" id="btnAddQuestion">إضافة سؤال</button>`;
-    document.getElementById("btnAddQuestion").addEventListener("click", addMcqQuestionRow);
-    addMcqQuestionRow();
+    (prefill?.questions?.length ? prefill.questions : [null]).forEach((q) => addMcqQuestionRow(q));
   } else if (type === "code") {
     box.innerHTML = `
       <div class="field"><label>اللغة</label>
@@ -305,48 +450,54 @@ function renderTaskTypeFields() {
           <option value="bash">Bash</option>
         </select>
       </div>
-      <div class="field"><label>الكود المبدئي (Starter Code)</label><textarea id="codeStarter" rows="5"></textarea></div>`;
+      <div class="field"><label>الكود المبدئي (Starter Code)</label><textarea id="codeStarter" rows="5">${escapeHtml(prefill?.starterCode || "")}</textarea></div>`;
+    if (prefill?.language) document.getElementById("codeLang").value = prefill.language;
   } else if (type === "survey") {
     box.innerHTML = `<div id="taskSurveyQuestions"></div><button type="button" class="btn btn-secondary btn-sm" id="btnAddTaskSurveyQ">إضافة سؤال</button>`;
-    document.getElementById("btnAddTaskSurveyQ").addEventListener("click", () => addSurveyQuestionRow("taskSurveyQuestions"));
-    addSurveyQuestionRow("taskSurveyQuestions");
+    (prefill?.questions?.length ? prefill.questions : [null]).forEach((q) => addSurveyQuestionRow("taskSurveyQuestions", q));
   }
 }
 
-/* ---- بناء بنود محتوى JSON ---- */
-function addJsonBlockRow() {
+/* ---- بناء بنود محتوى JSON (بتفويض أحداث ثابت على الحاوية) ---- */
+function addJsonBlockRow(data) {
   const box = document.getElementById("jsonBlocks");
   const row = document.createElement("div");
   row.className = "block-item";
+  const type = data?.type || "title";
   row.innerHTML = `
-    <button type="button" class="remove-x">×</button>
+    <button type="button" class="remove-x" data-remove-block>×</button>
     <div class="field"><label>نوع البند</label>
       <select class="block-type">
-        <option value="title">عنوان</option>
-        <option value="text">نص ملوّن</option>
-        <option value="link">رابط</option>
+        <option value="title" ${type === "title" ? "selected" : ""}>عنوان</option>
+        <option value="text" ${type === "text" ? "selected" : ""}>نص ملوّن</option>
+        <option value="link" ${type === "link" ? "selected" : ""}>رابط</option>
       </select>
     </div>
     <div class="block-fields"></div>`;
   box.appendChild(row);
-  row.querySelector(".remove-x").addEventListener("click", () => row.remove());
   const typeSel = row.querySelector(".block-type");
   const renderFields = () => {
     const fieldsBox = row.querySelector(".block-fields");
     const v = typeSel.value;
     if (v === "link") {
-      fieldsBox.innerHTML = `<div class="field"><label>نص الرابط</label><input class="block-label" /></div>
-        <div class="field"><label>الرابط (URL)</label><input class="block-url" /></div>`;
+      fieldsBox.innerHTML = `<div class="field"><label>نص الرابط</label><input class="block-label" value="${escapeHtml(data?.label || "")}" /></div>
+        <div class="field"><label>الرابط (URL)</label><input class="block-url" value="${escapeHtml(data?.url || "")}" /></div>`;
     } else if (v === "text") {
-      fieldsBox.innerHTML = `<div class="field"><label>النص</label><textarea class="block-text" rows="2"></textarea></div>
-        <div class="field"><label>لون النص</label><input type="color" class="block-color" value="#16181c" /></div>`;
+      fieldsBox.innerHTML = `<div class="field"><label>النص</label><textarea class="block-text" rows="2">${escapeHtml(data?.text || "")}</textarea></div>
+        <div class="field"><label>لون النص</label><input type="color" class="block-color" value="${data?.color || "#16181c"}" /></div>`;
     } else {
-      fieldsBox.innerHTML = `<div class="field"><label>نص العنوان</label><input class="block-text" /></div>`;
+      fieldsBox.innerHTML = `<div class="field"><label>نص العنوان</label><input class="block-text" value="${escapeHtml(data?.text || "")}" /></div>`;
     }
   };
   typeSel.addEventListener("change", renderFields);
   renderFields();
 }
+document.getElementById("panel-tasks").addEventListener("click", (e) => {
+  if (e.target.closest("[data-remove-block]")) e.target.closest(".block-item").remove();
+});
+document.getElementById("panel-tasks").addEventListener("click", (e) => {
+  if (e.target.id === "btnAddBlock") addJsonBlockRow();
+});
 function collectJsonBlocks() {
   return Array.from(document.querySelectorAll("#jsonBlocks .block-item")).map((row) => {
     const type = row.querySelector(".block-type").value;
@@ -356,66 +507,86 @@ function collectJsonBlocks() {
   });
 }
 
-/* ---- بناء أسئلة MCQ ---- */
-function addMcqQuestionRow() {
+/* ---- بناء أسئلة MCQ (بتفويض أحداث ثابت) ---- */
+let mcqQidCounter = 0;
+function addMcqQuestionRow(data) {
   const box = document.getElementById("mcqQuestions");
   const row = document.createElement("div");
   row.className = "question-item";
+  const qid = "q" + (mcqQidCounter++);
+  row.dataset.qid = qid;
   row.innerHTML = `
-    <button type="button" class="remove-x">×</button>
-    <div class="field"><label>نص السؤال</label><textarea class="q-text" rows="2"></textarea></div>
-    <div class="field"><label>نص خاص بالذكاء الاصطناعي (اختياري — يترك افتراضي لو فاضي)</label><textarea class="q-aiguard" rows="1"></textarea></div>
+    <button type="button" class="remove-x" data-remove-question>×</button>
+    <div class="field"><label>نص السؤال</label><textarea class="q-text" rows="2">${escapeHtml(data?.text || "")}</textarea></div>
+    <div class="field"><label>نص خاص بالذكاء الاصطناعي (اختياري — يترك افتراضي لو فاضي)</label><textarea class="q-aiguard" rows="1">${escapeHtml(data?.aiGuard || "")}</textarea></div>
     <div class="options-box"></div>
-    <button type="button" class="btn btn-ghost btn-sm add-option">إضافة اختيار</button>`;
+    <button type="button" class="btn btn-ghost btn-sm" data-add-option>إضافة اختيار</button>`;
   box.appendChild(row);
-  row.querySelector(".remove-x").addEventListener("click", () => row.remove());
-  row.querySelector(".add-option").addEventListener("click", () => addOptionRow(row));
-  addOptionRow(row); addOptionRow(row);
+  const opts = data?.options?.length ? data.options : ["", ""];
+  opts.forEach((optText, i) => addOptionRow(row, qid, optText, i === (data?.correctIndex ?? -1)));
 }
-function addOptionRow(questionRow) {
+function addOptionRow(questionRow, qid, text, isCorrect) {
   const optBox = questionRow.querySelector(".options-box");
-  const qIndex = Array.from(document.querySelectorAll("#mcqQuestions .question-item")).indexOf(questionRow);
   const row = document.createElement("div");
   row.className = "option-item";
-  row.style.display = "flex"; row.style.alignItems = "center"; row.style.gap = "8px";
+  row.style.cssText = "display:flex;align-items:center;gap:8px;";
   row.innerHTML = `
-    <input type="radio" name="correct-${qIndex}-${Date.now()}" class="opt-correct" />
-    <input class="opt-text" placeholder="نص الاختيار" style="flex:1;padding:9px;border-radius:8px;border:1px solid var(--line);" />
-    <button type="button" class="remove-x" style="position:static;">×</button>`;
+    <input type="radio" name="correct-${qid}" class="opt-correct" ${isCorrect ? "checked" : ""} />
+    <input class="opt-text" placeholder="نص الاختيار" value="${escapeHtml(text || "")}" style="flex:1;padding:9px;border-radius:8px;border:1px solid var(--line);" />
+    <button type="button" class="remove-x" data-remove-option style="position:static;">×</button>`;
   optBox.appendChild(row);
-  row.querySelector(".remove-x").addEventListener("click", () => row.remove());
 }
+// تفويض أحداث ثابت على تبويب المهام بالكامل: يغطي كل الأزرار الديناميكية
+// (إضافة سؤال / إضافة اختيار / حذف سؤال / حذف اختيار) بدون الحاجة لإعادة ربطها كل مرة
+document.getElementById("panel-tasks").addEventListener("click", (e) => {
+  if (e.target.id === "btnAddQuestion") return addMcqQuestionRow();
+  const addOptBtn = e.target.closest("[data-add-option]");
+  if (addOptBtn) {
+    const qRow = addOptBtn.closest(".question-item");
+    return addOptionRow(qRow, qRow.dataset.qid, "", false);
+  }
+  const remQBtn = e.target.closest("[data-remove-question]");
+  if (remQBtn) return remQBtn.closest(".question-item").remove();
+  const remOptBtn = e.target.closest("[data-remove-option]");
+  if (remOptBtn) return remOptBtn.closest(".option-item").remove();
+});
 function collectMcqQuestions() {
   return Array.from(document.querySelectorAll("#mcqQuestions .question-item")).map((row) => {
-    const options = Array.from(row.querySelectorAll(".option-item")).map((o) => o.querySelector(".opt-text").value);
+    const optionRows = Array.from(row.querySelectorAll(".option-item"));
+    const options = optionRows.map((o) => o.querySelector(".opt-text").value);
     let correctIndex = 0;
-    Array.from(row.querySelectorAll(".option-item")).forEach((o, i) => { if (o.querySelector(".opt-correct").checked) correctIndex = i; });
+    optionRows.forEach((o, i) => { if (o.querySelector(".opt-correct").checked) correctIndex = i; });
     return { text: row.querySelector(".q-text").value, aiGuard: row.querySelector(".q-aiguard").value, options, correctIndex };
   });
 }
 
 /* ---- بناء أسئلة الاستبيان (مشتركة بين مهمة الاستبيان والاستبيان المستقل) ---- */
-function addSurveyQuestionRow(containerId) {
+function addSurveyQuestionRow(containerId, data) {
   const box = document.getElementById(containerId);
   const row = document.createElement("div");
   row.className = "question-item";
+  const type = data?.type || "text";
   row.innerHTML = `
-    <button type="button" class="remove-x">×</button>
-    <div class="field"><label>نص السؤال</label><input class="sq-text" /></div>
+    <button type="button" class="remove-x" data-remove-survey-q>×</button>
+    <div class="field"><label>نص السؤال</label><input class="sq-text" value="${escapeHtml(data?.text || "")}" /></div>
     <div class="field"><label>نوع الإجابة</label>
       <select class="sq-type">
-        <option value="text">نص حر</option>
-        <option value="rating">تقييم من 1 إلى 5</option>
-        <option value="choice">اختيار من قائمة</option>
+        <option value="text" ${type === "text" ? "selected" : ""}>نص حر</option>
+        <option value="rating" ${type === "rating" ? "selected" : ""}>تقييم من 1 إلى 5</option>
+        <option value="choice" ${type === "choice" ? "selected" : ""}>اختيار من قائمة</option>
       </select>
     </div>
-    <div class="field sq-options-field" style="display:none;"><label>الخيارات (مفصولة بفواصل)</label><input class="sq-options" /></div>`;
+    <div class="field sq-options-field" style="${type === "choice" ? "" : "display:none;"}"><label>الخيارات (مفصولة بفواصل)</label><input class="sq-options" value="${escapeHtml((data?.options || []).join(", "))}" /></div>`;
   box.appendChild(row);
-  row.querySelector(".remove-x").addEventListener("click", () => row.remove());
   const typeSel = row.querySelector(".sq-type");
   const optField = row.querySelector(".sq-options-field");
   typeSel.addEventListener("change", () => { optField.style.display = typeSel.value === "choice" ? "block" : "none"; });
 }
+document.body.addEventListener("click", (e) => {
+  if (e.target.id === "btnAddSurveyQuestion") return addSurveyQuestionRow("surveyQuestions");
+  if (e.target.id === "btnAddTaskSurveyQ") return addSurveyQuestionRow("taskSurveyQuestions");
+  if (e.target.closest("[data-remove-survey-q]")) return e.target.closest(".question-item").remove();
+});
 function collectSurveyQuestions(containerId) {
   return Array.from(document.querySelectorAll(`#${containerId} .question-item`)).map((row) => {
     const type = row.querySelector(".sq-type").value;
@@ -425,9 +596,15 @@ function collectSurveyQuestions(containerId) {
   });
 }
 
-/* ---- حفظ المهمة ---- */
+/* ---- حفظ / تعديل المهمة ---- */
 document.getElementById("btnAddTask").addEventListener("click", async () => {
-  const [trackId, courseId, lectureId] = (document.getElementById("taskLectureSelect").value || "").split("|");
+  let trackId, courseId, lectureId;
+  if (editingTask) {
+    lectureId = editingTask.lectureId;
+    trackId = editingTask.trackId; courseId = editingTask.courseId;
+  } else {
+    [trackId, courseId, lectureId] = (document.getElementById("taskLectureSelect").value || "").split("|");
+  }
   if (!lectureId) return toast("أضف محاضرة أولًا.");
   const title = document.getElementById("taskTitle").value.trim();
   if (!title) return toast("اكتب عنوان المهمة.");
@@ -442,11 +619,16 @@ document.getElementById("btnAddTask").addEventListener("click", async () => {
   else if (type === "code") extra = { language: document.getElementById("codeLang").value, starterCode: document.getElementById("codeStarter").value };
   else if (type === "survey") extra = { questions: collectSurveyQuestions("taskSurveyQuestions") };
 
-  const ref = doc(collection(db, "lectures", lectureId, "tasks"));
-  await setDoc(ref, { id: ref.id, lectureId, courseId, trackId, type, title, order, ...extra, createdAt: serverTimestamp() });
-  toast("تم حفظ المهمة");
-  document.getElementById("taskTitle").value = "";
-  loadTasksAdmin();
+  const ok = await runSafely(async () => {
+    const ref = editingTask ? doc(db, "lectures", editingTask.lectureId, "tasks", editingTask.taskId) : doc(collection(db, "lectures", lectureId, "tasks"));
+    await setDoc(ref, { id: ref.id, lectureId, courseId, trackId, type, title, order, ...extra, updatedAt: serverTimestamp() }, { merge: true });
+  }, editingTask ? "تم تحديث المهمة" : "تم حفظ المهمة");
+  if (ok) {
+    editingTask = null;
+    document.getElementById("btnAddTask").textContent = "حفظ المهمة";
+    document.getElementById("taskTitle").value = "";
+    loadTasksAdmin();
+  }
 });
 
 async function loadTasksAdmin() {
@@ -454,27 +636,48 @@ async function loadTasksAdmin() {
   box.innerHTML = `<div class="sub">جارٍ التحميل...</div>`;
   const snap = await getDocs(collectionGroup(db, "tasks"));
   box.innerHTML = "";
+  if (snap.empty) box.innerHTML = `<div class="sub">لا توجد مهام بعد.</div>`;
   snap.forEach((d) => {
     const t = d.data();
     box.insertAdjacentHTML("beforeend", `
       <div class="list-row">
         <div><b>${escapeHtml(t.title)}</b><div class="meta">${escapeHtml(t.type)} · id: ${d.id}</div></div>
-        <div class="actions"><button class="btn btn-danger btn-sm" data-del-task="${d.id}" data-lecture="${t.lectureId}">حذف</button></div>
+        <div class="actions">
+          <button class="btn btn-secondary btn-sm" data-edit-task="${d.id}" data-lecture="${t.lectureId}">تعديل</button>
+          <button class="btn btn-danger btn-sm" data-del-task="${d.id}" data-lecture="${t.lectureId}">حذف</button>
+        </div>
       </div>`);
   });
-  box.querySelectorAll("[data-del-task]").forEach((b) => b.addEventListener("click", () => deleteTask(b.dataset.lecture, b.dataset.delTask)));
+}
+document.getElementById("tasksListAdmin").addEventListener("click", (e) => {
+  const editBtn = e.target.closest("[data-edit-task]");
+  const delBtn = e.target.closest("[data-del-task]");
+  if (editBtn) return startEditTask(editBtn.dataset.lecture, editBtn.dataset.editTask);
+  if (delBtn) return deleteTask(delBtn.dataset.lecture, delBtn.dataset.delTask);
+});
+async function startEditTask(lectureId, taskId) {
+  const snap = await getDoc(doc(db, "lectures", lectureId, "tasks", taskId));
+  if (!snap.exists()) return toast("المهمة غير موجودة.");
+  const t = snap.data();
+  const sel = document.getElementById("taskLectureSelect");
+  sel.value = `${t.trackId || ""}|${t.courseId || ""}|${lectureId}`;
+  document.getElementById("taskTitle").value = t.title || "";
+  document.getElementById("taskOrder").value = t.order || 1;
+  document.getElementById("taskType").value = t.type;
+  renderTaskTypeFields(t);
+  editingTask = { lectureId, taskId, trackId: t.trackId, courseId: t.courseId };
+  document.getElementById("btnAddTask").textContent = "تحديث المهمة";
+  document.getElementById("panel-tasks").scrollIntoView({ behavior: "smooth" });
 }
 async function deleteTask(lectureId, taskId) {
-  if (!confirm("حذف المهمة؟")) return;
-  await deleteDoc(doc(db, "lectures", lectureId, "tasks", taskId));
-  toast("تم الحذف");
+  if (!(await confirmModal("حذف المهمة؟"))) return;
+  await runSafely(() => deleteDoc(doc(db, "lectures", lectureId, "tasks", taskId)), "تم الحذف");
   loadTasksAdmin();
 }
 
 /* ========================================================================
    الاستبيانات المستقلة (courseSurveys / lectureSurveys)
    ======================================================================== */
-document.getElementById("btnAddSurveyQuestion").addEventListener("click", () => addSurveyQuestionRow("surveyQuestions"));
 addSurveyQuestionRow("surveyQuestions");
 
 async function populateSurveyTargetSelect() {
@@ -495,12 +698,13 @@ document.getElementById("btnSaveSurvey").addEventListener("click", async () => {
   const targetId = document.getElementById("surveyTargetSelect").value;
   if (!targetId) return toast("لا يوجد كورس/محاضرة لاختيارها.");
   const col = kind === "course" ? "courseSurveys" : "lectureSurveys";
-  await setDoc(doc(db, col, targetId), {
-    title: document.getElementById("surveyTitle").value.trim(),
-    questions: collectSurveyQuestions("surveyQuestions"),
-    updatedAt: serverTimestamp(),
-  });
-  toast("تم حفظ الاستبيان");
+  await runSafely(async () => {
+    await setDoc(doc(db, col, targetId), {
+      title: document.getElementById("surveyTitle").value.trim(),
+      questions: collectSurveyQuestions("surveyQuestions"),
+      updatedAt: serverTimestamp(),
+    });
+  }, "تم حفظ الاستبيان");
 });
 
 /* ========================================================================
@@ -511,30 +715,48 @@ async function loadDiscountsAdmin() {
   box.innerHTML = `<div class="sub">جارٍ التحميل...</div>`;
   const snap = await getDocs(collection(db, "discountCodes"));
   box.innerHTML = "";
+  if (snap.empty) box.innerHTML = `<div class="sub">لا توجد أكواد خصم بعد.</div>`;
   snap.forEach((d) => {
     const c = d.data();
     box.insertAdjacentHTML("beforeend", `
       <div class="list-row">
         <div><b>${escapeHtml(d.id)}</b> <span class="badge ${c.active !== false ? "on" : "off"}">${c.active !== false ? "فعّال" : "متوقف"}</span>
           <div class="meta">${c.percent ? c.percent + "%" : (c.amount ? c.amount + "$" : "-")}</div></div>
-        <div class="actions"><button class="btn btn-danger btn-sm" data-del-discount="${d.id}">حذف</button></div>
+        <div class="actions">
+          <button class="btn btn-secondary btn-sm" data-edit-discount="${d.id}">تعديل</button>
+          <button class="btn btn-danger btn-sm" data-del-discount="${d.id}">حذف</button>
+        </div>
       </div>`);
   });
-  box.querySelectorAll("[data-del-discount]").forEach((b) => b.addEventListener("click", () => deleteDiscount(b.dataset.delDiscount)));
+}
+document.getElementById("discountsListAdmin").addEventListener("click", (e) => {
+  const editBtn = e.target.closest("[data-edit-discount]");
+  const delBtn = e.target.closest("[data-del-discount]");
+  if (editBtn) return startEditDiscount(editBtn.dataset.editDiscount);
+  if (delBtn) return deleteDiscount(delBtn.dataset.delDiscount);
+});
+async function startEditDiscount(code) {
+  const snap = await getDoc(doc(db, "discountCodes", code));
+  if (!snap.exists()) return toast("الكود غير موجود.");
+  const c = snap.data();
+  document.getElementById("discountCode").value = code;
+  document.getElementById("discountPercent").value = c.percent || "";
+  document.getElementById("discountAmount").value = c.amount || "";
+  document.getElementById("discountActive").checked = c.active !== false;
+  document.getElementById("panel-discounts").scrollIntoView({ behavior: "smooth" });
 }
 document.getElementById("btnAddDiscount").addEventListener("click", async () => {
   const code = document.getElementById("discountCode").value.trim().toUpperCase();
   if (!code) return toast("اكتب الكود.");
   const percent = document.getElementById("discountPercent").value ? Number(document.getElementById("discountPercent").value) : null;
   const amount = document.getElementById("discountAmount").value ? Number(document.getElementById("discountAmount").value) : null;
-  await setDoc(doc(db, "discountCodes", code), { percent, amount, active: document.getElementById("discountActive").checked });
-  toast("تم حفظ الكود");
-  document.getElementById("discountCode").value = "";
-  loadDiscountsAdmin();
+  const ok = await runSafely(async () => {
+    await setDoc(doc(db, "discountCodes", code), { percent, amount, active: document.getElementById("discountActive").checked });
+  }, "تم حفظ الكود");
+  if (ok) { document.getElementById("discountCode").value = ""; loadDiscountsAdmin(); }
 });
 async function deleteDiscount(code) {
-  if (!confirm("حذف كود الخصم؟")) return;
-  await deleteDoc(doc(db, "discountCodes", code));
-  toast("تم الحذف");
+  if (!(await confirmModal("حذف كود الخصم؟"))) return;
+  await runSafely(() => deleteDoc(doc(db, "discountCodes", code)), "تم الحذف");
   loadDiscountsAdmin();
 }
